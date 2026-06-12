@@ -13,7 +13,8 @@
     "start": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run",
-    "package": "electron-vite build && electron-builder --mac --dir"
+    "package": "electron-vite build && electron-builder --mac --dir",
+    "release": "electron-vite build && electron-builder --mac dmg zip"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
@@ -42,9 +43,17 @@
     "productName": "Clean my node_modules",
     "mac": {
       "category": "public.app-category.developer-tools",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": true,
       "extendInfo": {
         "LSUIElement": true
       }
+    },
+    "dmg": {
+      "artifactName": "${productName}-${version}.${ext}"
     },
     "files": [
       "out/**"
