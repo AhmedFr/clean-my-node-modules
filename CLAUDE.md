@@ -24,6 +24,15 @@ decision made, scope discussed), update the `STATUS` data block at the top of
 Only edit the `STATUS` data block — the markup and render script below it should not
 need changes for routine updates.
 
+## Branch / PR flow
+
+- `main` is protected by convention: feature work happens on `feat/<name>` (or
+  `fix/<name>`) branches and lands via PR so the user can review.
+- Direct commits to main are OK only for docs, STATUS.html updates, and CI/config chores.
+- CI (`.github/workflows/ci.yml`) runs typecheck + tests + build on every PR, plus an
+  unsigned macOS packaging job. PRs should be green before review is requested.
+- Conventional-commit style subjects: `feat(scope): …`, `fix: …`, `docs: …`, `ci: …`.
+
 ## Conventions
 
 - Package manager: pnpm. Build-script approvals live in `pnpm-workspace.yaml`
