@@ -13,6 +13,8 @@ export const IPC = {
   setWindowHeight: 'window:set-height',
   quitApp: 'app:quit',
   getLastScanTime: 'scan:last-time',
+  getPnpmStore: 'pnpm-store:get',
+  prunePnpmStore: 'pnpm-store:prune',
   // events (main -> renderer)
   onScanProgress: 'scan:progress',
   onProjectsChanged: 'projects:changed',

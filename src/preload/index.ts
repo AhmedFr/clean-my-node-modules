@@ -13,6 +13,8 @@ function subscribe<T>(channel: string) {
 const api: CleanApi = {
   getProjects: () => ipcRenderer.invoke(IPC.getProjects),
   getLastScanTime: () => ipcRenderer.invoke(IPC.getLastScanTime),
+  getPnpmStore: (force) => ipcRenderer.invoke(IPC.getPnpmStore, force),
+  prunePnpmStore: () => ipcRenderer.invoke(IPC.prunePnpmStore),
   scan: () => ipcRenderer.invoke(IPC.scan),
   deleteNodeModules: (id) => ipcRenderer.invoke(IPC.deleteNodeModules, id),
   revealInFinder: (id) => ipcRenderer.invoke(IPC.revealInFinder, id),

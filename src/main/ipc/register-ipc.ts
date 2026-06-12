@@ -3,6 +3,7 @@ import { IPC } from '@shared/ipc.constants'
 import type { Settings } from '@shared/settings.types'
 import type { AppContext } from '../app-context.types'
 import { deleteNodeModules, openProject, revealInFinder } from '../actions/project-actions'
+import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
 
 export function registerIpc(ctx: AppContext): void {
   ipcMain.handle(IPC.getProjects, () => ctx.projects.all)
@@ -14,6 +15,9 @@ export function registerIpc(ctx: AppContext): void {
   })
 
   ipcMain.handle(IPC.scan, () => ctx.runScan())
+
+  ipcMain.handle(IPC.getPnpmStore, (_e, force?: boolean) => getPnpmStoreInfo(force))
+  ipcMain.handle(IPC.prunePnpmStore, () => prunePnpmStore())
 
   ipcMain.handle(IPC.deleteNodeModules, async (_e, id: string) => {
     const project = ctx.projects.all.find((p) => p.id === id)
