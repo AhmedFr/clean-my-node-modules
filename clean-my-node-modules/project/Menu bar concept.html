@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Menu bar app — concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root { --mono-font: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="colors.jsx"></script>
+  <script type="text/babel" src="icons.jsx"></script>
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="menubar.jsx"></script>
+
+  <script type="text/babel">
+    const ORDER = ["meter", "module", "stack", "sweep", "hex"];
+    const RECO = { meter: true, module: true };
+
+    function IconConcepts() {
+      return (
+        <div style={{ background: "#0f0f13", borderRadius: 12, padding: "8px 6px", border: "1px solid rgba(255,255,255,0.08)" }}>
+          {ORDER.map((k, i) => {
+            const info = GLYPH_INFO[k];
+            return (
+              <div key={k} style={{ display: "flex", alignItems: "center", gap: 18, padding: "14px 16px", borderTop: i ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+                <AppTile kind={k} size={46} />
+                {/* glyph chip */}
+                <div style={{ width: 52, height: 52, borderRadius: 10, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", flex: "0 0 auto" }}>
+                  <Glyph kind={k} size={26} color="rgba(255,255,255,0.92)" sw={1.7} ratio={0.72} />
+                </div>
+                {/* in a menu bar — calm + over */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: "0 0 auto" }}>
+                  <MenuStub kind={k} over={false} />
+                  <MenuStub kind={k} over={true} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 15, fontWeight: 650, color: "#fff" }}>{info.name}</span>
+                    {RECO[k] && <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "#ffd0d0", background: "rgba(255,99,99,0.18)", padding: "2px 7px", borderRadius: 20 }}>Recommended</span>}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.5)", marginTop: 3, lineHeight: 1.4 }}>{info.blurb}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    // tiny menu-bar strip showing just the icon among 2 system glyphs
+    function MenuStub({ kind, over }) {
+      const col = over ? "#ff7a7a" : "rgba(255,255,255,0.95)";
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "3px 8px", borderRadius: 6, background: "linear-gradient(#26203a,#161620)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ position: "relative", display: "flex" }}>
+            <Glyph kind={kind} size={15} color={col} sw={1.8} ratio={over ? 1 : 0.72} />
+            {over && <span style={{ position: "absolute", top: -1, right: -2, width: 5, height: 5, borderRadius: "50%", background: "#ff6363" }} />}
+          </div>
+          <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 10.5, fontWeight: 500 }}>9:41</span>
+        </div>
+      );
+    }
+
+    function App() {
+      return (
+        <DesignCanvas>
+          <DCSection id="logo" title="Logo / menu-bar icon" subtitle="Monochrome template glyph for the bar + colored tile for the Dock & notifications. The icon doubles as a status light — it reddens and gains a dot when you're over the limit.">
+            <DCArtboard id="icons" label="5 directions · calm vs. over-limit" width={660} height={410}>
+              <IconConcepts />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="menu" title="Top bar menu — dropdown" subtitle="Click the bar icon → this panel drops down. The glanceable home for a background utility; the full launcher stays for deep cleans (⌘O opens it).">
+            <DCArtboard id="a" label="A · Status list — actionable, text-forward" width={470} height={508}>
+              <Desk h={508}>
+                <MenuBar kind="meter" over={true} open={true} />
+                <DropdownA kind="meter" accent={ACCENT} />
+              </Desk>
+            </DCArtboard>
+            <DCArtboard id="b" label="B · Glance — donut + disk breakdown" width={470} height={452}>
+              <Desk h={452}>
+                <MenuBar kind="module" over={true} open={true} />
+                <DropdownB kind="module" accent={ACCENT} />
+              </Desk>
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
