@@ -15,7 +15,7 @@
 const STATUS = {
   app: "Clean my node_modules",
   version: "0.1.0",
-  updated: "2026-06-11",
+  updated: "2026-06-12",
   phase: "Core app fully working in dev — packaging, polish and your sign-off are what's left",
   summary: "The app scans your disk, shows everything in the tray dropdown and launcher window, and safely deletes to Trash. All core features from the design handoff are implemented. What remains is making it a real installable Mac app (icon, signing, launch-at-login) — and several things only you can do, listed in 'In your court' below.",
 
@@ -43,7 +43,8 @@ const STATUS = {
         { label: "Code signing + notarization", detail: "Blocked on an Apple Developer account — only you can set that up", status: "user" },
         { label: "Launch at login", detail: "app.setLoginItemSettings + a toggle in Settings", status: "planned" },
         { label: "Configurable scan roots", detail: "Today the scanner is hard-wired to your home directory", status: "planned" },
-        { label: "First git commit", detail: "Repo is initialized but has zero commits — everything is untracked. Say the word and Claude commits.", status: "user" }
+        { label: "First git commit", detail: "Repo is initialized but has zero commits — everything is untracked. Say the word and Claude commits.", status: "user" },
+        { label: "Landing page (site/)", detail: "Static GitHub Pages-ready page ported from the design handoff, content updated to the real app + OSS/$9 model — PR #4 awaits your review", status: "user" }
       ]
     },
     {
@@ -76,6 +77,9 @@ const STATUS = {
     { id: "test-notification", category: "testing", label: "Check the threshold notification fires", detail: "Set the GB limit below your current total in Settings and wait for / trigger a scan." },
     { id: "test-packaged-app", category: "testing", label: "Try the packaged app", detail: "pnpm package, then launch the .app from out/ (right-click → Open, it's unsigned). Does the tray behave the same as in dev?" },
     { id: "review-initial-commit", category: "review", label: "Review the code & approve the first commit", detail: "Nothing is committed yet — the whole codebase is one untracked pile. Skim it (or ask for a guided tour), then tell Claude to make the initial commit." },
+    { id: "review-pr4-landing", category: "review", label: "Review PR #4 — landing page", detail: "site/ ports the design handoff landing page with truthful content (OSS + $9 signed binary). Preview: cd site && python3 -m http.server. Merge when happy." },
+    { id: "ext-lemon-squeezy", category: "external", label: "Create the Lemon Squeezy product ($9 signed app)", detail: "The three buy buttons in site/index.html point to '#'. Create the product, then replace the hrefs (search 'TODO: Lemon Squeezy')." },
+    { id: "ext-license-file", category: "external", label: "Add a LICENSE file (MIT)", detail: "The landing page and README advertise MIT, but the repo has no LICENSE file yet. One 'add it' from you and Claude commits it." },
     { id: "ext-apple-dev", category: "external", label: "Apple Developer account (only if you want signing)", detail: "$99/yr at developer.apple.com. Without it the app stays right-click-to-open. Decide if this app is worth it." },
     { id: "vision-app-icon", category: "vision", label: "App icon direction", detail: "The tray glyph is the design's cube. Should the .app icon reuse it, or do you want something else? A reference image or one sentence is enough." },
     { id: "vision-scan-scope", category: "vision", label: "Where should scanning reach?", detail: "Whole home folder (current), or pick folders like ~/code? This decides how 'configurable scan roots' gets built." },
@@ -87,7 +91,8 @@ const STATUS = {
   log: [
     { date: "2026-06-10", text: "Built the entire app from the Claude Design handoff: scanner, tray panel, launcher window, settings, scheduler, notifications, safe-delete. Verified in dev via Playwright." },
     { date: "2026-06-11", text: "Added this status dashboard (STATUS.html) + CLAUDE.md rule to keep it updated every session." },
-    { date: "2026-06-11", text: "Drafted GitHub issues: #1 business model options (rec: OSS + paid signed binary), #2 prioritized package-manager coverage plan (pnpm store first). Both await your decisions." }
+    { date: "2026-06-11", text: "Drafted GitHub issues: #1 business model options (rec: OSS + paid signed binary), #2 prioritized package-manager coverage plan (pnpm store first). Both await your decisions." },
+    { date: "2026-06-12", text: "Built the product landing page (site/, PR #4): design-handoff port with truthful content — OSS (MIT) + $9 signed binary, real features, Lemon Squeezy buy links left as TODO for you." }
   ]
 };
 </script>
