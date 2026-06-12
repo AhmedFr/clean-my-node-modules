@@ -4,6 +4,7 @@
   "description": "macOS menu bar app that finds stale node_modules folders and reclaims disk space",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.1.2",
   "main": "out/main/index.js",
   "author": "Ahmed Abouelleil",
   "license": "MIT",

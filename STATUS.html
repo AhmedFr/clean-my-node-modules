@@ -15,9 +15,9 @@
 const STATUS = {
   app: "Clean my node_modules",
   version: "0.1.0",
-  updated: "2026-06-11",
-  phase: "Core app fully working in dev — packaging, polish and your sign-off are what's left",
-  summary: "The app scans your disk, shows everything in the tray dropdown and launcher window, and safely deletes to Trash. All core features from the design handoff are implemented. What remains is making it a real installable Mac app (icon, signing, launch-at-login) — and several things only you can do, listed in 'In your court' below.",
+  updated: "2026-06-12",
+  phase: "Going public: OSS + $9 signed binary decided, repo is live on GitHub with CI — two PRs await your review",
+  summary: "Business model is settled (issue #1): open source, $9 one-time for the signed binary. The repo is now public at github.com/AhmedFr/clean-my-node-modules with a clean history, CI on every PR, and a branch/PR flow. The pnpm store cleaner (issue #2 M1) and the landing page are open PRs. Your side: review the PRs, fetch the Apple signing credentials (docs/SIGNING.md), and create the Lemon Squeezy product.",
 
   milestones: [
     {
@@ -39,11 +39,23 @@ const STATUS = {
       note: "From 'works in pnpm dev' to 'lives in /Applications'",
       items: [
         { label: "Unsigned .app packaging", detail: "pnpm package via electron-builder works (LSUIElement menu-bar-only app)", status: "done" },
+        { label: "Public GitHub repo, clean history, CI, branch/PR flow", detail: "github.com/AhmedFr/clean-my-node-modules — CI runs typecheck, tests, build + unsigned mac packaging on every PR", status: "done" },
+        { label: "Code signing + notarization", detail: "Fully scaffolded (hardened runtime, entitlements, pnpm release). Just needs your 3 Apple credentials — docs/SIGNING.md", status: "user" },
+        { label: "Landing page", detail: "Ported from the design handoff with the real story: OSS + $9 signed binary. In PR — needs your review + the Lemon Squeezy buy URL", status: "progress" },
+        { label: "Lemon Squeezy product ($9)", detail: "Recommended over Stripe (merchant of record = they handle VAT). Create account + product, drop URL into the landing buy button", status: "user" },
         { label: "App icon for the packaged .app", detail: "Needs a 1024px icon — design direction is yours (see 'In your court')", status: "user" },
-        { label: "Code signing + notarization", detail: "Blocked on an Apple Developer account — only you can set that up", status: "user" },
         { label: "Launch at login", detail: "app.setLoginItemSettings + a toggle in Settings", status: "planned" },
-        { label: "Configurable scan roots", detail: "Today the scanner is hard-wired to your home directory", status: "planned" },
-        { label: "First git commit", detail: "Repo is initialized but has zero commits — everything is untracked. Say the word and Claude commits.", status: "user" }
+        { label: "Configurable scan roots", detail: "Today the scanner is hard-wired to your home directory", status: "planned" }
+      ]
+    },
+    {
+      title: "Beyond node_modules (issue #2)",
+      note: "Package-manager caches, pnpm first",
+      items: [
+        { label: "M1 — pnpm store size + prune in the panel", detail: "PR #3: Caches section, safe 'pnpm store prune' (never deletes the store), works even when launched outside a shell PATH", status: "progress" },
+        { label: "M2 — npm / yarn / bun global caches", detail: "Same Caches section, after #3 lands", status: "planned" },
+        { label: "M3 — per-project build outputs (.next, dist, …)", detail: "Behind a settings toggle", status: "planned" },
+        { label: "M4 — beyond JS (venv, target/, DerivedData)", detail: "Only if scope grows", status: "planned" }
       ]
     },
     {
@@ -51,7 +63,8 @@ const STATUS = {
       note: "How much you can trust it without watching it",
       items: [
         { label: "Unit tests — formatting & color math", detail: "vitest covers lib/format and lib/colors", status: "done" },
-        { label: "Unit tests — scanner & stores", detail: "detect-kind, scanner skip-rules, settings/project stores have no tests yet", status: "planned" },
+        { label: "CI on every PR", detail: "typecheck + tests + build + unsigned macOS packaging", status: "done" },
+        { label: "Unit tests — scanner & stores", detail: "PR #3 adds du-parsing and pnpm-resolution tests; detect-kind, skip-rules and the stores are still uncovered", status: "planned" },
         { label: "Manual end-to-end pass", detail: "Real tray, real deletion, real notifications — only you can judge this (see 'In your court')", status: "user" }
       ]
     },
@@ -61,33 +74,32 @@ const STATUS = {
       ideas: true,
       items: [
         { label: "Ignore list / pinned projects", detail: "Protect specific projects from 'Clean stale'", status: "planned" },
-        { label: "Other package-manager caches", detail: "Prioritized plan drafted in GitHub issue #2 — pnpm store first, then npm/yarn/bun caches, then build outputs", status: "planned" },
         { label: "Size shown in the menu bar itself", detail: "Tray title text next to the icon", status: "planned" },
         { label: "Auto-clean rules", detail: "e.g. auto-trash anything stale beyond 6 months", status: "planned" },
-        { label: "Distribution & business model", detail: "Options drafted in GitHub issue #1 — recommendation: OSS + paid signed binary. Awaiting your call.", status: "planned" }
+        { label: "Auto-updates for the paid binary", detail: "electron-updater + GitHub releases, once signing works", status: "planned" }
       ]
     }
   ],
 
   /* Things ONLY the user can do. Claude removes/updates these as they get done. */
   userActions: [
+    { id: "review-pr-pnpm", category: "review", label: "Review PR #3 — pnpm store prune", detail: "github.com/AhmedFr/clean-my-node-modules/pull/3. Best reviewed live: pnpm dev → tray shows 'Caches · pnpm store'; Prune is safe (only drops unreferenced packages)." },
+    { id: "review-pr-landing", category: "review", label: "Review the landing page PR", detail: "Check the copy tells the story you want (OSS + $9 signed binary) and the design feels right. Buy button is a placeholder until Lemon Squeezy exists." },
+    { id: "ext-apple-creds", category: "external", label: "Fetch your 3 Apple signing credentials", detail: "docs/SIGNING.md has the exact steps: Developer ID Application cert (via Xcode), Team ID, app-specific password → .env.signing. Then 'pnpm release' ships signed+notarized." },
+    { id: "ext-lemon-squeezy", category: "external", label: "Create the Lemon Squeezy product ($9)", detail: "lemonsqueezy.com — recommended over Stripe because they're the merchant of record (VAT handled). Paste the product URL and Claude wires it into the landing buy button." },
     { id: "e2e-dev-pass", category: "testing", label: "Run the app and do a real pass", detail: "pnpm dev — open the tray dropdown, check sizes look right, try the launcher (⌘O), search, keyboard nav." },
     { id: "test-trash-delete", category: "testing", label: "Verify deletion really goes to Trash", detail: "Delete a node_modules you don't care about, then check the Trash. This is the one destructive path — it deserves your own eyes." },
     { id: "test-notification", category: "testing", label: "Check the threshold notification fires", detail: "Set the GB limit below your current total in Settings and wait for / trigger a scan." },
     { id: "test-packaged-app", category: "testing", label: "Try the packaged app", detail: "pnpm package, then launch the .app from out/ (right-click → Open, it's unsigned). Does the tray behave the same as in dev?" },
-    { id: "review-initial-commit", category: "review", label: "Review the code & approve the first commit", detail: "Nothing is committed yet — the whole codebase is one untracked pile. Skim it (or ask for a guided tour), then tell Claude to make the initial commit." },
-    { id: "ext-apple-dev", category: "external", label: "Apple Developer account (only if you want signing)", detail: "$99/yr at developer.apple.com. Without it the app stays right-click-to-open. Decide if this app is worth it." },
     { id: "vision-app-icon", category: "vision", label: "App icon direction", detail: "The tray glyph is the design's cube. Should the .app icon reuse it, or do you want something else? A reference image or one sentence is enough." },
-    { id: "vision-scan-scope", category: "vision", label: "Where should scanning reach?", detail: "Whole home folder (current), or pick folders like ~/code? This decides how 'configurable scan roots' gets built." },
-    { id: "vision-scope", category: "vision", label: "How far does this project go?", detail: "Personal tool that's basically done, or something to polish and distribute? Your answer reorders everything in 'Ideas'." },
-    { id: "vision-business-model", category: "vision", label: "Answer GitHub issue #1 — business model", detail: "5 options drafted with a recommendation (OSS + paid signed binary). Decide: revenue goal y/n, price point, merchant, repo visibility." },
-    { id: "vision-pm-priority", category: "vision", label: "Confirm GitHub issue #2 — package-manager priority order", detail: "Proposed: pnpm store → npm/yarn/bun caches → build outputs (.next, dist, target) → beyond-JS. Promote/demote anything?" }
+    { id: "vision-scan-scope", category: "vision", label: "Where should scanning reach?", detail: "Whole home folder (current), or pick folders like ~/code? This decides how 'configurable scan roots' gets built." }
   ],
 
   log: [
     { date: "2026-06-10", text: "Built the entire app from the Claude Design handoff: scanner, tray panel, launcher window, settings, scheduler, notifications, safe-delete. Verified in dev via Playwright." },
     { date: "2026-06-11", text: "Added this status dashboard (STATUS.html) + CLAUDE.md rule to keep it updated every session." },
-    { date: "2026-06-11", text: "Drafted GitHub issues: #1 business model options (rec: OSS + paid signed binary), #2 prioritized package-manager coverage plan (pnpm store first). Both await your decisions." }
+    { date: "2026-06-11", text: "Drafted GitHub issues: #1 business model options (rec: OSS + paid signed binary), #2 prioritized package-manager coverage plan (pnpm store first). Both await your decisions." },
+    { date: "2026-06-12", text: "You decided: OSS + $9 signed binary, repo public. Shipped: clean 7-commit history pushed, repo made public, CI on PRs, signing scaffolded (docs/SIGNING.md), PR #3 (pnpm store prune), landing page PR. Your court: review both PRs, Apple credentials, Lemon Squeezy product." }
   ]
 };
 </script>
