@@ -41,7 +41,8 @@ const STATUS = {
         { label: "Unsigned .app packaging", detail: "pnpm package via electron-builder works (LSUIElement menu-bar-only app)", status: "done" },
         { label: "Public GitHub repo, clean history, CI, branch/PR flow", detail: "github.com/AhmedFr/clean-my-node-modules — CI runs typecheck, tests, build + unsigned mac packaging on every PR", status: "done" },
         { label: "Code signing + notarization", detail: "Fully scaffolded (hardened runtime, entitlements, pnpm release). Just needs your 3 Apple credentials — docs/SIGNING.md", status: "user" },
-        { label: "Landing page", detail: "Ported from the design handoff with the real story: OSS + $9 signed binary. In PR — needs your review + the Lemon Squeezy buy URL", status: "progress" },
+        { label: "Landing page (site/, GitHub Pages-ready)", detail: "PR #4: design-handoff port with truthful content — OSS + $9 signed binary. Needs your review + the Lemon Squeezy buy URL", status: "progress" },
+        { label: "MIT LICENSE file", detail: "Added after the landing page started advertising MIT without one in the repo", status: "done" },
         { label: "Lemon Squeezy product ($9)", detail: "Recommended over Stripe (merchant of record = they handle VAT). Create account + product, drop URL into the landing buy button", status: "user" },
         { label: "App icon for the packaged .app", detail: "Needs a 1024px icon — design direction is yours (see 'In your court')", status: "user" },
         { label: "Launch at login", detail: "app.setLoginItemSettings + a toggle in Settings", status: "planned" },
@@ -84,7 +85,7 @@ const STATUS = {
   /* Things ONLY the user can do. Claude removes/updates these as they get done. */
   userActions: [
     { id: "review-pr-pnpm", category: "review", label: "Review PR #3 — pnpm store prune", detail: "github.com/AhmedFr/clean-my-node-modules/pull/3. Best reviewed live: pnpm dev → tray shows 'Caches · pnpm store'; Prune is safe (only drops unreferenced packages)." },
-    { id: "review-pr-landing", category: "review", label: "Review the landing page PR", detail: "Check the copy tells the story you want (OSS + $9 signed binary) and the design feels right. Buy button is a placeholder until Lemon Squeezy exists." },
+    { id: "review-pr-landing", category: "review", label: "Review PR #4 — landing page", detail: "github.com/AhmedFr/clean-my-node-modules/pull/4. Preview: cd site && python3 -m http.server. Check the copy tells the story you want (OSS + $9 signed binary); buy buttons stay '#' until Lemon Squeezy exists." },
     { id: "ext-apple-creds", category: "external", label: "Fetch your 3 Apple signing credentials", detail: "docs/SIGNING.md has the exact steps: Developer ID Application cert (via Xcode), Team ID, app-specific password → .env.signing. Then 'pnpm release' ships signed+notarized." },
     { id: "ext-lemon-squeezy", category: "external", label: "Create the Lemon Squeezy product ($9)", detail: "lemonsqueezy.com — recommended over Stripe because they're the merchant of record (VAT handled). Paste the product URL and Claude wires it into the landing buy button." },
     { id: "e2e-dev-pass", category: "testing", label: "Run the app and do a real pass", detail: "pnpm dev — open the tray dropdown, check sizes look right, try the launcher (⌘O), search, keyboard nav." },
@@ -99,7 +100,7 @@ const STATUS = {
     { date: "2026-06-10", text: "Built the entire app from the Claude Design handoff: scanner, tray panel, launcher window, settings, scheduler, notifications, safe-delete. Verified in dev via Playwright." },
     { date: "2026-06-11", text: "Added this status dashboard (STATUS.html) + CLAUDE.md rule to keep it updated every session." },
     { date: "2026-06-11", text: "Drafted GitHub issues: #1 business model options (rec: OSS + paid signed binary), #2 prioritized package-manager coverage plan (pnpm store first). Both await your decisions." },
-    { date: "2026-06-12", text: "You decided: OSS + $9 signed binary, repo public. Shipped: clean 7-commit history pushed, repo made public, CI on PRs, signing scaffolded (docs/SIGNING.md), PR #3 (pnpm store prune), landing page PR. Your court: review both PRs, Apple credentials, Lemon Squeezy product." }
+    { date: "2026-06-12", text: "You decided: OSS + $9 signed binary, repo public. Shipped: clean history pushed, repo made public, CI on PRs, signing scaffolded (docs/SIGNING.md), MIT LICENSE, PR #3 (pnpm store prune), PR #4 (landing page). Your court: review both PRs, Apple credentials, Lemon Squeezy product." }
   ]
 };
 </script>
