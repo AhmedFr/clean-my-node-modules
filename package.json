@@ -1,0 +1,53 @@
+{
+  "name": "clean-my-node-modules",
+  "version": "0.1.0",
+  "description": "macOS menu bar app that finds stale node_modules folders and reclaims disk space",
+  "private": true,
+  "type": "module",
+  "main": "out/main/index.js",
+  "author": "Ahmed Abouelleil",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "vitest run",
+    "package": "electron-vite build && electron-builder --mac --dir"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
+  },
+  "build": {
+    "appId": "com.ahmed.clean-my-node-modules",
+    "productName": "Clean my node_modules",
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "extendInfo": {
+        "LSUIElement": true
+      }
+    },
+    "files": [
+      "out/**"
+    ]
+  }
+}
