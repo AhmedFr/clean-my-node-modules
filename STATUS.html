@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clean my node_modules — Project Status</title>
+<link rel="icon" href="data:,">
+<script>
+/* ============================================================
+   STATUS DATA — this is the ONLY part Claude edits each session.
+   Statuses: "done" | "progress" | "planned" | "user"
+   userActions categories: "testing" | "review" | "external" | "vision"
+   Keep ids stable — checkbox state is saved against them.
+   ============================================================ */
+const STATUS = {
+  app: "Clean my node_modules",
+  version: "0.1.0",
+  updated: "2026-06-11",
+  phase: "Core app fully working in dev — packaging, polish and your sign-off are what's left",
+  summary: "The app scans your disk, shows everything in the tray dropdown and launcher window, and safely deletes to Trash. All core features from the design handoff are implemented. What remains is making it a real installable Mac app (icon, signing, launch-at-login) — and several things only you can do, listed in 'In your court' below.",
+
+  milestones: [
+    {
+      title: "Core app",
+      note: "Everything from the Claude Design handoff",
+      items: [
+        { label: "Menu bar dropdown (tray panel)", detail: "Total size, pixel-cell meter vs GB limit, 4 oldest projects, one-click delete, 'Clean N stale' action", status: "done" },
+        { label: "Launcher window", detail: "⌘O Spotlight-style search, sort by last-used/size/name, full keyboard nav (↑↓ ↵ ⌘⌫ ⌘R ⌘, esc)", status: "done" },
+        { label: "Real disk scanner", detail: "Walks home dir (skips dot-folders & Library), sizes via du, detects framework, infers last-used from mtimes, caches results", status: "done" },
+        { label: "Safe deletion", detail: "shell.trashItem — folders go to Trash, never rm -rf", status: "done" },
+        { label: "Background scans + notifications", detail: "6h / daily / weekly / manual schedule, native notification when crossing the GB threshold", status: "done" },
+        { label: "Row actions", detail: "Reveal in Finder, open in editor", status: "done" },
+        { label: "Runtime tray icon", detail: "Cube glyph rasterized at runtime (glyph-raster.ts + own PNG encoder) — zero image assets", status: "done" },
+        { label: "Settings persistence", detail: "Plain JSON in userData; GB limit, schedule, etc.", status: "done" }
+      ]
+    },
+    {
+      title: "Ship it as a real Mac app",
+      note: "From 'works in pnpm dev' to 'lives in /Applications'",
+      items: [
+        { label: "Unsigned .app packaging", detail: "pnpm package via electron-builder works (LSUIElement menu-bar-only app)", status: "done" },
+        { label: "App icon for the packaged .app", detail: "Needs a 1024px icon — design direction is yours (see 'In your court')", status: "user" },
+        { label: "Code signing + notarization", detail: "Blocked on an Apple Developer account — only you can set that up", status: "user" },
+        { label: "Launch at login", detail: "app.setLoginItemSettings + a toggle in Settings", status: "planned" },
+        { label: "Configurable scan roots", detail: "Today the scanner is hard-wired to your home directory", status: "planned" },
+        { label: "First git commit", detail: "Repo is initialized but has zero commits — everything is untracked. Say the word and Claude commits.", status: "user" }
+      ]
+    },
+    {
+      title: "Quality & confidence",
+      note: "How much you can trust it without watching it",
+      items: [
+        { label: "Unit tests — formatting & color math", detail: "vitest covers lib/format and lib/colors", status: "done" },
+        { label: "Unit tests — scanner & stores", detail: "detect-kind, scanner skip-rules, settings/project stores have no tests yet", status: "planned" },
+        { label: "Manual end-to-end pass", detail: "Real tray, real deletion, real notifications — only you can judge this (see 'In your court')", status: "user" }
+      ]
+    },
+    {
+      title: "Ideas (not committed)",
+      note: "Future possibilities — need your vision call before any work starts",
+      ideas: true,
+      items: [
+        { label: "Ignore list / pinned projects", detail: "Protect specific projects from 'Clean stale'", status: "planned" },
+        { label: "Other package-manager caches", detail: "Prioritized plan drafted in GitHub issue #2 — pnpm store first, then npm/yarn/bun caches, then build outputs", status: "planned" },
+        { label: "Size shown in the menu bar itself", detail: "Tray title text next to the icon", status: "planned" },
+        { label: "Auto-clean rules", detail: "e.g. auto-trash anything stale beyond 6 months", status: "planned" },
+        { label: "Distribution & business model", detail: "Options drafted in GitHub issue #1 — recommendation: OSS + paid signed binary. Awaiting your call.", status: "planned" }
+      ]
+    }
+  ],
+
+  /* Things ONLY the user can do. Claude removes/updates these as they get done. */
+  userActions: [
+    { id: "e2e-dev-pass", category: "testing", label: "Run the app and do a real pass", detail: "pnpm dev — open the tray dropdown, check sizes look right, try the launcher (⌘O), search, keyboard nav." },
+    { id: "test-trash-delete", category: "testing", label: "Verify deletion really goes to Trash", detail: "Delete a node_modules you don't care about, then check the Trash. This is the one destructive path — it deserves your own eyes." },
+    { id: "test-notification", category: "testing", label: "Check the threshold notification fires", detail: "Set the GB limit below your current total in Settings and wait for / trigger a scan." },
+    { id: "test-packaged-app", category: "testing", label: "Try the packaged app", detail: "pnpm package, then launch the .app from out/ (right-click → Open, it's unsigned). Does the tray behave the same as in dev?" },
+    { id: "review-initial-commit", category: "review", label: "Review the code & approve the first commit", detail: "Nothing is committed yet — the whole codebase is one untracked pile. Skim it (or ask for a guided tour), then tell Claude to make the initial commit." },
+    { id: "ext-apple-dev", category: "external", label: "Apple Developer account (only if you want signing)", detail: "$99/yr at developer.apple.com. Without it the app stays right-click-to-open. Decide if this app is worth it." },
+    { id: "vision-app-icon", category: "vision", label: "App icon direction", detail: "The tray glyph is the design's cube. Should the .app icon reuse it, or do you want something else? A reference image or one sentence is enough." },
+    { id: "vision-scan-scope", category: "vision", label: "Where should scanning reach?", detail: "Whole home folder (current), or pick folders like ~/code? This decides how 'configurable scan roots' gets built." },
+    { id: "vision-scope", category: "vision", label: "How far does this project go?", detail: "Personal tool that's basically done, or something to polish and distribute? Your answer reorders everything in 'Ideas'." },
+    { id: "vision-business-model", category: "vision", label: "Answer GitHub issue #1 — business model", detail: "5 options drafted with a recommendation (OSS + paid signed binary). Decide: revenue goal y/n, price point, merchant, repo visibility." },
+    { id: "vision-pm-priority", category: "vision", label: "Confirm GitHub issue #2 — package-manager priority order", detail: "Proposed: pnpm store → npm/yarn/bun caches → build outputs (.next, dist, target) → beyond-JS. Promote/demote anything?" }
+  ],
+
+  log: [
+    { date: "2026-06-10", text: "Built the entire app from the Claude Design handoff: scanner, tray panel, launcher window, settings, scheduler, notifications, safe-delete. Verified in dev via Playwright." },
+    { date: "2026-06-11", text: "Added this status dashboard (STATUS.html) + CLAUDE.md rule to keep it updated every session." },
+    { date: "2026-06-11", text: "Drafted GitHub issues: #1 business model options (rec: OSS + paid signed binary), #2 prioritized package-manager coverage plan (pnpm store first). Both await your decisions." }
+  ]
+};
+</script>
+<style>
+  :root {
+    --bg: #0e1014;
+    --panel: #161a21;
+    --panel2: #1c212b;
+    --line: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --dim: #8b93a3;
+    --faint: #5b6271;
+    --green: #34d399;
+    --amber: #f5b14c;
+    --red: #ff6363;
+    --blue: #6ca0f0;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 48px 24px 96px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+
+  /* ---------- header ---------- */
+  header { margin-bottom: 36px; }
+  .titlebar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .cube {
+    width: 34px; height: 34px; flex: none;
+    display: grid; place-items: center;
+    background: linear-gradient(140deg, #232a36, #161a21);
+    border: 1px solid var(--line); border-radius: 9px;
+  }
+  h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.01em; }
+  h1 .nm { font-family: var(--mono); font-size: 19px; color: var(--green); }
+  .meta { font-family: var(--mono); font-size: 12px; color: var(--faint); margin-left: auto; text-align: right; }
+  .meta b { color: var(--dim); font-weight: 500; }
+  .phase { margin-top: 18px; font-size: 17px; font-weight: 550; letter-spacing: -0.005em; }
+  .summary { margin-top: 8px; color: var(--dim); max-width: 64ch; }
+
+  /* ---------- pixel meter ---------- */
+  .meter { margin-top: 22px; }
+  .meter-cells { display: flex; gap: 3px; height: 14px; }
+  .meter-cells i { flex: 1; border-radius: 2px; background: var(--panel2); }
+  .meter-cells i.on { background: var(--green); box-shadow: 0 0 6px rgba(52,211,153,0.35); }
+  .meter-cells i.half { background: linear-gradient(90deg, var(--green) 50%, var(--panel2) 50%); }
+  .meter-label { display: flex; justify-content: space-between; margin-top: 7px; font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+  .meter-label b { color: var(--green); font-weight: 500; }
+
+  /* ---------- sections ---------- */
+  section { margin-top: 44px; }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+  h2 { font-size: 16px; font-weight: 650; letter-spacing: -0.005em; }
+  .sec-note { font-size: 13px; color: var(--faint); }
+  .sec-count { margin-left: auto; font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-top: 10px; }
+  .item { display: flex; gap: 14px; padding: 13px 16px; border-top: 1px solid var(--line); align-items: baseline; }
+  .item:first-child { border-top: none; }
+  .item .label { font-weight: 550; font-size: 14.5px; }
+  .item .detail { color: var(--dim); font-size: 13px; margin-top: 2px; }
+  .item .text { flex: 1; }
+  .badge {
+    flex: none; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em;
+    padding: 3px 8px; border-radius: 99px; text-transform: uppercase; align-self: center;
+  }
+  .b-done { color: var(--green); background: rgba(52,211,153,0.10); }
+  .b-progress { color: var(--amber); background: rgba(245,177,76,0.10); }
+  .b-planned { color: var(--faint); background: rgba(139,147,163,0.08); }
+  .b-user { color: var(--red); background: rgba(255,99,99,0.10); }
+  .item.is-done .label { color: var(--dim); }
+
+  /* ---------- your court ---------- */
+  #court { scroll-margin-top: 24px; }
+  #court .card { border-color: rgba(255,99,99,0.25); }
+  #court h2 { color: var(--red); }
+  .court-item { display: flex; gap: 13px; padding: 14px 16px; border-top: 1px solid var(--line); }
+  .court-item:first-child { border-top: none; }
+  .court-item input[type="checkbox"] {
+    appearance: none; width: 18px; height: 18px; flex: none; margin-top: 2px;
+    border: 1.5px solid var(--faint); border-radius: 5px; cursor: pointer; position: relative;
+  }
+  .court-item input[type="checkbox"]:checked { background: var(--green); border-color: var(--green); }
+  .court-item input[type="checkbox"]:checked::after {
+    content: "✓"; position: absolute; inset: 0; display: grid; place-items: center;
+    color: #0e1014; font-size: 12px; font-weight: 800;
+  }
+  .court-item.is-checked .label, .court-item.is-checked .detail { text-decoration: line-through; opacity: 0.45; }
+  .cat {
+    flex: none; align-self: flex-start; margin-top: 2px;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 99px;
+  }
+  .c-testing { color: var(--amber); background: rgba(245,177,76,0.10); }
+  .c-review { color: var(--blue); background: rgba(108,160,240,0.12); }
+  .c-external { color: var(--red); background: rgba(255,99,99,0.10); }
+  .c-vision { color: #c792ea; background: rgba(199,146,234,0.10); }
+  .court-hint { margin-top: 10px; font-size: 12.5px; color: var(--faint); }
+
+  /* ---------- log ---------- */
+  .log-item { display: flex; gap: 16px; padding: 11px 16px; border-top: 1px solid var(--line); }
+  .log-item:first-child { border-top: none; }
+  .log-date { font-family: var(--mono); font-size: 12px; color: var(--faint); flex: none; padding-top: 2px; }
+  .log-text { color: var(--dim); font-size: 13.5px; }
+
+  footer { margin-top: 56px; font-size: 12px; color: var(--faint); text-align: center; }
+  footer code { font-family: var(--mono); color: var(--dim); }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f4f5f7; --panel: #ffffff; --panel2: #e8eaee;
+      --line: rgba(15,20,30,0.08); --text: #1a1e26; --dim: #555d6b; --faint: #8a909c;
+    }
+    .meter-cells i.on { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="titlebar">
+      <div class="cube">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.6" stroke-linejoin="round">
+          <path d="M12 2.5 21 7.5v9L12 21.5 3 16.5v-9L12 2.5Z"/>
+          <path d="M3 7.5 12 12.5l9-5M12 12.5v9"/>
+        </svg>
+      </div>
+      <h1>Clean my <span class="nm">node_modules</span> — status</h1>
+      <div class="meta" id="meta"></div>
+    </div>
+    <div class="phase" id="phase"></div>
+    <p class="summary" id="summary"></p>
+    <div class="meter">
+      <div class="meter-cells" id="meter"></div>
+      <div class="meter-label"><span>roadmap progress <span style="opacity:.6">(ideas excluded)</span></span><b id="meter-pct"></b></div>
+    </div>
+  </header>
+
+  <section id="court">
+    <div class="sec-head">
+      <h2>⚑ In your court — only you can do these</h2>
+      <span class="sec-count" id="court-count"></span>
+    </div>
+    <div class="card" id="court-list"></div>
+    <p class="court-hint">Checkboxes are saved in this browser. When something is truly done (tested, decided, reviewed), tell Claude — it gets removed from this list and the roadmap moves.</p>
+  </section>
+
+  <div id="milestones"></div>
+
+  <section>
+    <div class="sec-head"><h2>Session log</h2></div>
+    <div class="card" id="log"></div>
+  </section>
+
+  <footer>
+    Maintained automatically by Claude Code at the end of every working session — see <code>CLAUDE.md</code>.<br>
+    If this page looks stale, just ask: “update STATUS.html”.
+  </footer>
+</div>
+
+<script>
+(function render() {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+  $("meta").innerHTML = `v${STATUS.version}<br><b>updated ${STATUS.updated}</b>`;
+  $("phase").textContent = STATUS.phase;
+  $("summary").textContent = STATUS.summary;
+
+  // progress across non-idea milestones; "user" items count as half-done (built or unblocked-by-you)
+  const tracked = STATUS.milestones.filter(m => !m.ideas).flatMap(m => m.items);
+  const score = tracked.reduce((n, i) => n + (i.status === "done" ? 1 : i.status === "progress" || i.status === "user" ? 0.5 : 0), 0);
+  const pct = Math.round((score / tracked.length) * 100);
+
+  const CELLS = 30, fill = pct / 100 * CELLS;
+  $("meter").innerHTML = Array.from({ length: CELLS }, (_, i) =>
+    `<i class="${i + 1 <= Math.floor(fill) ? "on" : i < fill ? "half" : ""}"></i>`).join("");
+  $("meter-pct").textContent = pct + "%";
+
+  const BADGE = { done: ["b-done", "done"], progress: ["b-progress", "in progress"], planned: ["b-planned", "planned"], user: ["b-user", "needs you"] };
+
+  $("milestones").innerHTML = STATUS.milestones.map(m => {
+    const done = m.items.filter(i => i.status === "done").length;
+    return `<section>
+      <div class="sec-head">
+        <h2>${esc(m.title)}</h2><span class="sec-note">${esc(m.note)}</span>
+        <span class="sec-count">${m.ideas ? m.items.length + " ideas" : done + "/" + m.items.length}</span>
+      </div>
+      <div class="card">${m.items.map(i => {
+        const [cls, txt] = BADGE[i.status];
+        return `<div class="item is-${i.status}">
+          <div class="text"><div class="label">${esc(i.label)}</div><div class="detail">${esc(i.detail)}</div></div>
+          <span class="badge ${cls}">${txt}</span>
+        </div>`;
+      }).join("")}</div>
+    </section>`;
+  }).join("");
+
+  const saved = JSON.parse(localStorage.getItem("cmnm-court") || "{}");
+  $("court-count").textContent = STATUS.userActions.length + " open";
+  $("court-list").innerHTML = STATUS.userActions.map(a =>
+    `<label class="court-item ${saved[a.id] ? "is-checked" : ""}" data-id="${a.id}">
+      <input type="checkbox" ${saved[a.id] ? "checked" : ""}>
+      <span class="cat c-${a.category}">${a.category}</span>
+      <span class="text"><span class="label">${esc(a.label)}</span><div class="detail">${esc(a.detail)}</div></span>
+    </label>`).join("");
+
+  $("court-list").addEventListener("change", (e) => {
+    const row = e.target.closest(".court-item");
+    saved[row.dataset.id] = e.target.checked;
+    row.classList.toggle("is-checked", e.target.checked);
+    localStorage.setItem("cmnm-court", JSON.stringify(saved));
+  });
+
+  $("log").innerHTML = [...STATUS.log].reverse().map(l =>
+    `<div class="log-item"><span class="log-date">${l.date}</span><span class="log-text">${esc(l.text)}</span></div>`).join("");
+})();
+</script>
+</body>
+</html>
