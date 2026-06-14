@@ -60,6 +60,7 @@ export function Row({
         style={{
           minWidth: 0,
           flex: 1,
+          overflow: 'hidden',
           display: 'flex',
           flexDirection: roomy ? 'column' : 'row',
           alignItems: roomy ? 'flex-start' : 'baseline',
@@ -72,6 +73,10 @@ export function Row({
             fontSize: roomy ? 14.5 : 13.5,
             color: 'rgba(255,255,255,0.95)',
             whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+            flexShrink: 0,
           }}
         >
           {p.name}
@@ -84,6 +89,10 @@ export function Row({
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
             fontFamily: 'var(--mono-font)',
+            minWidth: 0,
+            maxWidth: '100%',
+            flex: roomy ? undefined : 1,
+            alignSelf: roomy ? 'stretch' : undefined,
           }}
         >
           {p.path}/node_modules

@@ -1,4 +1,4 @@
-import { BrowserWindow, app, ipcMain } from 'electron'
+import { BrowserWindow, app, ipcMain, screen } from 'electron'
 import { IPC } from '@shared/ipc.constants'
 import type { Settings } from '@shared/settings.types'
 import type { AppContext } from '../app-context.types'
@@ -54,7 +54,14 @@ export function registerIpc(ctx: AppContext): void {
     const win = BrowserWindow.fromWebContents(e.sender)
     if (!win || win.isDestroyed()) return
     const [width] = win.getContentSize()
-    win.setContentSize(width, Math.round(height), false)
+    const { workArea } = screen.getDisplayNearestPoint(win.getBounds())
+    // Never let the window grow taller than the screen, or the footer clips.
+    const target = Math.min(Math.round(height), workArea.height - 16)
+    win.setContentSize(width, target, false)
+    // If the resized window now spills past the bottom edge, nudge it back up.
+    const bounds = win.getBounds()
+    const overflow = bounds.y + bounds.height - (workArea.y + workArea.height)
+    if (overflow > 0) win.setPosition(bounds.x, Math.max(workArea.y, bounds.y - overflow), false)
   })
 }
 
