@@ -15,9 +15,14 @@
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run",
     "package": "electron-vite build && electron-builder --mac --dir",
-    "release": "electron-vite build && electron-builder --mac dmg zip"
+    "release": "electron-vite build && electron-builder --mac dmg zip",
+    "video:studio": "remotion studio video/index.ts",
+    "video:render": "remotion render video/index.ts ShowcaseSquare out/showcase.mp4",
+    "video:still": "remotion still video/index.ts ShowcaseSquare out/still.png --frame=130",
+    "video:typecheck": "tsc --noEmit -p video/tsconfig.json"
   },
   "devDependencies": {
+    "@remotion/cli": "^4.0.477",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
@@ -25,6 +30,7 @@
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
+    "remotion": "^4.0.477",
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
     "vitest": "^2.1.8"
