@@ -32,6 +32,13 @@ const NEXT_SCAN_LABEL: Record<string, string> = {
   manual: 'manual mode',
 }
 
+/** How many project rows stay visible before the list scrolls. */
+const VISIBLE_ROWS = 7
+/** Gap between rows, in px (kept in sync with the list container's flex gap). */
+const ROW_GAP = 4
+/** Vertical padding of the .cc-list container, in px (matches global.css). */
+const LIST_PADDING = 6
+
 export function LauncherApp(): ReactNode {
   const [settings, setSetting] = useSettings()
   const projects = useProjects()
@@ -73,6 +80,18 @@ export function LauncherApp(): ReactNode {
   useEffect(() => {
     if (sel >= filtered.length) setSel(Math.max(0, filtered.length - 1))
   }, [filtered.length, sel])
+
+  // Cap the list height to VISIBLE_ROWS by measuring a real row, so the count
+  // holds across densities and the window stays short enough to show the footer.
+  const [listMaxH, setListMaxH] = useState<number>()
+  useLayoutEffect(() => {
+    const first = filtered.find((p) => !deleting.has(p.id))
+    const el = first && rowEls.current[first.id]
+    const rowH = el?.offsetHeight
+    if (!rowH) return
+    const peek = Math.round(rowH * 0.3) // sliver of the next row hints at scrolling
+    setListMaxH(VISIBLE_ROWS * rowH + (VISIBLE_ROWS - 1) * ROW_GAP + LIST_PADDING * 2 + peek)
+  }, [filtered, deleting, settings.density, settings.sizeStyle])
 
   // sliding highlight
   const [hl, setHl] = useState({ top: 0, height: 0, on: false })
@@ -287,8 +306,8 @@ export function LauncherApp(): ReactNode {
               <SortTab label="Name" active={sortBy === 'name'} onClick={() => setSortBy('name')} />
             </div>
           </div>
-          <div ref={listRef} className="cc-list">
-            <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div ref={listRef} className="cc-list" style={listMaxH ? { maxHeight: listMaxH } : undefined}>
+            <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
               <div
                 className="cc-hl"
                 style={{
