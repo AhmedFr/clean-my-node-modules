@@ -6,9 +6,11 @@ import { PixelMeter } from '@renderer/components/PixelMeter'
 import { MiniRow } from '@renderer/components/MiniRow'
 import { MItem } from '@renderer/components/MItem'
 import { useProjects } from '@renderer/hooks/useProjects'
+import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
+import { PnpmStoreRow } from './PnpmStoreRow'
 import { ScanPanel } from './ScanPanel'
 import { PanelSettings } from './PanelSettings'
 import { CleanStaleCta } from './CleanStaleCta'
@@ -70,6 +72,17 @@ export function PanelApp(): ReactNode {
     },
     [flashToast],
   )
+
+  const { store, pruning, prune } = usePnpmStore()
+  const pruneStore = useCallback(async () => {
+    const result = await prune()
+    if (result?.ok) {
+      setReclaimed((r) => r + result.freedBytes)
+      flashToast({ text: `Reclaimed ${formatSizeStr(result.freedBytes)} · pnpm store`, good: true })
+    } else if (result) {
+      flashToast({ text: 'pnpm store prune failed' })
+    }
+  }, [prune, flashToast])
 
   const cleanStale = useCallback(() => {
     if (staleSet.length) {
@@ -266,6 +279,12 @@ export function PanelApp(): ReactNode {
               ) : (
                 <div style={{ height: 8 }} />
               )}
+            </>
+          )}
+          {store?.available && (
+            <>
+              <Separator />
+              <PnpmStoreRow store={store} pruning={pruning} onPrune={() => void pruneStore()} />
             </>
           )}
           <Separator />

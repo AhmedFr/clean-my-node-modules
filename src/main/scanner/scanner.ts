@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto'
-import { execFile } from 'node:child_process'
 import { readdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
-import { promisify } from 'node:util'
 import type { Project, ScanProgress } from '@shared/project.types'
+import { abbreviateHome } from '../lib/abbreviate-home'
+import { folderSize } from '../lib/folder-size'
 import { detectKind } from './detect-kind'
 import { findProjectIcon } from './find-project-icon'
 import {
@@ -13,8 +13,6 @@ import {
   SIZE_CONCURRENCY,
   SKIPPED_DIR_NAMES,
 } from './scanner.constants'
-
-const execFileAsync = promisify(execFile)
 
 export type ProgressCallback = (progress: ScanProgress) => void
 
@@ -108,15 +106,6 @@ async function buildProject(nodeModulesPath: string): Promise<Project | null> {
   }
 }
 
-/** node_modules size in bytes via `du -sk` (fast, native). */
-async function folderSize(path: string): Promise<number> {
-  const { stdout } = await execFileAsync('du', ['-sk', path], {
-    maxBuffer: 1024 * 1024,
-  })
-  const kb = parseInt(stdout.trim().split(/\s+/)[0], 10)
-  return Number.isFinite(kb) ? kb * 1024 : 0
-}
-
 /** Best-effort "last worked on": newest mtime among project markers. */
 async function lastUsedTime(projectDir: string): Promise<number> {
   const candidates = [
@@ -136,11 +125,6 @@ async function lastUsedTime(projectDir: string): Promise<number> {
   )
   const max = Math.max(...times)
   return max > 0 ? max : Date.now()
-}
-
-function abbreviateHome(path: string): string {
-  const home = homedir()
-  return path.startsWith(home) ? `~${path.slice(home.length)}` : path
 }
 
 async function mapLimit<T, R>(
