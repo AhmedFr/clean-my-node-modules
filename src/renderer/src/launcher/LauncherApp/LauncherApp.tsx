@@ -288,7 +288,7 @@ export function LauncherApp(): ReactNode {
             </div>
           </div>
           <div ref={listRef} className="cc-list">
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 4 }}>
               <div
                 className="cc-hl"
                 style={{

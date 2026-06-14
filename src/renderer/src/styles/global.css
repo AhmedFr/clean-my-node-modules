@@ -149,7 +149,12 @@ body {
 }
 .cc-list {
   overflow-y: auto;
-  max-height: min(440px, 50vh);
+  /* Show at least 7 project rows before scrolling. Sized for the tallest
+     (roomy) density: 7 × ~61px row + 6 × 4px gap + 12px container padding.
+     A vh-based cap is avoided on purpose — the window auto-hugs its content
+     (useAutoHeight), so vh tracks the window height and a 50vh cap would feed
+     back on itself and shrink the list to ~3 rows. */
+  max-height: 484px;
   padding: 6px;
 }
 .cc-list::-webkit-scrollbar {
