@@ -161,7 +161,7 @@ export function PanelApp(): ReactNode {
             >
               node_modules on disk
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 9, marginTop: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 5 }}>
               <span
                 style={{
                   fontSize: 27,
@@ -175,31 +175,54 @@ export function PanelApp(): ReactNode {
               >
                 {formatSizeStr(totalUsed)}
               </span>
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: over ? status : '#34d399',
-                  display: 'inline-flex',
-                  alignItems: 'flex-start',
-                  gap: 4,
-                  flex: 1,
-                  minWidth: 0,
-                  lineHeight: 1.35,
-                }}
-              >
+              {/* Two stacked lines, each no-wrap, so the narrow panel never reflows */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flex: '0 0 auto' }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    whiteSpace: 'nowrap',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: 'rgba(255,255,255,0.5)',
+                  }}
+                >
+                  <span style={{ display: 'flex', color: 'rgba(255,255,255,0.4)' }}>{UIIcon.hdd({ size: 12 })}</span>
+                  {settings.thresholdGB} GB limit
+                </span>
                 {over ? (
-                  <>
-                    {UIIcon.alert({ size: 12 })}
-                    {formatSizeStr(totalUsed - threshold)} over your {settings.thresholdGB} GB limit
-                  </>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      whiteSpace: 'nowrap',
+                      fontSize: 12.5,
+                      fontWeight: 650,
+                      color: status,
+                    }}
+                  >
+                    <span style={{ display: 'flex' }}>{UIIcon.alert({ size: 12 })}</span>
+                    {formatSizeStr(totalUsed - threshold)} over
+                  </span>
                 ) : (
-                  <>
-                    {UIIcon.check({ size: 13 })}
-                    {formatSizeStr(threshold - totalUsed)} under your {settings.thresholdGB} GB limit
-                  </>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      whiteSpace: 'nowrap',
+                      fontSize: 12.5,
+                      fontWeight: 650,
+                      color: '#34d399',
+                    }}
+                  >
+                    <span style={{ display: 'flex' }}>{UIIcon.check({ size: 13 })}</span>
+                    {formatSizeStr(threshold - totalUsed)} free
+                  </span>
                 )}
-              </span>
+              </div>
             </div>
             <PixelMeter
               usedGB={usedGB}

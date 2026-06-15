@@ -52,6 +52,7 @@
   <a class="lp-brand" href="#top"><span class="logo"><svg viewBox="0 0 24 24"><use href="#logo-module"></use></svg></span>Clean my node_modules</a>
   <nav class="lp-navlinks">
     <a href="#features">Features</a>
+    <a href="#why">Why</a>
     <a href="#how">How it works</a>
     <a href="#pricing">Pricing</a>
   </nav>
@@ -246,6 +247,59 @@
     <div class="lp-coming reveal">
       <span class="pill">Coming soon</span>
       <p>pnpm store cleanup — and other package-manager caches.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ why / node_modules lifecycle ============ -->
+<section class="lp-explain-sec" id="why">
+  <div class="wrap">
+    <div class="lp-section-head reveal">
+      <div class="lp-kicker">Why it piles up</div>
+      <h2 class="lp-h2">The <span class="accent">node_modules</span> lifecycle.</h2>
+      <p class="lp-lead">Every install writes your dependencies to disk. How much they pile up — and how much you can win back — comes down to your package manager.</p>
+    </div>
+
+    <div class="lp-explain">
+      <!-- npm / yarn: a full copy per project -->
+      <div class="ex-col reveal">
+        <div class="ex-head">
+          <span class="ex-pm">npm <span class="muted">· yarn</span></span>
+          <span class="ex-tag warn">a full copy per project</span>
+        </div>
+        <div class="ex-diagram" aria-hidden="true">
+          <div class="ex-proj"><span class="ex-pl">app-one</span><div class="ex-stack"><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="ex-proj"><span class="ex-pl">app-two</span><div class="ex-stack"><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="ex-proj"><span class="ex-pl">app-three</span><div class="ex-stack"><i></i><i></i><i></i><i></i><i></i></div></div>
+        </div>
+        <p class="ex-note">Each project gets its <b>own full copy</b> of every dependency. Install <code>lodash</code> in ten projects and it's written to disk <b>ten times</b>. Multiply that across hundreds of transitive packages and the old projects you forgot about — and you're tens of gigabytes deep.</p>
+      </div>
+
+      <!-- pnpm: one shared store -->
+      <div class="ex-col reveal d1">
+        <div class="ex-head">
+          <span class="ex-pm pnpm">pnpm</span>
+          <span class="ex-tag good">one shared store</span>
+        </div>
+        <div class="ex-diagram pnpm" aria-hidden="true">
+          <div class="ex-projrow">
+            <div class="ex-proj thin"><span class="ex-pl">app-one</span><div class="ex-stack thin"><i></i><i></i></div></div>
+            <div class="ex-proj thin"><span class="ex-pl">app-two</span><div class="ex-stack thin"><i></i><i></i></div></div>
+            <div class="ex-proj thin"><span class="ex-pl">app-three</span><div class="ex-stack thin"><i></i><i></i></div></div>
+          </div>
+          <div class="ex-links"><span></span><span></span><span></span></div>
+          <div class="ex-store">
+            <span class="ex-sl">~/.pnpm-store — stored once</span>
+            <div class="ex-stack store"><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+        <p class="ex-note">pnpm keeps <b>one global store</b> and hard-links each project into it. A given version of a package lives on disk <b>once</b>, no matter how many projects use it — a huge saving. <b>But the store still grows</b> as new versions land and old ones linger.</p>
+      </div>
+    </div>
+
+    <div class="lp-explain-foot reveal">
+      <span class="ck"><svg viewBox="0 0 24 24"><use href="#i-check"></use></svg></span>
+      <p>Clean my node_modules works <b>both ends</b>: it trashes the stale project <code>node_modules</code> you'll never <code>npm install</code> again — <b>and</b> safely prunes your pnpm store of versions nothing links to anymore.</p>
     </div>
   </div>
 </section>
