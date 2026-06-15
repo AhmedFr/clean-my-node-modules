@@ -342,9 +342,59 @@ section { position: relative; }
 .reveal.in { transform: none; }
 .reveal.d1 { transition-delay: .07s; } .reveal.d2 { transition-delay: .14s; } .reveal.d3 { transition-delay: .21s; }
 
+/* ============ why / node_modules lifecycle ============ */
+.lp-explain-sec { padding: 120px 0 0; }
+.lp-explain { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 54px; align-items: stretch; }
+.ex-col { padding: 26px 26px 28px; border-radius: 18px; background: rgba(255,255,255,0.025); border: 1px solid var(--line); display: flex; flex-direction: column; }
+.ex-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.ex-pm { font-family: var(--mono); font-size: 17px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+.ex-pm .muted { color: var(--ink-4); font-weight: 500; }
+.ex-pm.pnpm { color: var(--accent); }
+.ex-tag { font-size: 11.5px; font-weight: 600; padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
+.ex-tag.warn { color: var(--accent); background: rgba(255,99,99,0.10); border: 1px solid rgba(255,99,99,0.22); }
+.ex-tag.good { color: var(--green); background: rgba(52,211,153,0.10); border: 1px solid rgba(52,211,153,0.24); }
+
+.ex-diagram { background: rgba(0,0,0,0.22); border: 1px solid var(--line); border-radius: 13px; padding: 16px; min-height: 206px;
+  display: flex; flex-direction: column; gap: 13px; justify-content: center; }
+.ex-diagram.pnpm { justify-content: space-between; gap: 0; }
+
+.ex-pl { display: block; font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin-bottom: 5px; }
+.ex-stack { display: flex; gap: 4px; }
+.ex-stack i { height: 22px; border-radius: 4px; flex: 1; opacity: 0.92; }
+/* a fixed 5-colour palette so each npm project shows the SAME packages = duplication */
+.ex-stack i:nth-child(1) { background: #ff6363; flex: 1.4; }
+.ex-stack i:nth-child(2) { background: #6ca0f0; flex: 1; }
+.ex-stack i:nth-child(3) { background: #34d399; flex: 1.7; }
+.ex-stack i:nth-child(4) { background: #f5b14c; flex: 0.8; }
+.ex-stack i:nth-child(5) { background: #b58af0; flex: 1.2; }
+
+/* pnpm side: thin projects holding links, one shared store */
+.ex-projrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.ex-stack.thin { gap: 3px; }
+.ex-stack.thin i { height: 9px; border-radius: 3px; background: var(--ink-4) !important; flex: 1 !important; opacity: 0.5; }
+.ex-links { display: grid; grid-template-columns: repeat(3, 1fr); height: 24px; }
+.ex-links span { position: relative; }
+.ex-links span::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; transform: translateX(-50%);
+  background: repeating-linear-gradient(180deg, var(--accent) 0 3px, transparent 3px 7px); opacity: 0.55; }
+.ex-store { border: 1px solid rgba(255,99,99,0.35); background: rgba(255,99,99,0.05); border-radius: 10px; padding: 11px 12px 12px; }
+.ex-sl { display: block; font-family: var(--mono); font-size: 11px; color: var(--accent); margin-bottom: 7px; }
+.ex-stack.store i { height: 26px; }
+
+.ex-note { margin-top: 18px; font-size: 14.5px; line-height: 1.6; color: var(--ink-2); }
+.ex-note b { color: var(--ink); font-weight: 600; }
+
+.lp-explain-foot { display: flex; align-items: flex-start; gap: 13px; max-width: 840px; margin: 30px auto 0;
+  padding: 18px 22px; border-radius: 14px; background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.18); }
+.lp-explain-foot .ck { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: rgba(52,211,153,0.16); color: var(--green); margin-top: 1px; }
+.lp-explain-foot .ck svg { width: 15px; height: 15px; }
+.lp-explain-foot p { font-size: 14.5px; line-height: 1.6; color: var(--ink-2); }
+.lp-explain-foot b { color: var(--ink); font-weight: 600; }
+
 /* ============ responsive ============ */
 @media (max-width: 900px) {
   .lp-navlinks { display: none; }
+  .lp-explain { grid-template-columns: 1fr; }
   .lp-feature { grid-template-columns: 1fr; gap: 32px; }
   .lp-feature.flip .lp-feat-visual { order: 0; }
   .lp-grid, .lp-steps { grid-template-columns: 1fr; }
