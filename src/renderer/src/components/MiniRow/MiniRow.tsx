@@ -1,8 +1,8 @@
-import { useState, type ReactNode } from 'react'
-import { mixColor } from '@renderer/lib/colors'
-import { formatSizeStr, relativeTime, staleness } from '@renderer/lib/format'
 import { ProjectIcon } from '@renderer/components/ProjectIcon'
 import { UIIcon } from '@renderer/components/UIIcon'
+import { mixColor } from '@renderer/lib/colors'
+import { formatSizeStr, relativeTime, staleness } from '@renderer/lib/format'
+import { type ReactNode, useState } from 'react'
 import type { MiniRowProps } from './MiniRow.types'
 
 /** Compact project row inside the menu bar dropdown. */

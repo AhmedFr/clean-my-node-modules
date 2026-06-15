@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
-import { mixColor } from '@renderer/lib/colors'
 import { Glyph } from '@renderer/components/Glyph'
+import { mixColor } from '@renderer/lib/colors'
+import type { ReactNode } from 'react'
 import type { AppIconProps } from './AppIcon.types'
 
 /** Mini gradient app icon used in the launcher header and footer. */

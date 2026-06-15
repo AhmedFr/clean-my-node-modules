@@ -1,6 +1,6 @@
+import type { IconRenderer } from '@renderer/components/UIIcon'
 import type { Project } from '@shared/project.types'
 import type { Density, SizeStyle } from '@shared/settings.types'
-import type { IconRenderer } from '@renderer/components/UIIcon'
 
 export interface RowProps {
   p: Project

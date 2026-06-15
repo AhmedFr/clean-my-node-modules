@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import { AbsoluteFill } from 'remotion'
 import { ACCENT, BG, UI_FONT } from '../theme.constants'
 import type { ScreenFrameProps } from './ScreenFrame.types'
@@ -17,7 +17,14 @@ export function ScreenFrame({
 }: ScreenFrameProps): React.ReactNode {
   const parts = accentWord ? headline.split(accentWord) : [headline]
   return (
-    <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 24%, #15181d 0%, ${BG} 60%, #08090b 100%)`, fontFamily: UI_FONT, display: 'flex', flexDirection: 'column' }}>
+    <AbsoluteFill
+      style={{
+        background: `radial-gradient(circle at 50% 24%, #15181d 0%, ${BG} 60%, #08090b 100%)`,
+        fontFamily: UI_FONT,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <div
         style={{
           position: 'absolute',
@@ -33,7 +40,16 @@ export function ScreenFrame({
       />
       <div style={{ padding: '76px 90px 0', textAlign: 'center', position: 'relative' }}>
         {eyebrow && (
-          <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: ACCENT, marginBottom: 16 }}>
+          <div
+            style={{
+              fontSize: 19,
+              fontWeight: 700,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              color: ACCENT,
+              marginBottom: 16,
+            }}
+          >
             {eyebrow}
           </div>
         )}
@@ -49,7 +65,17 @@ export function ScreenFrame({
           )}
         </div>
         {sub && (
-          <div style={{ marginTop: 20, fontSize: 27, fontWeight: 450, color: 'rgba(255,255,255,0.5)', maxWidth: 1100, marginLeft: 'auto', marginRight: 'auto' }}>
+          <div
+            style={{
+              marginTop: 20,
+              fontSize: 27,
+              fontWeight: 450,
+              color: 'rgba(255,255,255,0.5)',
+              maxWidth: 1100,
+              marginLeft: 'auto',
+              marginRight: 'auto',
+            }}
+          >
             {sub}
           </div>
         )}

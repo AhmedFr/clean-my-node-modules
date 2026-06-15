@@ -1,7 +1,6 @@
-import React from 'react'
+import type React from 'react'
 import { interpolate } from 'remotion'
-import { ACCENT, MONO_FONT, mixColor } from '../../theme.constants'
-import { fmtSize } from '../../theme.constants'
+import { ACCENT, fmtSize, MONO_FONT, mixColor } from '../../theme.constants'
 import { FrameworkMark } from '../FrameworkMark'
 import { ROW_GAP, ROW_H } from './ProjectRow.constants'
 import type { ProjectRowProps } from './ProjectRow.types'
@@ -29,7 +28,16 @@ function ActionButton({ d, danger }: { d: string; danger?: boolean }): React.Rea
         color: danger ? ACCENT : 'rgba(255,255,255,0.8)',
       }}
     >
-      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width={16}
+        height={16}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d={d} />
       </svg>
     </div>
@@ -50,7 +58,16 @@ function TrashButton(): React.ReactNode {
         color: ACCENT,
       }}
     >
-      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width={16}
+        height={16}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M3 6h18" />
         <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
@@ -127,14 +144,31 @@ export function ProjectRow({ project, deleteProgress, selected, maxSizeGB }: Pro
                 whiteSpace: 'nowrap',
               }}
             >
-              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}>
+              <svg
+                width={14}
+                height={14}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ opacity: 0.8 }}
+              >
                 <circle cx="12" cy="12" r="9" />
                 <path d="M12 7v5l3 2" />
               </svg>
               {project.age}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, width: 96 }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.95)', fontVariantNumeric: 'tabular-nums' }}>
+              <span
+                style={{
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: 'rgba(255,255,255,0.95)',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
                 {fmtSize(project.sizeGB)}
               </span>
               <div style={{ width: 88, height: 4, borderRadius: 3, background: 'rgba(255,255,255,0.08)' }}>

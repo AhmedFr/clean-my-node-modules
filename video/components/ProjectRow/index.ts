@@ -1,2 +1,2 @@
 export { ProjectRow } from './ProjectRow'
-export { ROW_H, ROW_GAP } from './ProjectRow.constants'
+export { ROW_GAP, ROW_H } from './ProjectRow.constants'

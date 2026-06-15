@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import type { Framework } from '../../mockData'
 import type { FrameworkMarkProps } from './FrameworkMark.types'
 

@@ -3,13 +3,14 @@ type Rgba = [number, number, number, number]
 function parseColor(c: string): Rgba {
   if (c[0] === '#') {
     const h = c.slice(1)
-    const n = h.length === 3 ? h.split('').map((x) => x + x).join('') : h
-    return [
-      parseInt(n.slice(0, 2), 16),
-      parseInt(n.slice(2, 4), 16),
-      parseInt(n.slice(4, 6), 16),
-      1,
-    ]
+    const n =
+      h.length === 3
+        ? h
+            .split('')
+            .map((x) => x + x)
+            .join('')
+        : h
+    return [parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16), 1]
   }
   const m = c.match(/rgba?\(([^)]+)\)/)
   if (m) {

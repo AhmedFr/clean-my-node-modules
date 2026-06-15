@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
 import { mixColor } from '@renderer/lib/colors'
+import { type ReactNode, useState } from 'react'
 import type { MItemProps } from './MItem.types'
 
 /** Menu-style row (icon, label, shortcut) inside the dropdown panel. */
@@ -24,7 +24,7 @@ export function MItem({ icon, label, shortcut, danger, onClick }: MItemProps): R
       }}
     >
       <span style={{ display: 'flex', width: 16, color: h ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)' }}>
-        {icon && icon({ size: 15 })}
+        {icon?.({ size: 15 })}
       </span>
       <span style={{ flex: 1, fontSize: 13 }}>{label}</span>
       {shortcut && (

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { useScanProgress } from '@renderer/hooks/useScanProgress'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 interface ScanPanelProps {
   accent: string

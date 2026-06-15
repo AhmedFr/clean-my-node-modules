@@ -1,2 +1,2 @@
 export { PanelApp } from './PanelApp'
-export type { PanelView, PanelToast } from './PanelApp.types'
+export type { PanelToast, PanelView } from './PanelApp.types'

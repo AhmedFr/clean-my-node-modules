@@ -17,8 +17,22 @@ export interface MockProject {
 export const PROJECTS: MockProject[] = [
   { id: 'web', name: 'web', path: '~/code/acme/web', framework: 'next', sizeGB: 6.2, age: '2 months ago' },
   { id: 'api', name: 'api', path: '~/code/acme/services/api', framework: 'node', sizeGB: 5.4, age: '3 months ago' },
-  { id: 'dashboard', name: 'dashboard', path: '~/code/acme/apps/dashboard', framework: 'react', sizeGB: 4.8, age: '5 months ago' },
-  { id: 'mobile', name: 'mobile', path: '~/code/acme/apps/mobile', framework: 'react', sizeGB: 3.9, age: '7 months ago' },
+  {
+    id: 'dashboard',
+    name: 'dashboard',
+    path: '~/code/acme/apps/dashboard',
+    framework: 'react',
+    sizeGB: 4.8,
+    age: '5 months ago',
+  },
+  {
+    id: 'mobile',
+    name: 'mobile',
+    path: '~/code/acme/apps/mobile',
+    framework: 'react',
+    sizeGB: 3.9,
+    age: '7 months ago',
+  },
   { id: 'docs', name: 'docs', path: '~/code/acme/docs', framework: 'svelte', sizeGB: 2.7, age: '9 months ago' },
   { id: 'cli', name: 'cli', path: '~/code/acme/packages/cli', framework: 'ts', sizeGB: 1.6, age: '1 year ago' },
 ]

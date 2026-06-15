@@ -1,13 +1,7 @@
 import type { ReactNode } from 'react'
 import type { SegmentedProps } from './Segmented.types'
 
-export function Segmented<T extends string>({
-  options,
-  value,
-  onChange,
-  accent,
-  small,
-}: SegmentedProps<T>): ReactNode {
+export function Segmented<T extends string>({ options, value, onChange, accent, small }: SegmentedProps<T>): ReactNode {
   return (
     <div
       style={{

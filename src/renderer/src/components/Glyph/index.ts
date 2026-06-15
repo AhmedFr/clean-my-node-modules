@@ -1,2 +1,2 @@
-export { Glyph, AppTile } from './Glyph'
-export type { GlyphProps, AppTileProps } from './Glyph.types'
+export { AppTile, Glyph } from './Glyph'
+export type { AppTileProps, GlyphProps } from './Glyph.types'

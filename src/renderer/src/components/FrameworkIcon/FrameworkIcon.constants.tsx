@@ -91,9 +91,7 @@ export const FRAMEWORKS: Record<FrameworkKind, FrameworkSpec> = {
   vite: {
     bg: '#241a3a',
     fg: '#bd34fe',
-    mark: (c) => (
-      <path d="M5 6 12 20 19 6 12 9z" stroke={c} strokeWidth="1.4" fill="none" strokeLinejoin="round" />
-    ),
+    mark: (c) => <path d="M5 6 12 20 19 6 12 9z" stroke={c} strokeWidth="1.4" fill="none" strokeLinejoin="round" />,
   },
   remix: {
     bg: '#20242b',

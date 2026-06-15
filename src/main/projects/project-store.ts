@@ -1,7 +1,7 @@
-import { app } from 'electron'
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { Project } from '@shared/project.types'
+import { app } from 'electron'
 
 interface CacheShape {
   projects: Project[]
@@ -54,7 +54,7 @@ export class ProjectStore {
   }
 
   private emit(): void {
-    this.listeners.forEach((fn) => fn(this.all))
+    for (const fn of this.listeners) fn(this.all)
   }
 
   private load(): void {

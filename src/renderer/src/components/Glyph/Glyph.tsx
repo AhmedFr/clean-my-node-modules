@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
 import { mixColor } from '@renderer/lib/colors'
+import type { ReactNode } from 'react'
 import type { AppTileProps, GlyphProps } from './Glyph.types'
 
 /** The app's module-cube logo glyph. */

@@ -1,7 +1,7 @@
-import { useState, type ReactNode } from 'react'
-import { formatSizeStr } from '@renderer/lib/format'
 import { UIIcon } from '@renderer/components/UIIcon'
+import { formatSizeStr } from '@renderer/lib/format'
 import type { PnpmStoreInfo } from '@shared/pnpm-store.types'
+import { type ReactNode, useState } from 'react'
 
 interface PnpmStoreRowProps {
   store: PnpmStoreInfo
@@ -55,9 +55,7 @@ export function PnpmStoreRow({ store, pruning, onPrune }: PnpmStoreRowProps): Re
           {UIIcon.hdd({ size: 13 })}
         </span>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 550, color: 'var(--text)' }}>
-            pnpm store
-          </div>
+          <div style={{ fontSize: 12.5, fontWeight: 550, color: 'var(--text)' }}>pnpm store</div>
           <div
             style={{
               fontSize: 10.5,

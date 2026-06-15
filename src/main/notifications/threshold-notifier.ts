@@ -1,5 +1,5 @@
-import { Notification } from 'electron'
 import { GB } from '@shared/units.constants'
+import { Notification } from 'electron'
 
 /** Fires a native notification when usage crosses the threshold (once per crossing). */
 export class ThresholdNotifier {

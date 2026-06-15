@@ -1,7 +1,7 @@
-import { BrowserWindow, app, ipcMain, screen } from 'electron'
 import { IPC } from '@shared/ipc.constants'
-import type { AppContext } from '../app-context.types'
+import { app, BrowserWindow, ipcMain, screen } from 'electron'
 import { deleteNodeModules, openProject, revealInFinder } from '../actions/project-actions'
+import type { AppContext } from '../app-context.types'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
 import { coerceSetting } from '../settings/validate-setting'
 

@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
-import type { Settings } from '@shared/settings.types'
-import type { SetSetting } from '@renderer/hooks/useSettings'
 import { Segmented } from '@renderer/components/Segmented'
 import { Toggle } from '@renderer/components/Toggle'
+import type { SetSetting } from '@renderer/hooks/useSettings'
+import type { Settings } from '@shared/settings.types'
+import type { ReactNode } from 'react'
 
 interface SettingsRowProps {
   label: string

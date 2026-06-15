@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import type { RowActionProps } from './Row.types'
 
 export function RowAction({ icon, label, danger, onClick }: RowActionProps): ReactNode {

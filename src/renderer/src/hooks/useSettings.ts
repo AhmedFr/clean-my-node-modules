@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
-import type { Settings } from '@shared/settings.types'
 import { DEFAULT_SETTINGS } from '@shared/settings.constants'
+import type { Settings } from '@shared/settings.types'
+import { useCallback, useEffect, useState } from 'react'
 
 export type SetSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => void
 

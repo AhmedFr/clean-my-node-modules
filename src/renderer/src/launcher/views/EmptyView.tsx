@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
-import { formatSizeStr } from '@renderer/lib/format'
-import { UIIcon } from '@renderer/components/UIIcon'
 import { Kbd } from '@renderer/components/Kbd'
+import { UIIcon } from '@renderer/components/UIIcon'
+import { formatSizeStr } from '@renderer/lib/format'
+import type { ReactNode } from 'react'
 
 interface EmptyViewProps {
   reclaimedTotal: number
@@ -47,9 +47,8 @@ export function EmptyView({ reclaimedTotal, nextScanLabel }: EmptyViewProps): Re
             lineHeight: 1.5,
           }}
         >
-          No stale{' '}
-          <code style={{ fontFamily: 'var(--mono-font)', color: 'var(--text-3)' }}>node_modules</code>{' '}
-          over your limit.{' '}
+          No stale <code style={{ fontFamily: 'var(--mono-font)', color: 'var(--text-3)' }}>node_modules</code> over
+          your limit.{' '}
           {reclaimedTotal > 0 ? (
             <>
               You reclaimed{' '}

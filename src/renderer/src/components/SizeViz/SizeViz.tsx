@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
 import { mixColor } from '@renderer/lib/colors'
 import { formatSize } from '@renderer/lib/format'
+import type { ReactNode } from 'react'
 import type { SizeVizProps } from './SizeViz.types'
 
 export function SizeViz({ style, bytes, maxBytes, stale, accent, density }: SizeVizProps): ReactNode {
@@ -17,18 +17,12 @@ export function SizeViz({ style, bytes, maxBytes, stale, accent, density }: Size
       }}
     >
       {s.value}
-      <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 2, fontWeight: 600 }}>
-        {s.unit}
-      </span>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 2, fontWeight: 600 }}>{s.unit}</span>
     </span>
   )
 
   if (style === 'plain') {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', minWidth: 70 }}>
-        {num}
-      </div>
-    )
+    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', minWidth: 70 }}>{num}</div>
   }
 
   if (style === 'bar') {

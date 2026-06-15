@@ -1,15 +1,15 @@
-import { app } from 'electron'
 import { IPC } from '@shared/ipc.constants'
 import { GB } from '@shared/units.constants'
-import { Scanner } from './scanner/scanner'
+import { app } from 'electron'
+import { broadcast, registerIpc } from './ipc/register-ipc'
+import { ThresholdNotifier } from './notifications/threshold-notifier'
 import { ProjectStore } from './projects/project-store'
+import { Scanner } from './scanner/scanner'
+import { ScanScheduler } from './scheduler/scan-scheduler'
 import { SettingsStore } from './settings/settings-store'
 import { TrayManager } from './tray/tray'
-import { PanelWindow } from './windows/panel-window'
 import { LauncherWindow } from './windows/launcher-window'
-import { ScanScheduler } from './scheduler/scan-scheduler'
-import { ThresholdNotifier } from './notifications/threshold-notifier'
-import { registerIpc, broadcast } from './ipc/register-ipc'
+import { PanelWindow } from './windows/panel-window'
 import { is } from './windows/window-utils'
 
 app.whenReady().then(() => {
@@ -58,7 +58,7 @@ app.whenReady().then(() => {
   // Tear down timers + store listeners on quit so nothing outlives the app.
   app.on('before-quit', () => {
     scheduler.stop()
-    unsubscribe.forEach((off) => off())
+    for (const off of unsubscribe) off()
   })
 
   tray.create((trayInstance) => panel.toggle(trayInstance))

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
 import type { Project } from '@shared/project.types'
+import { useEffect, useState } from 'react'
 
 /** Live project inventory synced with the main process. */
 export function useProjects(): Project[] {

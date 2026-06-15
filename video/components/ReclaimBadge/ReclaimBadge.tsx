@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import { SAFE, UI_FONT } from '../../theme.constants'
 import type { ReclaimBadgeProps } from './ReclaimBadge.types'
 
@@ -32,12 +32,29 @@ export function ReclaimBadge({ gb, appear }: ReclaimBadgeProps): React.ReactNode
           justifyContent: 'center',
         }}
       >
-        <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#0c1410" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width={22}
+          height={22}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#0c1410"
+          strokeWidth={2.6}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="m20 6-11 11-5-5" />
         </svg>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.5)',
+          }}
+        >
           Reclaimed
         </span>
         <span style={{ fontSize: 34, fontWeight: 800, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>

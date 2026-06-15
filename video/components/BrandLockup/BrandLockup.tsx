@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import { UI_FONT } from '../../theme.constants'
 import { AppTile } from '../AppTile'
 import type { BrandLockupProps } from './BrandLockup.types'

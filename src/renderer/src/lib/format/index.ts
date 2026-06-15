@@ -1,2 +1,2 @@
-export { MB, GB, DAY, formatSize, formatSizeStr, relativeTime, staleness } from './format'
 export type { FormattedSize } from './format'
+export { DAY, formatSize, formatSizeStr, GB, MB, relativeTime, staleness } from './format'

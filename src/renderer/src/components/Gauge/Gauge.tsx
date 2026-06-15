@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
 import { statusColor } from '@renderer/lib/colors'
-import { GB, formatSizeStr } from '@renderer/lib/format'
+import { formatSizeStr, GB } from '@renderer/lib/format'
+import type { ReactNode } from 'react'
 import type { GaugeProps } from './Gauge.types'
 
 const CELLS = 16

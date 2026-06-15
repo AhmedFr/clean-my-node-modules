@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { GB, MB, formatSize, formatSizeStr, relativeTime, staleness } from './format'
+import { formatSize, formatSizeStr, GB, MB, relativeTime, staleness } from './format'
 
 const DAY = 86400000
 const NOW = 1_800_000_000_000

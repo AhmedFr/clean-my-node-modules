@@ -1,11 +1,11 @@
-import { useState, type ReactNode } from 'react'
-import { mixColor } from '@renderer/lib/colors'
-import { relativeTime, staleness } from '@renderer/lib/format'
 import { ProjectIcon } from '@renderer/components/ProjectIcon'
 import { SizeViz } from '@renderer/components/SizeViz'
 import { UIIcon } from '@renderer/components/UIIcon'
-import { RowAction } from './RowAction'
+import { mixColor } from '@renderer/lib/colors'
+import { relativeTime, staleness } from '@renderer/lib/format'
+import { type ReactNode, useState } from 'react'
 import type { RowProps } from './Row.types'
+import { RowAction } from './RowAction'
 
 export function Row({
   p,

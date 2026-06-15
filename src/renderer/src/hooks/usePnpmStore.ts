@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
 import type { PnpmPruneResult, PnpmStoreInfo } from '@shared/pnpm-store.types'
+import { useCallback, useEffect, useState } from 'react'
 
 interface UsePnpmStore {
   store: PnpmStoreInfo | null

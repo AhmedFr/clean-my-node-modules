@@ -13,6 +13,8 @@
     "build": "electron-vite build",
     "start": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "lint": "biome check .",
+    "format": "biome format --write .",
     "test": "vitest run",
     "package": "electron-vite build && electron-builder --mac --dir",
     "release": "electron-vite build && electron-builder --mac dmg zip",
@@ -22,6 +24,7 @@
     "video:typecheck": "tsc --noEmit -p video/tsconfig.json"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.0",
     "@remotion/cli": "^4.0.477",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",

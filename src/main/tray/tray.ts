@@ -1,4 +1,4 @@
-import { Tray, nativeImage } from 'electron'
+import { nativeImage, Tray } from 'electron'
 import { rasterizeGlyph } from './glyph-raster'
 import { encodePng } from './png-encode'
 
@@ -20,7 +20,13 @@ function buildIcon(over: boolean, accent: string): Electron.NativeImage {
 
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace('#', '')
-  const n = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
+  const n =
+    h.length === 3
+      ? h
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : h
   return [parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16)]
 }
 

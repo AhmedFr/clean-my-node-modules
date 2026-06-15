@@ -1,22 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { DAY, GB, formatSizeStr } from '@renderer/lib/format'
-import { statusColor } from '@renderer/lib/colors'
-import { UIIcon } from '@renderer/components/UIIcon'
-import { PixelMeter } from '@renderer/components/PixelMeter'
-import { MiniRow } from '@renderer/components/MiniRow'
 import { MItem } from '@renderer/components/MItem'
-import { useProjects } from '@renderer/hooks/useProjects'
+import { MiniRow } from '@renderer/components/MiniRow'
+import { PixelMeter } from '@renderer/components/PixelMeter'
+import { UIIcon } from '@renderer/components/UIIcon'
+import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
+import { useProjects } from '@renderer/hooks/useProjects'
 import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
-import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
-import { PnpmStoreRow } from './PnpmStoreRow'
-import { ScanPanel } from './ScanPanel'
-import { PanelSettings } from './PanelSettings'
+import { statusColor } from '@renderer/lib/colors'
+import { DAY, formatSizeStr, GB } from '@renderer/lib/format'
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CleanStaleCta } from './CleanStaleCta'
-import { Separator } from './Separator'
 import { STALE_DAYS, VISIBLE_ROWS } from './PanelApp.constants'
 import type { PanelToast, PanelView } from './PanelApp.types'
+import { PanelSettings } from './PanelSettings'
+import { PnpmStoreRow } from './PnpmStoreRow'
+import { ScanPanel } from './ScanPanel'
+import { Separator } from './Separator'
 
 export function PanelApp(): ReactNode {
   const [settings, setSetting] = useSettings()
@@ -50,10 +50,7 @@ export function PanelApp(): ReactNode {
 
   const oldest = useMemo(() => [...projects].sort((a, b) => a.lastUsed - b.lastUsed), [projects])
   const visible = oldest.slice(0, VISIBLE_ROWS)
-  const staleSet = useMemo(
-    () => projects.filter((p) => (Date.now() - p.lastUsed) / DAY > STALE_DAYS),
-    [projects],
-  )
+  const staleSet = useMemo(() => projects.filter((p) => (Date.now() - p.lastUsed) / DAY > STALE_DAYS), [projects])
   const freeable = staleSet.reduce((a, p) => a + p.size, 0)
 
   const removeMany = useCallback(
@@ -63,11 +60,11 @@ export function PanelApp(): ReactNode {
       for (const id of ids) freed += await window.clean.deleteNodeModules(id)
       setDeleting((s) => {
         const n = new Set(s)
-        ids.forEach((i) => n.delete(i))
+        for (const i of ids) n.delete(i)
         return n
       })
       setReclaimed((r) => r + freed)
-      flashToast({ text: `Reclaimed ${formatSizeStr(freed)}${label ? ' · ' + label : ''}`, good: true })
+      flashToast({ text: `Reclaimed ${formatSizeStr(freed)}${label ? ` · ${label}` : ''}`, good: true })
     },
     [flashToast],
   )
@@ -125,9 +122,7 @@ export function PanelApp(): ReactNode {
         : settings.scanInterval === 'weekly'
           ? '5 d'
           : '—'
-  const lastScanLabel = lastScan
-    ? `${Math.max(1, Math.round((Date.now() - lastScan) / 60000))} min ago`
-    : 'never'
+  const lastScanLabel = lastScan ? `${Math.max(1, Math.round((Date.now() - lastScan) / 60000))} min ago` : 'never'
 
   return (
     <div ref={rootRef} className="mb-panel">
@@ -160,7 +155,9 @@ export function PanelApp(): ReactNode {
             >
               node_modules on disk
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 5 }}>
+            <div
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 5 }}
+            >
               <span
                 style={{
                   fontSize: 27,
@@ -175,7 +172,9 @@ export function PanelApp(): ReactNode {
                 {formatSizeStr(totalUsed)}
               </span>
               {/* Two stacked lines, each no-wrap, so the narrow panel never reflows */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flex: '0 0 auto' }}>
+              <div
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flex: '0 0 auto' }}
+              >
                 <span
                   style={{
                     display: 'inline-flex',
@@ -329,10 +328,7 @@ export function PanelApp(): ReactNode {
       )}
 
       {toast && (
-        <div
-          className="mb-toast"
-          style={{ borderColor: toast.good ? 'var(--good-line)' : 'var(--surface-4)' }}
-        >
+        <div className="mb-toast" style={{ borderColor: toast.good ? 'var(--good-line)' : 'var(--surface-4)' }}>
           <span style={{ color: toast.good ? 'var(--good)' : 'var(--text-3)', display: 'flex' }}>
             {(toast.good ? UIIcon.checkCircle : UIIcon.finder)({ size: 15 })}
           </span>

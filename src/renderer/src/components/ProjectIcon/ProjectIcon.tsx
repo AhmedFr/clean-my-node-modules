@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
 import { FrameworkIcon } from '@renderer/components/FrameworkIcon'
+import { type ReactNode, useState } from 'react'
 import type { ProjectIconProps } from './ProjectIcon.types'
 
 /** The project's own favicon/logo when available; framework icon otherwise. */

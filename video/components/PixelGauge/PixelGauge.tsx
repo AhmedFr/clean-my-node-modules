@@ -1,16 +1,11 @@
-import React from 'react'
+import type React from 'react'
 import { ACCENT, fmtTotal, statusColor } from '../../theme.constants'
 import type { PixelGaugeProps } from './PixelGauge.types'
 
 const CELLS = 16
 
 /** Header threshold gauge — pixel-cell bar, mirrored from the app's Gauge. */
-export function PixelGauge({
-  usedGB,
-  limitGB,
-  trackMaxGB,
-  accent = ACCENT,
-}: PixelGaugeProps): React.ReactNode {
+export function PixelGauge({ usedGB, limitGB, trackMaxGB, accent = ACCENT }: PixelGaugeProps): React.ReactNode {
   const track = trackMaxGB ?? Math.max(limitGB * 1.5, usedGB * 1.05)
   const limitPos = Math.min(0.94, limitGB / track)
   const limitCellIdx = Math.min(CELLS - 1, Math.max(0, Math.floor(limitPos * CELLS)))

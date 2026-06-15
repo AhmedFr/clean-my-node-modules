@@ -1,10 +1,10 @@
-import React from 'react'
-import { ACCENT, SAFE, UI_FONT } from '../theme.constants'
-import { LIMIT_GB, PROJECTS, TOTAL_USED_GB } from '../mockData'
-import type { MockProject } from '../mockData'
-import { LauncherWindow } from '../components/LauncherWindow'
+import type React from 'react'
 import type { RowState } from '../components/LauncherWindow'
+import { LauncherWindow } from '../components/LauncherWindow'
 import { ReclaimBadge } from '../components/ReclaimBadge'
+import type { MockProject } from '../mockData'
+import { LIMIT_GB, PROJECTS, TOTAL_USED_GB } from '../mockData'
+import { ACCENT, SAFE, UI_FONT } from '../theme.constants'
 import { ScreenFrame } from './ScreenFrame'
 
 const MAX_SIZE = Math.max(...PROJECTS.map((p) => p.sizeGB))
@@ -37,8 +37,22 @@ export function ScreenBeauty(): React.ReactNode {
 
 const CLEANED: MockProject[] = [
   { id: 'cli', name: 'cli', path: '~/code/acme/packages/cli', framework: 'ts', sizeGB: 0.9, age: '2 weeks ago' },
-  { id: 'scripts', name: 'scripts', path: '~/code/acme/tools/scripts', framework: 'node', sizeGB: 0.4, age: '5 days ago' },
-  { id: 'shared', name: 'shared', path: '~/code/acme/packages/shared', framework: 'ts', sizeGB: 0.2, age: '3 days ago' },
+  {
+    id: 'scripts',
+    name: 'scripts',
+    path: '~/code/acme/tools/scripts',
+    framework: 'node',
+    sizeGB: 0.4,
+    age: '5 days ago',
+  },
+  {
+    id: 'shared',
+    name: 'shared',
+    path: '~/code/acme/packages/shared',
+    framework: 'ts',
+    sizeGB: 0.2,
+    age: '3 days ago',
+  },
 ]
 
 /** 2 — the payoff: gauge swung green, "Reclaimed 23 GB". */
@@ -91,12 +105,23 @@ function SafeChip(): React.ReactNode {
         boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
       }}
     >
-      <svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width={24}
+        height={24}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={ACCENT}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M3 6h18" />
         <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
       </svg>
-      Moved to the Trash — never <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', color: '#fff' }}>rm&nbsp;-rf</span>, always recoverable
+      Moved to the Trash — never{' '}
+      <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', color: '#fff' }}>rm&nbsp;-rf</span>, always
+      recoverable
     </div>
   )
 }

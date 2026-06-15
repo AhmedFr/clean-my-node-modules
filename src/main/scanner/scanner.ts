@@ -8,12 +8,7 @@ import { folderSize } from '../lib/folder-size'
 import { detectKind } from './detect-kind'
 import { findProjectIcon } from './find-project-icon'
 import { resolveProjectName } from './resolve-name'
-import {
-  MAX_SCAN_DEPTH,
-  PROGRESS_THROTTLE_MS,
-  SIZE_CONCURRENCY,
-  SKIPPED_DIR_NAMES,
-} from './scanner.constants'
+import { MAX_SCAN_DEPTH, PROGRESS_THROTTLE_MS, SIZE_CONCURRENCY, SKIPPED_DIR_NAMES } from './scanner.constants'
 
 export type ProgressCallback = (progress: ScanProgress) => void
 
@@ -49,12 +44,8 @@ export class Scanner {
       const walk = async (dir: string, depth: number): Promise<void> => {
         checked++
         emit(dir)
-        let entries
-        try {
-          entries = await readdir(dir, { withFileTypes: true })
-        } catch {
-          return
-        }
+        const entries = await readdir(dir, { withFileTypes: true }).catch(() => null)
+        if (!entries) return
         const subdirs: string[] = []
         for (const entry of entries) {
           if (!entry.isDirectory() || entry.isSymbolicLink()) continue
@@ -80,9 +71,7 @@ export class Scanner {
         return buildProject(nm, repoRootCache)
       })
       emit('', true)
-      return projects
-        .filter((p): p is Project => p !== null)
-        .sort((a, b) => a.lastUsed - b.lastUsed)
+      return projects.filter((p): p is Project => p !== null).sort((a, b) => a.lastUsed - b.lastUsed)
     } finally {
       this.current = null
     }
@@ -119,12 +108,7 @@ async function buildProject(
 
 /** Best-effort "last worked on": newest mtime among project markers. */
 async function lastUsedTime(projectDir: string): Promise<number> {
-  const candidates = [
-    projectDir,
-    join(projectDir, 'package.json'),
-    join(projectDir, 'src'),
-    join(projectDir, '.git'),
-  ]
+  const candidates = [projectDir, join(projectDir, 'package.json'), join(projectDir, 'src'), join(projectDir, '.git')]
   const times = await Promise.all(
     candidates.map(async (p) => {
       try {
@@ -138,11 +122,7 @@ async function lastUsedTime(projectDir: string): Promise<number> {
   return max > 0 ? max : Date.now()
 }
 
-async function mapLimit<T, R>(
-  items: T[],
-  limit: number,
-  fn: (item: T) => Promise<R>,
-): Promise<R[]> {
+async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
   const results: R[] = new Array(items.length)
   let next = 0
   const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
