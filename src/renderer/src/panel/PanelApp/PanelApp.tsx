@@ -156,7 +156,7 @@ export function PanelApp(): ReactNode {
                 fontWeight: 600,
                 textTransform: 'uppercase',
                 letterSpacing: '.05em',
-                color: 'rgba(255,255,255,0.42)',
+                color: 'var(--text-dim)',
               }}
             >
               node_modules on disk
@@ -185,10 +185,10 @@ export function PanelApp(): ReactNode {
                     whiteSpace: 'nowrap',
                     fontSize: 12,
                     fontWeight: 600,
-                    color: 'rgba(255,255,255,0.5)',
+                    color: 'var(--text-muted)',
                   }}
                 >
-                  <span style={{ display: 'flex', color: 'rgba(255,255,255,0.4)' }}>{UIIcon.hdd({ size: 12 })}</span>
+                  <span style={{ display: 'flex', color: 'var(--text-dim)' }}>{UIIcon.hdd({ size: 12 })}</span>
                   {settings.thresholdGB} GB limit
                 </span>
                 {over ? (
@@ -215,7 +215,7 @@ export function PanelApp(): ReactNode {
                       whiteSpace: 'nowrap',
                       fontSize: 12.5,
                       fontWeight: 650,
-                      color: '#34d399',
+                      color: 'var(--good)',
                     }}
                   >
                     <span style={{ display: 'flex' }}>{UIIcon.check({ size: 13 })}</span>
@@ -241,8 +241,8 @@ export function PanelApp(): ReactNode {
                   height: 46,
                   margin: '0 auto',
                   borderRadius: '50%',
-                  background: 'rgba(52,211,153,0.13)',
-                  color: '#34d399',
+                  background: 'var(--good-wash)',
+                  color: 'var(--good)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -251,7 +251,7 @@ export function PanelApp(): ReactNode {
                 {UIIcon.checkCircle({ size: 26 })}
               </div>
               <div style={{ fontSize: 14.5, fontWeight: 650, color: '#fff', marginTop: 10 }}>All clean</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 3 }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>
                 Reclaimed {formatSizeStr(reclaimed)} this session.
               </div>
             </div>
@@ -271,12 +271,12 @@ export function PanelApp(): ReactNode {
                     fontWeight: 600,
                     textTransform: 'uppercase',
                     letterSpacing: '.05em',
-                    color: 'rgba(255,255,255,0.42)',
+                    color: 'var(--text-dim)',
                   }}
                 >
                   Reclaimable · oldest first
                 </span>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{projects.length} total</span>
+                <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>{projects.length} total</span>
               </div>
               {visible.map((p) => (
                 <MiniRow
@@ -323,7 +323,7 @@ export function PanelApp(): ReactNode {
             <MItem icon={UIIcon.power} label="Quit" shortcut="⌘Q" onClick={() => window.clean.quitApp()} />
           </div>
           <Separator />
-          <div style={{ padding: '1px 16px 9px', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+          <div style={{ padding: '1px 16px 9px', fontSize: 11, color: 'var(--text-dim)' }}>
             Last scan {lastScanLabel} · next in {nextScanLabel}
           </div>
         </>
@@ -332,9 +332,9 @@ export function PanelApp(): ReactNode {
       {toast && (
         <div
           className="mb-toast"
-          style={{ borderColor: toast.good ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.14)' }}
+          style={{ borderColor: toast.good ? 'var(--good-line)' : 'var(--surface-4)' }}
         >
-          <span style={{ color: toast.good ? '#34d399' : 'rgba(255,255,255,0.7)', display: 'flex' }}>
+          <span style={{ color: toast.good ? 'var(--good)' : 'var(--text-3)', display: 'flex' }}>
             {(toast.good ? UIIcon.checkCircle : UIIcon.finder)({ size: 15 })}
           </span>
           <span style={{ fontSize: 12.5, color: '#fff', fontWeight: 550 }}>{toast.text}</span>

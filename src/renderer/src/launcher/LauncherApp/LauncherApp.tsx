@@ -227,7 +227,7 @@ export function LauncherApp(): ReactNode {
       ref={rootRef}
       className="cc-window"
       style={{
-        boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.06)${
+        boxShadow: `inset 0 0 0 1px var(--surface-1)${
           ratio > 0.85 ? `, 0 0 60px -10px ${mixColor(status, 'rgba(0,0,0,0)', 0.45)}` : ''
         }`,
       }}
@@ -262,7 +262,7 @@ export function LauncherApp(): ReactNode {
           <button className="cc-back" onClick={() => setView('list')} aria-label="Back">
             {UIIcon.chevronLeft({ size: 18 })}
           </button>
-          <div style={{ fontSize: 14.5, fontWeight: 650, color: 'rgba(255,255,255,0.92)' }}>
+          <div style={{ fontSize: 14.5, fontWeight: 650, color: 'var(--text)' }}>
             {view === 'settings' ? 'Settings' : 'Scanning'}
           </div>
           <div style={{ flex: 1 }} />
@@ -293,14 +293,14 @@ export function LauncherApp(): ReactNode {
                 fontWeight: 600,
                 letterSpacing: '.04em',
                 textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.36)',
+                color: 'var(--text-faint)',
               }}
             >
               {filtered.length} folder{filtered.length !== 1 ? 's' : ''}
               {query ? ' found' : ' · reclaimable'}
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginRight: 4 }}>Sort</span>
+              <span style={{ fontSize: 11, color: 'var(--text-faint)', marginRight: 4 }}>Sort</span>
               <SortTab label="Last used" active={sortBy === 'used'} onClick={() => setSortBy('used')} />
               <SortTab label="Size" active={sortBy === 'size'} onClick={() => setSortBy('size')} />
               <SortTab label="Name" active={sortBy === 'name'} onClick={() => setSortBy('name')} />
@@ -314,8 +314,8 @@ export function LauncherApp(): ReactNode {
                   top: hl.top,
                   height: hl.height,
                   opacity: hl.on ? 1 : 0,
-                  background: 'rgba(255,255,255,0.085)',
-                  boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.07)',
+                  background: 'var(--surface-2)',
+                  boxShadow: 'inset 0 0 0 1px var(--hairline)',
                 }}
               />
               {filtered.length === 0 ? (
@@ -323,7 +323,7 @@ export function LauncherApp(): ReactNode {
                   style={{
                     padding: '40px 20px',
                     textAlign: 'center',
-                    color: 'rgba(255,255,255,0.4)',
+                    color: 'var(--text-dim)',
                     fontSize: 13,
                   }}
                 >
@@ -359,12 +359,12 @@ export function LauncherApp(): ReactNode {
       {toast && (
         <div
           className="cc-toast"
-          style={{ borderColor: toast.tone === 'good' ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.12)' }}
+          style={{ borderColor: toast.tone === 'good' ? 'var(--good-line)' : 'var(--surface-3)' }}
         >
-          <span style={{ color: toast.tone === 'good' ? '#34d399' : 'rgba(255,255,255,0.7)', display: 'flex' }}>
+          <span style={{ color: toast.tone === 'good' ? 'var(--good)' : 'var(--text-3)', display: 'flex' }}>
             {toast.icon({ size: 15 })}
           </span>
-          <span style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.9)', fontWeight: 550 }}>{toast.text}</span>
+          <span style={{ fontSize: 12.5, color: 'var(--text)', fontWeight: 550 }}>{toast.text}</span>
         </div>
       )}
 
@@ -377,7 +377,7 @@ export function LauncherApp(): ReactNode {
             <span
               style={{
                 fontSize: 13,
-                color: 'rgba(255,255,255,0.9)',
+                color: 'var(--text)',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -404,7 +404,7 @@ export function LauncherApp(): ReactNode {
               <span
                 style={{
                   fontSize: 12.5,
-                  color: ratio > 1 ? mixColor('#fff', accent, 0.5) : 'rgba(255,255,255,0.55)',
+                  color: ratio > 1 ? mixColor('#fff', accent, 0.5) : 'var(--text-muted)',
                   fontWeight: 550,
                 }}
               >

@@ -1,7 +1,39 @@
 :root {
   --ui-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
   --mono-font: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ===== design tokens =====
+     Single source of truth for the UI's colors. Inline styles in the React
+     components reference these via var(--token); collapse the old hand-typed
+     rgba() drift (0.40/0.42, 0.08/0.085…) onto one scale. */
+
+  /* brand / status */
   --accent: #ff6363;
+  --good: #34d399;
+  --good-line: rgba(52, 211, 153, 0.4);
+  --good-wash: rgba(52, 211, 153, 0.13);
+
+  /* text (white at decreasing emphasis) */
+  --text-strong: rgba(255, 255, 255, 0.95);
+  --text: rgba(255, 255, 255, 0.9);
+  --text-2: rgba(255, 255, 255, 0.8);
+  --text-3: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --text-dim: rgba(255, 255, 255, 0.4);
+  --text-faint: rgba(255, 255, 255, 0.34);
+
+  /* surfaces (white overlays for fills, borders, dividers) */
+  --hairline: rgba(255, 255, 255, 0.07);
+  --surface-1: rgba(255, 255, 255, 0.06);
+  --surface-2: rgba(255, 255, 255, 0.08);
+  --surface-3: rgba(255, 255, 255, 0.12);
+  --surface-4: rgba(255, 255, 255, 0.14);
+  --border: rgba(255, 255, 255, 0.1);
+
+  /* panel backgrounds */
+  --panel-launcher: rgba(20, 20, 23, 0.82);
+  --panel-menu: rgba(30, 30, 33, 0.72);
+  --toast-bg: rgba(30, 30, 34, 0.92);
 }
 * {
   box-sizing: border-box;
@@ -27,8 +59,8 @@ body {
 .mb-panel {
   width: 334px;
   overflow: hidden;
-  background: rgba(30, 30, 33, 0.72);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  background: var(--panel-menu);
+  box-shadow: inset 0 1px 0 var(--surface-2), inset 0 0 0 1px var(--surface-3);
   animation: mbdrop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.05);
   transform-origin: top center;
   position: relative;
@@ -48,11 +80,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--hairline);
+  color: var(--text-2);
 }
 .mb-back:hover {
-  background: rgba(255, 255, 255, 0.13);
+  background: var(--surface-4);
 }
 .mb-toast {
   position: absolute;
@@ -66,7 +98,7 @@ body {
   padding: 9px 12px;
   border-radius: 11px;
   background: rgba(20, 20, 23, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--surface-4);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   animation: mbtoast 0.26s cubic-bezier(0.2, 1.2, 0.4, 1);
 }
@@ -75,7 +107,7 @@ body {
 .cc-window {
   position: relative;
   width: 100%;
-  background: rgba(20, 20, 23, 0.82);
+  background: var(--panel-launcher);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -92,8 +124,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.7);
+  background: var(--surface-2);
+  color: var(--text-3);
   transition: background 0.12s, color 0.12s;
 }
 .cc-close:hover {
@@ -112,13 +144,13 @@ body {
   border: none;
   outline: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--text-strong);
   font-size: 17px;
   font-family: var(--ui-font);
   font-weight: 450;
 }
 .cc-input::placeholder {
-  color: rgba(255, 255, 255, 0.34);
+  color: var(--text-faint);
 }
 .cc-back {
   width: 30px;
@@ -129,16 +161,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.75);
+  background: var(--surface-1);
+  color: var(--text-3);
   transition: background 0.12s;
 }
 .cc-back:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--surface-3);
 }
 .cc-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--hairline);
   flex: 0 0 auto;
 }
 .cc-listhead {
@@ -160,7 +192,7 @@ body {
   width: 9px;
 }
 .cc-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border);
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -198,7 +230,7 @@ body {
   align-items: center;
   gap: 4px;
   font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-dim);
   font-weight: 500;
 }
 .cc-iconbtn {
@@ -211,12 +243,12 @@ body {
   align-items: center;
   justify-content: center;
   background: transparent;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
   transition: background 0.12s, color 0.12s;
 }
 .cc-iconbtn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--border);
+  color: var(--text);
 }
 .cc-btn {
   display: inline-flex;
@@ -232,11 +264,11 @@ body {
   transition: filter 0.12s, background 0.12s;
 }
 .cc-btn.ghost {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--surface-2);
+  color: var(--text-2);
 }
 .cc-btn.ghost:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--surface-4);
 }
 .cc-btn.danger {
   color: #fff;
@@ -255,8 +287,8 @@ body {
   z-index: 30;
   padding: 9px 14px;
   border-radius: 12px;
-  background: rgba(30, 30, 34, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--toast-bg);
+  border: 1px solid var(--surface-3);
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
   animation: cctoast 0.3s cubic-bezier(0.2, 1.2, 0.4, 1);
 }
