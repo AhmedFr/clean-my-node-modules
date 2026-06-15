@@ -19,7 +19,7 @@ export function Gauge({ used, threshold, accent }: GaugeProps): ReactNode {
         style={{
           fontSize: 13,
           fontWeight: 650,
-          color: 'rgba(255,255,255,0.92)',
+          color: 'var(--text)',
           fontVariantNumeric: 'tabular-nums',
           whiteSpace: 'nowrap',
         }}
@@ -40,15 +40,15 @@ export function Gauge({ used, threshold, accent }: GaugeProps): ReactNode {
                   flex: 1,
                   height: 12,
                   borderRadius: 2,
-                  backgroundColor: 'rgba(255,255,255,0.06)',
+                  backgroundColor: 'var(--surface-1)',
                   backgroundImage:
-                    'repeating-linear-gradient(45deg, rgba(255,255,255,0.7) 0 1.5px, rgba(255,255,255,0) 1.5px 4px)',
-                  boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.5)',
+                    'repeating-linear-gradient(45deg, var(--text-3) 0 1.5px, rgba(255,255,255,0) 1.5px 4px)',
+                  boxShadow: 'inset 0 0 0 1px var(--text-muted)',
                 }}
               />
             )
           }
-          const col = filled ? statusColor(p / thresholdGB, accent) : 'rgba(255,255,255,0.09)'
+          const col = filled ? statusColor(p / thresholdGB, accent) : 'var(--surface-2)'
           return (
             <div
               key={i}

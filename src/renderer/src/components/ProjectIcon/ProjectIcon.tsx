@@ -20,8 +20,8 @@ export function ProjectIcon({ p, size = 30, radius = 8 }: ProjectIconProps): Rea
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'rgba(255,255,255,0.06)',
-        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.07)',
+        background: 'var(--surface-1)',
+        boxShadow: 'inset 0 0 0 1px var(--hairline)',
         overflow: 'hidden',
       }}
     >

@@ -34,7 +34,7 @@ export function ScanPanel({ accent, onDone }: ScanPanelProps): ReactNode {
       }}
     >
       <div style={{ position: 'relative', width: 56, height: 56 }}>
-        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)' }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid var(--border)' }} />
         <div
           style={{
             position: 'absolute',
@@ -63,7 +63,7 @@ export function ScanPanel({ accent, onDone }: ScanPanelProps): ReactNode {
         <div
           style={{
             fontSize: 12,
-            color: 'rgba(255,255,255,0.45)',
+            color: 'var(--text-muted)',
             marginTop: 3,
             fontVariantNumeric: 'tabular-nums',
           }}
@@ -71,7 +71,7 @@ export function ScanPanel({ accent, onDone }: ScanPanelProps): ReactNode {
           {count.toLocaleString()} folders checked
         </div>
       </div>
-      <div style={{ width: 230, height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+      <div style={{ width: 230, height: 5, borderRadius: 3, background: 'var(--border)', overflow: 'hidden' }}>
         <div
           style={{
             width: progress?.done ? '100%' : `${Math.min(95, count / 35)}%`,

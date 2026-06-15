@@ -71,7 +71,7 @@ export function Row({
           style={{
             fontWeight: 600,
             fontSize: roomy ? 14.5 : 13.5,
-            color: 'rgba(255,255,255,0.95)',
+            color: 'var(--text-strong)',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -84,7 +84,7 @@ export function Row({
         <span
           style={{
             fontSize: 12,
-            color: 'rgba(255,255,255,0.38)',
+            color: 'var(--text-dim)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',

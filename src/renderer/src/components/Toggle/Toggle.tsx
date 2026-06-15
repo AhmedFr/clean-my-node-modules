@@ -14,7 +14,7 @@ export function Toggle({ on, accent, onToggle }: ToggleProps): ReactNode {
         border: 'none',
         cursor: 'pointer',
         position: 'relative',
-        background: on ? accent : 'rgba(255,255,255,0.14)',
+        background: on ? accent : 'var(--surface-4)',
         transition: 'background .2s',
       }}
     >

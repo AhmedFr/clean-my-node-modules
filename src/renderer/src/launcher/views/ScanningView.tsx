@@ -37,7 +37,7 @@ export function ScanningView({ accent, onDone }: ScanningViewProps): ReactNode {
       }}
     >
       <div style={{ position: 'relative', width: 84, height: 84 }}>
-        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.08)' }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid var(--surface-2)' }} />
         <div
           style={{
             position: 'absolute',
@@ -62,11 +62,11 @@ export function ScanningView({ accent, onDone }: ScanningViewProps): ReactNode {
         </div>
       </div>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 16, fontWeight: 650, color: 'rgba(255,255,255,0.95)' }}>Scanning your disk…</div>
+        <div style={{ fontSize: 16, fontWeight: 650, color: 'var(--text-strong)' }}>Scanning your disk…</div>
         <div
           style={{
             fontSize: 12.5,
-            color: 'rgba(255,255,255,0.45)',
+            color: 'var(--text-muted)',
             marginTop: 4,
             fontVariantNumeric: 'tabular-nums',
           }}
@@ -74,7 +74,7 @@ export function ScanningView({ accent, onDone }: ScanningViewProps): ReactNode {
           {count.toLocaleString()} folders checked
         </div>
       </div>
-      <div style={{ width: 300, height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+      <div style={{ width: 300, height: 5, borderRadius: 3, background: 'var(--surface-2)', overflow: 'hidden' }}>
         <div
           style={{
             width: progress?.done ? '100%' : `${Math.min(95, count / 35)}%`,

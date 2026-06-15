@@ -18,7 +18,7 @@ export function MItem({ icon, label, shortcut, danger, onClick }: MItemProps): R
         margin: '0 6px',
         borderRadius: 6,
         cursor: 'default',
-        background: h ? (danger ? mixColor('#000', '#ff6363', 0.86) : 'rgba(255,255,255,0.07)') : 'transparent',
+        background: h ? (danger ? mixColor('#000', '#ff6363', 0.86) : 'var(--hairline)') : 'transparent',
         color: h ? '#fff' : 'rgba(255,255,255,0.86)',
         transition: 'background .08s',
       }}
@@ -31,7 +31,7 @@ export function MItem({ icon, label, shortcut, danger, onClick }: MItemProps): R
         <span
           style={{
             fontSize: 12,
-            color: h ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)',
+            color: h ? 'var(--text-2)' : 'var(--text-dim)',
             letterSpacing: '.06em',
           }}
         >

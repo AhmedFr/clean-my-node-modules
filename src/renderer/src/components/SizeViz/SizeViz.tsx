@@ -12,12 +12,12 @@ export function SizeViz({ style, bytes, maxBytes, stale, accent, density }: Size
       style={{
         fontVariantNumeric: 'tabular-nums',
         fontWeight: 650,
-        color: 'rgba(255,255,255,0.92)',
+        color: 'var(--text)',
         fontSize: density === 'compact' ? 13 : 14,
       }}
     >
       {s.value}
-      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginLeft: 2, fontWeight: 600 }}>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 2, fontWeight: 600 }}>
         {s.unit}
       </span>
     </span>
@@ -35,7 +35,7 @@ export function SizeViz({ style, bytes, maxBytes, stale, accent, density }: Size
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, minWidth: 96 }}>
         {num}
-        <div style={{ width: 88, height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+        <div style={{ width: 88, height: 5, borderRadius: 3, background: 'var(--surface-2)', overflow: 'hidden' }}>
           <div
             style={{
               width: `${ratio * 100}%`,
@@ -56,7 +56,7 @@ export function SizeViz({ style, bytes, maxBytes, stale, accent, density }: Size
     <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 92, justifyContent: 'flex-end' }}>
       {num}
       <svg width="32" height="32" viewBox="0 0 32 32" style={{ flex: '0 0 auto' }}>
-        <circle cx="16" cy="16" r={R} fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth="3.5" />
+        <circle cx="16" cy="16" r={R} fill="none" stroke="var(--surface-2)" strokeWidth="3.5" />
         <circle
           cx="16"
           cy="16"
