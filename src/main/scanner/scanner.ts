@@ -1,12 +1,13 @@
 import { createHash } from 'node:crypto'
 import { readdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { basename, dirname, join } from 'node:path'
+import { dirname, join } from 'node:path'
 import type { Project, ScanProgress } from '@shared/project.types'
 import { abbreviateHome } from '../lib/abbreviate-home'
 import { folderSize } from '../lib/folder-size'
 import { detectKind } from './detect-kind'
 import { findProjectIcon } from './find-project-icon'
+import { resolveProjectName } from './resolve-name'
 import {
   MAX_SCAN_DEPTH,
   PROGRESS_THROTTLE_MS,
@@ -67,9 +68,11 @@ export class Scanner {
 
       for (const root of this.roots) await walk(root, 0)
 
+      // Shared across projects so monorepo siblings resolve their repo root once.
+      const repoRootCache = new Map<string, string | null>()
       const projects = await mapLimit(found, SIZE_CONCURRENCY, (nm) => {
         emit(dirname(nm))
-        return buildProject(nm)
+        return buildProject(nm, repoRootCache)
       })
       emit('', true)
       onProgress?.({ foldersChecked: checked, currentPath: '', done: true })
@@ -82,18 +85,22 @@ export class Scanner {
   }
 }
 
-async function buildProject(nodeModulesPath: string): Promise<Project | null> {
+async function buildProject(
+  nodeModulesPath: string,
+  repoRootCache: Map<string, string | null>,
+): Promise<Project | null> {
   const projectDir = dirname(nodeModulesPath)
   try {
-    const [size, lastUsed, kind, iconDataUrl] = await Promise.all([
+    const [size, lastUsed, kind, iconDataUrl, name] = await Promise.all([
       folderSize(nodeModulesPath),
       lastUsedTime(projectDir),
       detectKind(projectDir),
       findProjectIcon(projectDir),
+      resolveProjectName(projectDir, repoRootCache),
     ])
     return {
       id: createHash('sha1').update(projectDir).digest('hex').slice(0, 12),
-      name: basename(projectDir),
+      name,
       path: abbreviateHome(projectDir),
       absPath: projectDir,
       kind,
