@@ -15,7 +15,7 @@
 const STATUS = {
   app: "Clean my node_modules",
   version: "0.1.0",
-  updated: "2026-06-15",
+  updated: "2026-06-16",
   phase: "Going public: OSS + $9 signed binary, repo live with CI — all open PRs merged to main (pnpm store, landing page, launcher polish, showcase video)",
   summary: "Business model is settled (issue #1): open source, $9 one-time for the signed binary. The repo is public at github.com/AhmedFr/clean-my-node-modules with CI on every PR. Everything is now merged to main: the pnpm store cleaner (issue #2 M1), the landing page, the 7-row launcher fix, and a Remotion showcase video. Your side: fetch the Apple signing credentials (docs/SIGNING.md), create the Lemon Squeezy product, and post the showcase video.",
 
@@ -75,6 +75,7 @@ const STATUS = {
         { label: "Unit tests — formatting & color math", detail: "vitest covers lib/format and lib/colors", status: "done" },
         { label: "CI on every PR", detail: "typecheck + tests + build + unsigned macOS packaging", status: "done" },
         { label: "Unit tests — scanner & stores", detail: "PR #3 adds du-parsing and pnpm-resolution tests; detect-kind, skip-rules and the stores are still uncovered", status: "planned" },
+        { label: "Readability / design-token refactor", detail: "Senior review (June 16) found the code is architecturally sound but hard to read due to inline-style walls. Pass 1 done: color design tokens (CSS vars) replace ~100 hand-typed rgba() literals in global.css + both app shells. Next: weight/spacing tokens, propagate to components, then decompose LauncherApp/PanelApp + add a linter", status: "progress" },
         { label: "Manual end-to-end pass", detail: "Real tray, real deletion, real notifications — only you can judge this (see 'In your court')", status: "user" }
       ]
     },
@@ -112,7 +113,8 @@ const STATUS = {
     { date: "2026-06-14", text: "Launcher list readability: list now measures a real row and caps at ~7 rows across densities (4px gap + kept y-padding), long paths truncate with an ellipsis instead of overrunning the size column, and the window is clamped to the screen so the footer no longer clips." },
     { date: "2026-06-15", text: "Built a Remotion showcase video (video/, square 1080² 10s loop): the launcher fills with oversized node_modules, a one-click cascade clears them while the pixel gauge sweeps red→green and a 'Reclaimed 23 GB' badge counts up, ending on the brand card. Rendered to out/showcase.mp4; edit live with pnpm video:studio." },
     { date: "2026-06-15", text: "Merged everything to main: PR #3 (pnpm store prune), #4 (landing page), #5 (7-row launcher list), #6 (showcase video). main is now the integrated state." },
-    { date: "2026-06-15", text: "Three enhancements: panel over-limit now a two-line no-wrap stack (GB limit / GB over) so the narrow menu-bar panel never reflows; smarter project names (generic folders qualified with repo/parent); landing page gained a 'node_modules lifecycle' section with an npm-vs-pnpm duplication diagram. Apple notarization still stuck in a multi-hour backlog on Apple's side." }
+    { date: "2026-06-15", text: "Three enhancements: panel over-limit now a two-line no-wrap stack (GB limit / GB over) so the narrow menu-bar panel never reflows; smarter project names (generic folders qualified with repo/parent); landing page gained a 'node_modules lifecycle' section with an npm-vs-pnpm duplication diagram. Apple notarization still stuck in a multi-hour backlog on Apple's side." },
+    { date: "2026-06-16", text: "Apple notarization finally cleared — all submissions Accepted (~13h Apple-side backlog). Did a senior architectural review (verdict: sound architecture, readability hurt by inline-style walls) and shipped readability pass 1: color design tokens (CSS vars) across global.css + both app shells." }
   ]
 };
 </script>
