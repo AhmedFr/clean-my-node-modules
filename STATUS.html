@@ -27,6 +27,7 @@ const STATUS = {
         { label: "Menu bar dropdown (tray panel)", detail: "Total size, pixel-cell meter vs GB limit, 4 oldest projects, one-click delete, 'Clean N stale' action", status: "done" },
         { label: "Launcher window", detail: "⌘O Spotlight-style search, sort by last-used/size/name, full keyboard nav (↑↓ ↵ ⌘⌫ ⌘R ⌘, esc)", status: "done" },
         { label: "Real disk scanner", detail: "Walks home dir (skips dot-folders & Library), sizes via du, detects framework, infers last-used from mtimes, caches results", status: "done" },
+        { label: "Smarter project names", detail: "Generic folder names (frontend, backend, web, api, framework…) are qualified with the git-repo root or parent, e.g. 'selfkit / frontend' — package.json name preferred when meaningful", status: "done" },
         { label: "Safe deletion", detail: "shell.trashItem — folders go to Trash, never rm -rf", status: "done" },
         { label: "Background scans + notifications", detail: "6h / daily / weekly / manual schedule, native notification when crossing the GB threshold", status: "done" },
         { label: "Row actions", detail: "Reveal in Finder, open in editor", status: "done" },
@@ -110,7 +111,8 @@ const STATUS = {
     { date: "2026-06-12", text: "You decided: OSS + $9 signed binary, repo public. Shipped: clean history pushed, repo made public, CI on PRs, signing scaffolded (docs/SIGNING.md), MIT LICENSE, PR #3 (pnpm store prune), PR #4 (landing page). Your court: review both PRs, Apple credentials, Lemon Squeezy product." },
     { date: "2026-06-14", text: "Launcher list readability: list now measures a real row and caps at ~7 rows across densities (4px gap + kept y-padding), long paths truncate with an ellipsis instead of overrunning the size column, and the window is clamped to the screen so the footer no longer clips." },
     { date: "2026-06-15", text: "Built a Remotion showcase video (video/, square 1080² 10s loop): the launcher fills with oversized node_modules, a one-click cascade clears them while the pixel gauge sweeps red→green and a 'Reclaimed 23 GB' badge counts up, ending on the brand card. Rendered to out/showcase.mp4; edit live with pnpm video:studio." },
-    { date: "2026-06-15", text: "Merged everything to main: PR #3 (pnpm store prune), #4 (landing page), #5 (7-row launcher list), #6 (showcase video). main is now the integrated state." }
+    { date: "2026-06-15", text: "Merged everything to main: PR #3 (pnpm store prune), #4 (landing page), #5 (7-row launcher list), #6 (showcase video). main is now the integrated state." },
+    { date: "2026-06-15", text: "Three enhancements: panel over-limit now a two-line no-wrap stack (GB limit / GB over) so the narrow menu-bar panel never reflows; smarter project names (generic folders qualified with repo/parent); landing page gained a 'node_modules lifecycle' section with an npm-vs-pnpm duplication diagram. Apple notarization still stuck in a multi-hour backlog on Apple's side." }
   ]
 };
 </script>
