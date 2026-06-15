@@ -1,16 +1,15 @@
 import { MItem } from '@renderer/components/MItem'
 import { MiniRow } from '@renderer/components/MiniRow'
-import { PixelMeter } from '@renderer/components/PixelMeter'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
 import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
-import { statusColor } from '@renderer/lib/colors'
 import { DAY, formatSizeStr, GB } from '@renderer/lib/format'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CleanStaleCta } from './CleanStaleCta'
+import { DiskSummary } from './DiskSummary'
 import { STALE_DAYS, VISIBLE_ROWS } from './PanelApp.constants'
 import type { PanelToast, PanelView } from './PanelApp.types'
 import { PanelSettings } from './PanelSettings'
@@ -38,9 +37,6 @@ export function PanelApp(): ReactNode {
 
   const totalUsed = useMemo(() => projects.reduce((a, p) => a + p.size, 0), [projects])
   const usedGB = totalUsed / GB
-  const ratio = totalUsed / threshold
-  const status = statusColor(ratio, accent)
-  const over = totalUsed > threshold
 
   // high-water mark keeps the meter scale stable while deleting (no render-time
   // mutation: account for current usage now, persist the peak via state)
@@ -143,93 +139,14 @@ export function PanelApp(): ReactNode {
 
       {view === 'main' && (
         <>
-          <div style={{ padding: '13px 15px 12px' }}>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '.05em',
-                color: 'var(--text-dim)',
-              }}
-            >
-              node_modules on disk
-            </div>
-            <div
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 5 }}
-            >
-              <span
-                style={{
-                  fontSize: 27,
-                  fontWeight: 700,
-                  color: '#fff',
-                  letterSpacing: '-.01em',
-                  fontVariantNumeric: 'tabular-nums',
-                  whiteSpace: 'nowrap',
-                  flex: '0 0 auto',
-                }}
-              >
-                {formatSizeStr(totalUsed)}
-              </span>
-              {/* Two stacked lines, each no-wrap, so the narrow panel never reflows */}
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flex: '0 0 auto' }}
-              >
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    whiteSpace: 'nowrap',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  <span style={{ display: 'flex', color: 'var(--text-dim)' }}>{UIIcon.hdd({ size: 12 })}</span>
-                  {settings.thresholdGB} GB limit
-                </span>
-                {over ? (
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      whiteSpace: 'nowrap',
-                      fontSize: 12.5,
-                      fontWeight: 650,
-                      color: status,
-                    }}
-                  >
-                    <span style={{ display: 'flex' }}>{UIIcon.alert({ size: 12 })}</span>
-                    {formatSizeStr(totalUsed - threshold)} over
-                  </span>
-                ) : (
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      whiteSpace: 'nowrap',
-                      fontSize: 12.5,
-                      fontWeight: 650,
-                      color: 'var(--good)',
-                    }}
-                  >
-                    <span style={{ display: 'flex' }}>{UIIcon.check({ size: 13 })}</span>
-                    {formatSizeStr(threshold - totalUsed)} free
-                  </span>
-                )}
-              </div>
-            </div>
-            <PixelMeter
-              usedGB={usedGB}
-              thresholdGB={settings.thresholdGB}
-              trackMaxGB={trackMaxGB}
-              accent={accent}
-              cells={32}
-            />
-          </div>
+          <DiskSummary
+            totalUsed={totalUsed}
+            threshold={threshold}
+            thresholdGB={settings.thresholdGB}
+            usedGB={usedGB}
+            trackMaxGB={trackMaxGB}
+            accent={accent}
+          />
           <Separator />
           {projects.length === 0 ? (
             <div style={{ padding: '26px 20px 30px', textAlign: 'center' }}>
