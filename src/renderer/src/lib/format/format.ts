@@ -1,6 +1,7 @@
-export const MB = 1024 * 1024
-export const GB = 1024 * MB
-const DAY = 86400000
+import { GB, MB } from '@shared/units.constants'
+export { GB, MB }
+
+export const DAY = 86400000
 
 export interface FormattedSize {
   value: string

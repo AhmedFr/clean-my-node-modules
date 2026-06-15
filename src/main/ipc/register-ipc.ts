@@ -1,17 +1,20 @@
 import { BrowserWindow, app, ipcMain, screen } from 'electron'
 import { IPC } from '@shared/ipc.constants'
-import type { Settings } from '@shared/settings.types'
 import type { AppContext } from '../app-context.types'
 import { deleteNodeModules, openProject, revealInFinder } from '../actions/project-actions'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
+import { coerceSetting } from '../settings/validate-setting'
 
 export function registerIpc(ctx: AppContext): void {
   ipcMain.handle(IPC.getProjects, () => ctx.projects.all)
   ipcMain.handle(IPC.getLastScanTime, () => ctx.projects.lastScanTime)
   ipcMain.handle(IPC.getSettings, () => ctx.settings.get())
 
-  ipcMain.handle(IPC.setSetting, (_e, key: keyof Settings, value: Settings[keyof Settings]) => {
-    return ctx.settings.set(key, value as never)
+  ipcMain.handle(IPC.setSetting, (_e, key: unknown, value: unknown) => {
+    // Never trust the renderer's payload — validate before persisting.
+    const ok = coerceSetting(key, value)
+    if (!ok) return ctx.settings.get()
+    return ctx.settings.set(ok.key, ok.value as never)
   })
 
   ipcMain.handle(IPC.scan, () => ctx.runScan())

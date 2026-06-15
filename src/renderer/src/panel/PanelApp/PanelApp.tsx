@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { GB, formatSizeStr } from '@renderer/lib/format'
+import { DAY, GB, formatSizeStr } from '@renderer/lib/format'
 import { statusColor } from '@renderer/lib/colors'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { PixelMeter } from '@renderer/components/PixelMeter'
@@ -17,8 +17,6 @@ import { CleanStaleCta } from './CleanStaleCta'
 import { Separator } from './Separator'
 import { STALE_DAYS, VISIBLE_ROWS } from './PanelApp.constants'
 import type { PanelToast, PanelView } from './PanelApp.types'
-
-const DAY = 86400000
 
 export function PanelApp(): ReactNode {
   const [settings, setSetting] = useSettings()
@@ -44,10 +42,11 @@ export function PanelApp(): ReactNode {
   const status = statusColor(ratio, accent)
   const over = totalUsed > threshold
 
-  // high-water mark keeps the meter scale stable while deleting
-  const maxSeenGB = useRef(usedGB)
-  if (usedGB > maxSeenGB.current) maxSeenGB.current = usedGB
-  const trackMaxGB = Math.max(settings.thresholdGB * 1.5, maxSeenGB.current * 1.06)
+  // high-water mark keeps the meter scale stable while deleting (no render-time
+  // mutation: account for current usage now, persist the peak via state)
+  const [maxSeenGB, setMaxSeenGB] = useState(usedGB)
+  useEffect(() => setMaxSeenGB((m) => Math.max(m, usedGB)), [usedGB])
+  const trackMaxGB = Math.max(settings.thresholdGB * 1.5, Math.max(maxSeenGB, usedGB) * 1.06)
 
   const oldest = useMemo(() => [...projects].sort((a, b) => a.lastUsed - b.lastUsed), [projects])
   const visible = oldest.slice(0, VISIBLE_ROWS)

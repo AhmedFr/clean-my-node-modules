@@ -19,17 +19,22 @@ export type ProgressCallback = (progress: ScanProgress) => void
 
 /** Walks scan roots for node_modules folders and builds Project entries. */
 export class Scanner {
-  private scanning = false
+  private current: Promise<Project[]> | null = null
 
   constructor(private roots: string[] = [homedir()]) {}
 
   get isScanning(): boolean {
-    return this.scanning
+    return this.current !== null
   }
 
-  async scan(onProgress?: ProgressCallback): Promise<Project[]> {
-    if (this.scanning) throw new Error('Scan already in progress')
-    this.scanning = true
+  /** Concurrent callers share the in-flight scan instead of starting a second. */
+  scan(onProgress?: ProgressCallback): Promise<Project[]> {
+    if (this.current) return this.current
+    this.current = this.run(onProgress)
+    return this.current
+  }
+
+  private async run(onProgress?: ProgressCallback): Promise<Project[]> {
     try {
       const found: string[] = []
       let checked = 0
@@ -75,12 +80,11 @@ export class Scanner {
         return buildProject(nm, repoRootCache)
       })
       emit('', true)
-      onProgress?.({ foldersChecked: checked, currentPath: '', done: true })
       return projects
         .filter((p): p is Project => p !== null)
         .sort((a, b) => a.lastUsed - b.lastUsed)
     } finally {
-      this.scanning = false
+      this.current = null
     }
   }
 }
