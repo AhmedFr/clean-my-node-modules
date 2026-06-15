@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
 import { FrameworkIcon } from '@renderer/components/FrameworkIcon'
+import { type ReactNode, useState } from 'react'
 import type { ProjectIconProps } from './ProjectIcon.types'
 
 /** The project's own favicon/logo when available; framework icon otherwise. */
@@ -20,8 +20,8 @@ export function ProjectIcon({ p, size = 30, radius = 8 }: ProjectIconProps): Rea
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'rgba(255,255,255,0.06)',
-        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.07)',
+        background: 'var(--surface-1)',
+        boxShadow: 'inset 0 0 0 1px var(--hairline)',
         overflow: 'hidden',
       }}
     >

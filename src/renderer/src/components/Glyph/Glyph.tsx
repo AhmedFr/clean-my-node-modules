@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
 import { mixColor } from '@renderer/lib/colors'
+import type { ReactNode } from 'react'
 import type { AppTileProps, GlyphProps } from './Glyph.types'
 
 /** The app's module-cube logo glyph. */
@@ -29,7 +29,7 @@ export function AppTile({ size = 44, accent = '#ff6363' }: AppTileProps): ReactN
         color: '#fff',
         flex: '0 0 auto',
         background: `linear-gradient(155deg, ${mixColor(accent, '#fff', 0.16)}, ${mixColor(accent, '#000', 0.34)})`,
-        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.3), 0 4px 12px ${mixColor(accent, '#000', 0.3)}`,
+        boxShadow: `inset 0 1px 0 var(--text-faint), 0 4px 12px ${mixColor(accent, '#000', 0.3)}`,
       }}
     >
       <Glyph size={size * 0.56} color="#fff" strokeWidth={1.8} />

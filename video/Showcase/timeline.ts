@@ -1,14 +1,14 @@
 import { Easing, interpolate } from 'remotion'
-import { LIMIT_GB, PROJECTS, TOTAL_USED_GB } from '../mockData'
 import type { RowState } from '../components/LauncherWindow'
+import { LIMIT_GB, PROJECTS, TOTAL_USED_GB } from '../mockData'
 import {
   BADGE_IN,
   BRAND_IN,
   CLICK_FRAMES,
   CURSOR_EXIT,
   CURSOR_IDLE,
-  DELETE_STARTS,
   DEL_LEN,
+  DELETE_STARTS,
   GAUGE_FILL,
   SCENE_OUT,
   TRASH_TARGET,
@@ -70,7 +70,8 @@ export function computeState(frame: number): SceneState {
   const cursorOpacity = interpolate(frame, [160, 178], [1, 0], clampOpts)
 
   const sceneOpacity = interpolate(frame, SCENE_OUT, [1, 0], clampOpts)
-  const badgeAppear = interpolate(frame, BADGE_IN, [0, 1], { ...clampOpts, easing: Easing.out(Easing.back(1.4)) }) * sceneOpacity
+  const badgeAppear =
+    interpolate(frame, BADGE_IN, [0, 1], { ...clampOpts, easing: Easing.out(Easing.back(1.4)) }) * sceneOpacity
   const brandAppear = interpolate(frame, BRAND_IN, [0, 1], { ...clampOpts, easing: Easing.out(Easing.cubic) })
   const cleanT = clamp01(reclaimGB / 23)
 

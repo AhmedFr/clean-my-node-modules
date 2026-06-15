@@ -18,17 +18,7 @@ export interface Project {
   iconDataUrl?: string
 }
 
-export type FrameworkKind =
-  | 'react'
-  | 'next'
-  | 'vue'
-  | 'svelte'
-  | 'node'
-  | 'astro'
-  | 'ts'
-  | 'vite'
-  | 'remix'
-  | 'expo'
+export type FrameworkKind = 'react' | 'next' | 'vue' | 'svelte' | 'node' | 'astro' | 'ts' | 'vite' | 'remix' | 'expo'
 
 export interface ScanProgress {
   foldersChecked: number

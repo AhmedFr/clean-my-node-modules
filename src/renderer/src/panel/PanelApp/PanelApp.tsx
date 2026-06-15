@@ -1,24 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { GB, formatSizeStr } from '@renderer/lib/format'
-import { statusColor } from '@renderer/lib/colors'
-import { UIIcon } from '@renderer/components/UIIcon'
-import { PixelMeter } from '@renderer/components/PixelMeter'
-import { MiniRow } from '@renderer/components/MiniRow'
 import { MItem } from '@renderer/components/MItem'
-import { useProjects } from '@renderer/hooks/useProjects'
+import { MiniRow } from '@renderer/components/MiniRow'
+import { UIIcon } from '@renderer/components/UIIcon'
+import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
+import { useProjects } from '@renderer/hooks/useProjects'
 import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
-import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
-import { PnpmStoreRow } from './PnpmStoreRow'
-import { ScanPanel } from './ScanPanel'
-import { PanelSettings } from './PanelSettings'
+import { DAY, formatSizeStr, GB } from '@renderer/lib/format'
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CleanStaleCta } from './CleanStaleCta'
-import { Separator } from './Separator'
+import { DiskSummary } from './DiskSummary'
 import { STALE_DAYS, VISIBLE_ROWS } from './PanelApp.constants'
 import type { PanelToast, PanelView } from './PanelApp.types'
-
-const DAY = 86400000
+import { PanelSettings } from './PanelSettings'
+import { PnpmStoreRow } from './PnpmStoreRow'
+import { ScanPanel } from './ScanPanel'
+import { Separator } from './Separator'
 
 export function PanelApp(): ReactNode {
   const [settings, setSetting] = useSettings()
@@ -40,21 +37,16 @@ export function PanelApp(): ReactNode {
 
   const totalUsed = useMemo(() => projects.reduce((a, p) => a + p.size, 0), [projects])
   const usedGB = totalUsed / GB
-  const ratio = totalUsed / threshold
-  const status = statusColor(ratio, accent)
-  const over = totalUsed > threshold
 
-  // high-water mark keeps the meter scale stable while deleting
-  const maxSeenGB = useRef(usedGB)
-  if (usedGB > maxSeenGB.current) maxSeenGB.current = usedGB
-  const trackMaxGB = Math.max(settings.thresholdGB * 1.5, maxSeenGB.current * 1.06)
+  // high-water mark keeps the meter scale stable while deleting (no render-time
+  // mutation: account for current usage now, persist the peak via state)
+  const [maxSeenGB, setMaxSeenGB] = useState(usedGB)
+  useEffect(() => setMaxSeenGB((m) => Math.max(m, usedGB)), [usedGB])
+  const trackMaxGB = Math.max(settings.thresholdGB * 1.5, Math.max(maxSeenGB, usedGB) * 1.06)
 
   const oldest = useMemo(() => [...projects].sort((a, b) => a.lastUsed - b.lastUsed), [projects])
   const visible = oldest.slice(0, VISIBLE_ROWS)
-  const staleSet = useMemo(
-    () => projects.filter((p) => (Date.now() - p.lastUsed) / DAY > STALE_DAYS),
-    [projects],
-  )
+  const staleSet = useMemo(() => projects.filter((p) => (Date.now() - p.lastUsed) / DAY > STALE_DAYS), [projects])
   const freeable = staleSet.reduce((a, p) => a + p.size, 0)
 
   const removeMany = useCallback(
@@ -64,11 +56,11 @@ export function PanelApp(): ReactNode {
       for (const id of ids) freed += await window.clean.deleteNodeModules(id)
       setDeleting((s) => {
         const n = new Set(s)
-        ids.forEach((i) => n.delete(i))
+        for (const i of ids) n.delete(i)
         return n
       })
       setReclaimed((r) => r + freed)
-      flashToast({ text: `Reclaimed ${formatSizeStr(freed)}${label ? ' · ' + label : ''}`, good: true })
+      flashToast({ text: `Reclaimed ${formatSizeStr(freed)}${label ? ` · ${label}` : ''}`, good: true })
     },
     [flashToast],
   )
@@ -126,9 +118,7 @@ export function PanelApp(): ReactNode {
         : settings.scanInterval === 'weekly'
           ? '5 d'
           : '—'
-  const lastScanLabel = lastScan
-    ? `${Math.max(1, Math.round((Date.now() - lastScan) / 60000))} min ago`
-    : 'never'
+  const lastScanLabel = lastScan ? `${Math.max(1, Math.round((Date.now() - lastScan) / 60000))} min ago` : 'never'
 
   return (
     <div ref={rootRef} className="mb-panel">
@@ -149,89 +139,14 @@ export function PanelApp(): ReactNode {
 
       {view === 'main' && (
         <>
-          <div style={{ padding: '13px 15px 12px' }}>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '.05em',
-                color: 'var(--text-dim)',
-              }}
-            >
-              node_modules on disk
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 5 }}>
-              <span
-                style={{
-                  fontSize: 27,
-                  fontWeight: 700,
-                  color: '#fff',
-                  letterSpacing: '-.01em',
-                  fontVariantNumeric: 'tabular-nums',
-                  whiteSpace: 'nowrap',
-                  flex: '0 0 auto',
-                }}
-              >
-                {formatSizeStr(totalUsed)}
-              </span>
-              {/* Two stacked lines, each no-wrap, so the narrow panel never reflows */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flex: '0 0 auto' }}>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    whiteSpace: 'nowrap',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  <span style={{ display: 'flex', color: 'var(--text-dim)' }}>{UIIcon.hdd({ size: 12 })}</span>
-                  {settings.thresholdGB} GB limit
-                </span>
-                {over ? (
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      whiteSpace: 'nowrap',
-                      fontSize: 12.5,
-                      fontWeight: 650,
-                      color: status,
-                    }}
-                  >
-                    <span style={{ display: 'flex' }}>{UIIcon.alert({ size: 12 })}</span>
-                    {formatSizeStr(totalUsed - threshold)} over
-                  </span>
-                ) : (
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      whiteSpace: 'nowrap',
-                      fontSize: 12.5,
-                      fontWeight: 650,
-                      color: 'var(--good)',
-                    }}
-                  >
-                    <span style={{ display: 'flex' }}>{UIIcon.check({ size: 13 })}</span>
-                    {formatSizeStr(threshold - totalUsed)} free
-                  </span>
-                )}
-              </div>
-            </div>
-            <PixelMeter
-              usedGB={usedGB}
-              thresholdGB={settings.thresholdGB}
-              trackMaxGB={trackMaxGB}
-              accent={accent}
-              cells={32}
-            />
-          </div>
+          <DiskSummary
+            totalUsed={totalUsed}
+            threshold={threshold}
+            thresholdGB={settings.thresholdGB}
+            usedGB={usedGB}
+            trackMaxGB={trackMaxGB}
+            accent={accent}
+          />
           <Separator />
           {projects.length === 0 ? (
             <div style={{ padding: '26px 20px 30px', textAlign: 'center' }}>
@@ -330,10 +245,7 @@ export function PanelApp(): ReactNode {
       )}
 
       {toast && (
-        <div
-          className="mb-toast"
-          style={{ borderColor: toast.good ? 'var(--good-line)' : 'var(--surface-4)' }}
-        >
+        <div className="mb-toast" style={{ borderColor: toast.good ? 'var(--good-line)' : 'var(--surface-4)' }}>
           <span style={{ color: toast.good ? 'var(--good)' : 'var(--text-3)', display: 'flex' }}>
             {(toast.good ? UIIcon.checkCircle : UIIcon.finder)({ size: 15 })}
           </span>

@@ -25,8 +25,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint + format check
+        run: pnpm exec biome ci .
+
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Typecheck (video)
+        run: pnpm video:typecheck
 
       - name: Unit tests
         run: pnpm test

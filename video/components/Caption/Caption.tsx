@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import { interpolate, useCurrentFrame } from 'remotion'
 import { ACCENT, UI_FONT } from '../../theme.constants'
 import type { CaptionProps } from './Caption.types'

@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
-import { formatSizeStr } from '@renderer/lib/format'
-import { UIIcon } from '@renderer/components/UIIcon'
 import { Kbd } from '@renderer/components/Kbd'
+import { UIIcon } from '@renderer/components/UIIcon'
+import { formatSizeStr } from '@renderer/lib/format'
+import type { ReactNode } from 'react'
 
 interface EmptyViewProps {
   reclaimedTotal: number
@@ -30,7 +30,7 @@ export function EmptyView({ reclaimedTotal, nextScanLabel }: EmptyViewProps): Re
           alignItems: 'center',
           justifyContent: 'center',
           background: 'rgba(52,211,153,0.12)',
-          color: '#34d399',
+          color: 'var(--good)',
           animation: 'ccpop .5s cubic-bezier(.2,1.4,.4,1)',
         }}
       >
@@ -41,19 +41,18 @@ export function EmptyView({ reclaimedTotal, nextScanLabel }: EmptyViewProps): Re
         <div
           style={{
             fontSize: 13,
-            color: 'rgba(255,255,255,0.5)',
+            color: 'var(--text-muted)',
             marginTop: 6,
             maxWidth: 320,
             lineHeight: 1.5,
           }}
         >
-          No stale{' '}
-          <code style={{ fontFamily: 'var(--mono-font)', color: 'rgba(255,255,255,0.7)' }}>node_modules</code>{' '}
-          over your limit.{' '}
+          No stale <code style={{ fontFamily: 'var(--mono-font)', color: 'var(--text-3)' }}>node_modules</code> over
+          your limit.{' '}
           {reclaimedTotal > 0 ? (
             <>
               You reclaimed{' '}
-              <span style={{ color: '#34d399', fontWeight: 600 }}>{formatSizeStr(reclaimedTotal)}</span> this
+              <span style={{ color: 'var(--good)', fontWeight: 600 }}>{formatSizeStr(reclaimedTotal)}</span> this
               session.
             </>
           ) : (
@@ -67,7 +66,7 @@ export function EmptyView({ reclaimedTotal, nextScanLabel }: EmptyViewProps): Re
           alignItems: 'center',
           gap: 7,
           marginTop: 4,
-          color: 'rgba(255,255,255,0.4)',
+          color: 'var(--text-dim)',
           fontSize: 12,
         }}
       >

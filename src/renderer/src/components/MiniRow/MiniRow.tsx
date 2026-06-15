@@ -1,8 +1,8 @@
-import { useState, type ReactNode } from 'react'
-import { mixColor } from '@renderer/lib/colors'
-import { formatSizeStr, relativeTime, staleness } from '@renderer/lib/format'
 import { ProjectIcon } from '@renderer/components/ProjectIcon'
 import { UIIcon } from '@renderer/components/UIIcon'
+import { mixColor } from '@renderer/lib/colors'
+import { formatSizeStr, relativeTime, staleness } from '@renderer/lib/format'
+import { type ReactNode, useState } from 'react'
 import type { MiniRowProps } from './MiniRow.types'
 
 /** Compact project row inside the menu bar dropdown. */
@@ -22,7 +22,7 @@ export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProp
         margin: '0 6px',
         borderRadius: 7,
         cursor: 'default',
-        background: h && !deleting ? 'rgba(255,255,255,0.07)' : 'transparent',
+        background: h && !deleting ? 'var(--hairline)' : 'transparent',
         height: deleting ? 0 : 'auto',
         opacity: deleting ? 0 : 1,
         transform: deleting ? 'translateX(30px)' : 'none',
@@ -36,7 +36,7 @@ export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProp
           style={{
             fontSize: 12.5,
             fontWeight: 550,
-            color: 'rgba(255,255,255,0.92)',
+            color: 'var(--text)',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',

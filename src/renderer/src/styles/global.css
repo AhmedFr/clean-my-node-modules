@@ -1,6 +1,6 @@
 :root {
-  --ui-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
-  --mono-font: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --ui-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+  --mono-font: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   /* ===== design tokens =====
      Single source of truth for the UI's colors. Inline styles in the React
@@ -60,7 +60,9 @@ body {
   width: 334px;
   overflow: hidden;
   background: var(--panel-menu);
-  box-shadow: inset 0 1px 0 var(--surface-2), inset 0 0 0 1px var(--surface-3);
+  box-shadow:
+    inset 0 1px 0 var(--surface-2),
+    inset 0 0 0 1px var(--surface-3);
   animation: mbdrop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.05);
   transform-origin: top center;
   position: relative;
@@ -126,7 +128,9 @@ body {
   justify-content: center;
   background: var(--surface-2);
   color: var(--text-3);
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 .cc-close:hover {
   background: rgba(255, 99, 99, 0.85);
@@ -208,7 +212,9 @@ body {
   border-radius: 10px;
   pointer-events: none;
   z-index: 0;
-  transition: top 0.17s cubic-bezier(0.3, 0.8, 0.3, 1), height 0.17s cubic-bezier(0.3, 0.8, 0.3, 1),
+  transition:
+    top 0.17s cubic-bezier(0.3, 0.8, 0.3, 1),
+    height 0.17s cubic-bezier(0.3, 0.8, 0.3, 1),
     opacity 0.15s;
 }
 .cc-footer {
@@ -244,7 +250,9 @@ body {
   justify-content: center;
   background: transparent;
   color: var(--text-muted);
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 .cc-iconbtn:hover {
   background: var(--border);
@@ -261,7 +269,9 @@ body {
   font-size: 12.5px;
   font-weight: 650;
   font-family: var(--ui-font);
-  transition: filter 0.12s, background 0.12s;
+  transition:
+    filter 0.12s,
+    background 0.12s;
 }
 .cc-btn.ghost {
   background: var(--surface-2);
@@ -293,7 +303,7 @@ body {
   animation: cctoast 0.3s cubic-bezier(0.2, 1.2, 0.4, 1);
 }
 
-input[type='range'] {
+input[type="range"] {
   accent-color: var(--accent);
 }
 

@@ -18,7 +18,13 @@ type Rgba = [number, number, number, number]
 function parseColor(c: string): Rgba {
   if (c[0] === '#') {
     const h = c.slice(1)
-    const n = h.length === 3 ? h.split('').map((x) => x + x).join('') : h
+    const n =
+      h.length === 3
+        ? h
+            .split('')
+            .map((x) => x + x)
+            .join('')
+        : h
     return [parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16), 1]
   }
   const m = c.match(/rgba?\(([^)]+)\)/)
@@ -59,6 +65,5 @@ export function fmtTotal(gb: number): string {
   return `${gb.toFixed(2)} GB`
 }
 
-export const UI_FONT =
-  '-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", system-ui, sans-serif'
+export const UI_FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", system-ui, sans-serif'
 export const MONO_FONT = 'ui-monospace, "SF Mono", Menlo, monospace'

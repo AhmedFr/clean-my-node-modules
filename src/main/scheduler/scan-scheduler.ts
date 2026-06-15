@@ -1,5 +1,5 @@
-import type { ScanInterval } from '@shared/settings.types'
 import { SCAN_INTERVAL_MS } from '@shared/settings.constants'
+import type { ScanInterval } from '@shared/settings.types'
 
 /** Re-runs the scan on the configured interval ('manual' disables it). */
 export class ScanScheduler {

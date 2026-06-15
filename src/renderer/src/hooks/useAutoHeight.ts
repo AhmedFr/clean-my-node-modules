@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from 'react'
+import { type RefObject, useEffect } from 'react'
 
 /** Resizes the native window to hug the referenced element's height. */
 export function useAutoHeight(ref: RefObject<HTMLElement | null>): void {

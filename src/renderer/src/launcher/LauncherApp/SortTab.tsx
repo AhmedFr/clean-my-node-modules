@@ -18,8 +18,8 @@ export function SortTab({ label, active, onClick }: SortTabProps): ReactNode {
         fontSize: 11.5,
         fontWeight: 600,
         fontFamily: 'var(--ui-font)',
-        color: active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.4)',
-        background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+        color: active ? 'var(--text)' : 'var(--text-dim)',
+        background: active ? 'var(--surface-2)' : 'transparent',
         transition: 'color .12s, background .12s',
       }}
     >

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
 import type { ScanProgress } from '@shared/project.types'
+import { useEffect, useState } from 'react'
 
 /** Subscribes to live scan progress events from the main process. */
 export function useScanProgress(): ScanProgress | null {

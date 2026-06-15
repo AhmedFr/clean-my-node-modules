@@ -1,6 +1,5 @@
+import { GB } from '@shared/units.constants'
 import { Notification } from 'electron'
-
-const GB = 1024 * 1024 * 1024
 
 /** Fires a native notification when usage crosses the threshold (once per crossing). */
 export class ThresholdNotifier {

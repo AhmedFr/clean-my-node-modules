@@ -1,11 +1,11 @@
-import { useState, type ReactNode } from 'react'
-import { mixColor } from '@renderer/lib/colors'
-import { relativeTime, staleness } from '@renderer/lib/format'
 import { ProjectIcon } from '@renderer/components/ProjectIcon'
 import { SizeViz } from '@renderer/components/SizeViz'
 import { UIIcon } from '@renderer/components/UIIcon'
-import { RowAction } from './RowAction'
+import { mixColor } from '@renderer/lib/colors'
+import { relativeTime, staleness } from '@renderer/lib/format'
+import { type ReactNode, useState } from 'react'
 import type { RowProps } from './Row.types'
+import { RowAction } from './RowAction'
 
 export function Row({
   p,
@@ -71,7 +71,7 @@ export function Row({
           style={{
             fontWeight: 600,
             fontSize: roomy ? 14.5 : 13.5,
-            color: 'rgba(255,255,255,0.95)',
+            color: 'var(--text-strong)',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -84,7 +84,7 @@ export function Row({
         <span
           style={{
             fontSize: 12,
-            color: 'rgba(255,255,255,0.38)',
+            color: 'var(--text-dim)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',

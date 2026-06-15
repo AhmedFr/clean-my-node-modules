@@ -1,8 +1,8 @@
-import { app } from 'electron'
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import type { Settings } from '@shared/settings.types'
 import { DEFAULT_SETTINGS } from '@shared/settings.constants'
+import type { Settings } from '@shared/settings.types'
+import { app } from 'electron'
 
 type Listener = (settings: Settings) => void
 
@@ -22,7 +22,7 @@ export class SettingsStore {
   set<K extends keyof Settings>(key: K, value: Settings[K]): Settings {
     this.settings = { ...this.settings, [key]: value }
     this.persist()
-    this.listeners.forEach((fn) => fn(this.get()))
+    for (const fn of this.listeners) fn(this.get())
     return this.get()
   }
 

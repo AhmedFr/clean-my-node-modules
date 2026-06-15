@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import { ACCENT } from '../../theme.constants'
 import type { CursorProps } from './Cursor.types'
 
@@ -23,7 +23,12 @@ export function Cursor({ x, y, pulse = 0, press = 0, size = 46 }: CursorProps): 
           }}
         />
       )}
-      <svg width={size} height={size} viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 3px 5px rgba(0,0,0,0.45))', transform: `scale(${1 - press * 0.16})` }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        style={{ filter: 'drop-shadow(0 3px 5px rgba(0,0,0,0.45))', transform: `scale(${1 - press * 0.16})` }}
+      >
         <path
           d="M4 2.6 L4 18.4 L8.6 14.1 L11.4 20.4 L13.9 19.3 L11.1 13.2 L16.8 13.2 Z"
           fill="#fff"

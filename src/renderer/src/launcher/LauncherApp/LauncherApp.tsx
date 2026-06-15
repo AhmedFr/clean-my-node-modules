@@ -1,29 +1,21 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
-import type { Project } from '@shared/project.types'
-import { GB, formatSizeStr } from '@renderer/lib/format'
-import { mixColor, statusColor } from '@renderer/lib/colors'
 import { AppIcon } from '@renderer/components/AppIcon'
 import { Gauge } from '@renderer/components/Gauge'
 import { Kbd } from '@renderer/components/Kbd'
 import { Row } from '@renderer/components/Row'
 import { UIIcon } from '@renderer/components/UIIcon'
+import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { useProjects } from '@renderer/hooks/useProjects'
 import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
-import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
-import { ScanningView } from '../views/ScanningView'
+import { mixColor, statusColor } from '@renderer/lib/colors'
+import { formatSizeStr, GB } from '@renderer/lib/format'
+import type { Project } from '@shared/project.types'
+import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { EmptyView } from '../views/EmptyView'
+import { ScanningView } from '../views/ScanningView'
 import { SettingsView } from '../views/SettingsView'
-import { SortTab } from './SortTab'
 import type { LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
+import { SortTab } from './SortTab'
 
 const NEXT_SCAN_LABEL: Record<string, string> = {
   '6h': '6 hours',
@@ -67,9 +59,7 @@ export function LauncherApp(): ReactNode {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const arr = projects.filter(
-      (p) => !q || p.name.toLowerCase().includes(q) || p.path.toLowerCase().includes(q),
-    )
+    const arr = projects.filter((p) => !q || p.name.toLowerCase().includes(q) || p.path.toLowerCase().includes(q))
     return [...arr].sort((a, b) => {
       if (sortBy === 'size') return b.size - a.size
       if (sortBy === 'name') return a.name.localeCompare(b.name)

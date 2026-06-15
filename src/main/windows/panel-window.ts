@@ -1,5 +1,5 @@
-import { BrowserWindow, screen, type Tray } from 'electron'
 import { join } from 'node:path'
+import { BrowserWindow, screen, type Tray } from 'electron'
 import { is } from './window-utils'
 
 const PANEL_WIDTH = 334

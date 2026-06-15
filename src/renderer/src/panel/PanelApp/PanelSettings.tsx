@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
-import type { Settings } from '@shared/settings.types'
-import type { SetSetting } from '@renderer/hooks/useSettings'
 import { Segmented } from '@renderer/components/Segmented'
 import { Toggle } from '@renderer/components/Toggle'
+import type { SetSetting } from '@renderer/hooks/useSettings'
+import type { Settings } from '@shared/settings.types'
+import type { ReactNode } from 'react'
 import { Separator } from './Separator'
 
 interface PanelSettingsProps {
@@ -15,9 +15,7 @@ interface PanelSettingsProps {
 export function PanelSettings({ settings, setSetting, accent }: PanelSettingsProps): ReactNode {
   return (
     <div style={{ padding: '4px 12px 12px' }}>
-      <div
-        style={{ padding: '10px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-      >
+      <div style={{ padding: '10px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>Scan frequency</div>
         <Segmented
           small
@@ -50,9 +48,7 @@ export function PanelSettings({ settings, setSetting, accent }: PanelSettingsPro
         />
       </div>
       <Separator />
-      <div
-        style={{ padding: '8px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-      >
+      <div style={{ padding: '8px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>Notify when over limit</div>
         <Toggle on={settings.notify} accent={accent} onToggle={() => setSetting('notify', !settings.notify)} />
       </div>

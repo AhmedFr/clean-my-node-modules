@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '@shared/ipc.constants'
+import { contextBridge, ipcRenderer } from 'electron'
 import type { CleanApi } from './api.types'
 
 function subscribe<T>(channel: string) {

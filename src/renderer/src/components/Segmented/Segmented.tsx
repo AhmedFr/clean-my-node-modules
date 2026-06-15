@@ -1,18 +1,12 @@
 import type { ReactNode } from 'react'
 import type { SegmentedProps } from './Segmented.types'
 
-export function Segmented<T extends string>({
-  options,
-  value,
-  onChange,
-  accent,
-  small,
-}: SegmentedProps<T>): ReactNode {
+export function Segmented<T extends string>({ options, value, onChange, accent, small }: SegmentedProps<T>): ReactNode {
   return (
     <div
       style={{
         display: 'inline-flex',
-        background: small ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.06)',
+        background: small ? 'var(--hairline)' : 'var(--surface-1)',
         borderRadius: small ? 8 : 9,
         padding: small ? 2 : 3,
         gap: 2,
@@ -32,7 +26,7 @@ export function Segmented<T extends string>({
               fontSize: small ? 11.5 : 12.5,
               fontWeight: 600,
               fontFamily: 'var(--ui-font)',
-              color: on ? '#fff' : 'rgba(255,255,255,0.55)',
+              color: on ? '#fff' : 'var(--text-muted)',
               background: on ? accent : 'transparent',
               transition: 'background .15s, color .15s',
             }}

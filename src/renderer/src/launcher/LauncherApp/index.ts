@@ -1,2 +1,2 @@
 export { LauncherApp } from './LauncherApp'
-export type { LauncherView, LauncherToast, SortKey } from './LauncherApp.types'
+export type { LauncherToast, LauncherView, SortKey } from './LauncherApp.types'

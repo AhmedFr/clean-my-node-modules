@@ -18,6 +18,14 @@ const KIND_BY_DEPENDENCY: Array<[string, FrameworkKind]> = [
   ['typescript', 'ts'],
 ]
 
+/** Pure: first matching dependency wins (most specific first); else 'node'. */
+export function kindFromDeps(deps: Record<string, string | undefined>): FrameworkKind {
+  for (const [dep, kind] of KIND_BY_DEPENDENCY) {
+    if (deps[dep]) return kind
+  }
+  return 'node'
+}
+
 export async function detectKind(projectDir: string): Promise<FrameworkKind> {
   try {
     const raw = await readFile(join(projectDir, 'package.json'), 'utf8')
@@ -25,12 +33,9 @@ export async function detectKind(projectDir: string): Promise<FrameworkKind> {
       dependencies?: Record<string, string>
       devDependencies?: Record<string, string>
     }
-    const deps = { ...pkg.devDependencies, ...pkg.dependencies }
-    for (const [dep, kind] of KIND_BY_DEPENDENCY) {
-      if (deps[dep]) return kind
-    }
+    return kindFromDeps({ ...pkg.devDependencies, ...pkg.dependencies })
   } catch {
     // unreadable/malformed package.json → generic node project
+    return 'node'
   }
-  return 'node'
 }

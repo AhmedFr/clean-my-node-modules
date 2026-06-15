@@ -1,5 +1,5 @@
-import { BrowserWindow } from 'electron'
 import { join } from 'node:path'
+import { BrowserWindow } from 'electron'
 import { is } from './window-utils'
 
 const LAUNCHER_WIDTH = 740

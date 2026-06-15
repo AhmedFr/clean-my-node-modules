@@ -1,14 +1,14 @@
-import React from 'react'
-import { AbsoluteFill, Sequence, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion'
-import { ACCENT, BG, SAFE, mixColor } from '../theme.constants'
-import { PROJECTS } from '../mockData'
-import { LauncherWindow } from '../components/LauncherWindow'
-import { Cursor } from '../components/Cursor'
-import { Caption } from '../components/Caption'
-import { ReclaimBadge } from '../components/ReclaimBadge'
+import type React from 'react'
+import { AbsoluteFill, interpolate, Sequence, spring, useCurrentFrame, useVideoConfig } from 'remotion'
 import { BrandLockup } from '../components/BrandLockup'
-import { computeState } from './timeline'
+import { Caption } from '../components/Caption'
+import { Cursor } from '../components/Cursor'
+import { LauncherWindow } from '../components/LauncherWindow'
+import { ReclaimBadge } from '../components/ReclaimBadge'
+import { PROJECTS } from '../mockData'
+import { ACCENT, BG, mixColor, SAFE } from '../theme.constants'
 import { CAP1, CAP2, CAP3, LAUNCHER_LEFT, LAUNCHER_TOP, WINDOW_SPRING_START } from './Showcase.constants'
+import { computeState } from './timeline'
 
 const MAX_SIZE = Math.max(...PROJECTS.map((p) => p.sizeGB))
 
@@ -20,7 +20,9 @@ export function Showcase(): React.ReactNode {
   const winSpring = spring({ frame: frame - WINDOW_SPRING_START, fps, config: { damping: 18, mass: 0.85 } })
   const winY = interpolate(winSpring, [0, 1], [70, 0])
   const winScale = interpolate(winSpring, [0, 1], [0.92, 1])
-  const winOpacity = interpolate(frame, [WINDOW_SPRING_START, WINDOW_SPRING_START + 10], [0, 1], { extrapolateRight: 'clamp' })
+  const winOpacity = interpolate(frame, [WINDOW_SPRING_START, WINDOW_SPRING_START + 10], [0, 1], {
+    extrapolateRight: 'clamp',
+  })
 
   const glow = mixColor(ACCENT, SAFE, s.cleanT)
 
@@ -68,7 +70,9 @@ export function Showcase(): React.ReactNode {
           <Cursor x={s.cursor.x} y={s.cursor.y} pulse={s.cursor.pulse} press={s.cursor.press} />
         </div>
 
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 150, display: 'flex', justifyContent: 'center' }}>
+        <div
+          style={{ position: 'absolute', left: 0, right: 0, bottom: 150, display: 'flex', justifyContent: 'center' }}
+        >
           <ReclaimBadge gb={s.reclaimGB} appear={s.badgeAppear} />
         </div>
 

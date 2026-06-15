@@ -75,7 +75,10 @@ const STATUS = {
         { label: "Unit tests — formatting & color math", detail: "vitest covers lib/format and lib/colors", status: "done" },
         { label: "CI on every PR", detail: "typecheck + tests + build + unsigned macOS packaging", status: "done" },
         { label: "Unit tests — scanner & stores", detail: "PR #3 adds du-parsing and pnpm-resolution tests; detect-kind, skip-rules and the stores are still uncovered", status: "planned" },
-        { label: "Readability / design-token refactor", detail: "Senior review (June 16) found the code is architecturally sound but hard to read due to inline-style walls. Pass 1 done: color design tokens (CSS vars) replace ~100 hand-typed rgba() literals in global.css + both app shells. Next: weight/spacing tokens, propagate to components, then decompose LauncherApp/PanelApp + add a linter", status: "progress" },
+        { label: "Readability: design tokens across the renderer", detail: "From the June 16 senior review (verdict: sound architecture, hard to read due to inline-style walls). Color design tokens (CSS vars) now replace ~100 hand-typed rgba() literals across global.css + all renderer components/shells", status: "done" },
+        { label: "Linter + CI hardening (Biome)", detail: "Biome format+lint adopted (style-matched config), wired into CI; the previously-orphaned video/ project now typechecks in CI too. Real findings fixed; a11y rules deferred as a tracked pass", status: "done" },
+        { label: "Main-process hardening", detail: "IPC setSetting now validates the renderer payload (was cast as never); lifecycle teardown on quit; scanner shares its in-flight run; deduped GB/DAY constants. + validation/detect-kind/settings-store tests (48 total)", status: "done" },
+        { label: "Shell decomposition", detail: "Started: extracted DiskSummary from PanelApp (345→257 lines). Remaining — LauncherApp's keyboard/effect hooks — deferred to an interactive session (needs the running app to verify behavior)", status: "progress" },
         { label: "Manual end-to-end pass", detail: "Real tray, real deletion, real notifications — only you can judge this (see 'In your court')", status: "user" }
       ]
     },
@@ -114,7 +117,8 @@ const STATUS = {
     { date: "2026-06-15", text: "Built a Remotion showcase video (video/, square 1080² 10s loop): the launcher fills with oversized node_modules, a one-click cascade clears them while the pixel gauge sweeps red→green and a 'Reclaimed 23 GB' badge counts up, ending on the brand card. Rendered to out/showcase.mp4; edit live with pnpm video:studio." },
     { date: "2026-06-15", text: "Merged everything to main: PR #3 (pnpm store prune), #4 (landing page), #5 (7-row launcher list), #6 (showcase video). main is now the integrated state." },
     { date: "2026-06-15", text: "Three enhancements: panel over-limit now a two-line no-wrap stack (GB limit / GB over) so the narrow menu-bar panel never reflows; smarter project names (generic folders qualified with repo/parent); landing page gained a 'node_modules lifecycle' section with an npm-vs-pnpm duplication diagram. Apple notarization still stuck in a multi-hour backlog on Apple's side." },
-    { date: "2026-06-16", text: "Apple notarization finally cleared — all submissions Accepted (~13h Apple-side backlog). Did a senior architectural review (verdict: sound architecture, readability hurt by inline-style walls) and shipped readability pass 1: color design tokens (CSS vars) across global.css + both app shells." }
+    { date: "2026-06-16", text: "Apple notarization finally cleared — all submissions Accepted (~13h Apple-side backlog). Did a senior architectural review (verdict: sound architecture, readability hurt by inline-style walls) and shipped readability pass 1: color design tokens (CSS vars) across global.css + both app shells." },
+    { date: "2026-06-16", text: "Worked through the full review remediation: color tokens across the whole renderer, main-process hardening (validated IPC, lifecycle teardown, in-flight scan dedup), Biome lint+format wired into CI (with video typecheck), tests up to 48, and started the shell decomposition (DiskSummary out of PanelApp). LauncherApp's hook extraction left for an interactive (running-app) session." }
   ]
 };
 </script>

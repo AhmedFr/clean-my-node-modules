@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
-import type { Settings } from '@shared/settings.types'
-import type { SetSetting } from '@renderer/hooks/useSettings'
 import { Segmented } from '@renderer/components/Segmented'
 import { Toggle } from '@renderer/components/Toggle'
+import type { SetSetting } from '@renderer/hooks/useSettings'
+import type { Settings } from '@shared/settings.types'
+import type { ReactNode } from 'react'
 
 interface SettingsRowProps {
   label: string
@@ -22,8 +22,8 @@ function SettingsRow({ label, hint, children }: SettingsRowProps): ReactNode {
       }}
     >
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 550, color: 'rgba(255,255,255,0.9)' }}>{label}</div>
-        {hint && <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{hint}</div>}
+        <div style={{ fontSize: 13.5, fontWeight: 550, color: 'var(--text)' }}>{label}</div>
+        {hint && <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 2 }}>{hint}</div>}
       </div>
       <div style={{ flex: '0 0 auto' }}>{children}</div>
     </div>
@@ -54,7 +54,7 @@ export function SettingsView({ settings, setSetting, accent }: SettingsViewProps
           ]}
         />
       </SettingsRow>
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
+      <div style={{ height: 1, background: 'var(--surface-1)' }} />
       <SettingsRow
         label="Alert threshold"
         hint={`Notify me when node_modules folders exceed ${gb.toFixed(1)} GB total`}
@@ -74,7 +74,7 @@ export function SettingsView({ settings, setSetting, accent }: SettingsViewProps
               fontVariantNumeric: 'tabular-nums',
               fontWeight: 650,
               fontSize: 13,
-              color: 'rgba(255,255,255,0.9)',
+              color: 'var(--text)',
               minWidth: 48,
             }}
           >
@@ -82,7 +82,7 @@ export function SettingsView({ settings, setSetting, accent }: SettingsViewProps
           </span>
         </div>
       </SettingsRow>
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
+      <div style={{ height: 1, background: 'var(--surface-1)' }} />
       <SettingsRow label="Threshold notifications" hint="Show a desktop alert the moment you cross the limit">
         <Toggle on={settings.notify} accent={accent} onToggle={() => setSetting('notify', !settings.notify)} />
       </SettingsRow>

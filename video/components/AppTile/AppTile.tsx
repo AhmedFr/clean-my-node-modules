@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import { ACCENT, mixColor } from '../../theme.constants'
 import type { AppTileProps } from './AppTile.types'
 

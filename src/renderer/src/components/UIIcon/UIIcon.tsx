@@ -1,13 +1,7 @@
 import type { ReactNode } from 'react'
 import type { IconProps, IconRenderer, UIIconName } from './UIIcon.types'
 
-function Icon({
-  path,
-  size = 16,
-  stroke = 2,
-  fill = 'none',
-  style,
-}: IconProps & { path: ReactNode }): ReactNode {
+function Icon({ path, size = 16, stroke = 2, fill = 'none', style }: IconProps & { path: ReactNode }): ReactNode {
   return (
     <svg
       width={size}
@@ -126,9 +120,7 @@ export const UIIcon: Record<UIIconName, IconRenderer> = {
       }
     />
   ),
-  sparkle: (p) => (
-    <Icon {...p} path={<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />} />
-  ),
+  sparkle: (p) => <Icon {...p} path={<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />} />,
   command: (p) => (
     <Icon {...p} path={<path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3z" />} />
   ),

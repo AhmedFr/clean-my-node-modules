@@ -1,10 +1,10 @@
-import React from 'react'
-import { ACCENT, HAIRLINE, PANEL, UI_FONT, mixColor } from '../../theme.constants'
+import type React from 'react'
+import { ACCENT, HAIRLINE, mixColor, PANEL, UI_FONT } from '../../theme.constants'
 import { AppTile } from '../AppTile'
 import { PixelGauge } from '../PixelGauge'
 import { ProjectRow } from '../ProjectRow'
-import { LAUNCHER_WIDTH } from './LauncherWindow.types'
 import type { LauncherWindowProps } from './LauncherWindow.types'
+import { LAUNCHER_WIDTH } from './LauncherWindow.types'
 
 function SortTab({ label, active }: { label: string; active?: boolean }): React.ReactNode {
   return (
@@ -69,7 +69,15 @@ export function LauncherWindow({
             color: 'rgba(255,255,255,0.7)',
           }}
         >
-          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+          <svg
+            width={14}
+            height={14}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+          >
             <path d="M6 6l12 12M18 6 6 18" />
           </svg>
         </div>
@@ -112,7 +120,15 @@ export function LauncherWindow({
 
       <div style={{ height: 1, background: HAIRLINE }} />
       {/* Footer */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', minHeight: 50 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '11px 16px',
+          minHeight: 50,
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <AppTile size={20} />
           <span
@@ -125,7 +141,16 @@ export function LauncherWindow({
             {footerText}
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 500 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            color: 'rgba(255,255,255,0.4)',
+            fontSize: 12,
+            fontWeight: 500,
+          }}
+        >
           <span>↑↓ navigate</span>
           <span>↵ open</span>
           <span>⌘⌫ delete</span>

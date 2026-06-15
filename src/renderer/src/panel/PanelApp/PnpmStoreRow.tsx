@@ -1,7 +1,7 @@
-import { useState, type ReactNode } from 'react'
-import { formatSizeStr } from '@renderer/lib/format'
 import { UIIcon } from '@renderer/components/UIIcon'
+import { formatSizeStr } from '@renderer/lib/format'
 import type { PnpmStoreInfo } from '@shared/pnpm-store.types'
+import { type ReactNode, useState } from 'react'
 
 interface PnpmStoreRowProps {
   store: PnpmStoreInfo
@@ -21,7 +21,7 @@ export function PnpmStoreRow({ store, pruning, onPrune }: PnpmStoreRowProps): Re
           fontWeight: 600,
           textTransform: 'uppercase',
           letterSpacing: '.05em',
-          color: 'rgba(255,255,255,0.42)',
+          color: 'var(--text-dim)',
         }}
       >
         Caches
@@ -36,7 +36,7 @@ export function PnpmStoreRow({ store, pruning, onPrune }: PnpmStoreRowProps): Re
           padding: '6px 8px',
           margin: '0 6px 4px',
           borderRadius: 7,
-          background: hover ? 'rgba(255,255,255,0.07)' : 'transparent',
+          background: hover ? 'var(--hairline)' : 'transparent',
         }}
       >
         <span
@@ -44,8 +44,8 @@ export function PnpmStoreRow({ store, pruning, onPrune }: PnpmStoreRowProps): Re
             width: 23,
             height: 23,
             borderRadius: 6,
-            background: 'rgba(255,255,255,0.08)',
-            color: 'rgba(255,255,255,0.75)',
+            background: 'var(--surface-2)',
+            color: 'var(--text-3)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -55,9 +55,7 @@ export function PnpmStoreRow({ store, pruning, onPrune }: PnpmStoreRowProps): Re
           {UIIcon.hdd({ size: 13 })}
         </span>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 550, color: 'rgba(255,255,255,0.92)' }}>
-            pnpm store
-          </div>
+          <div style={{ fontSize: 12.5, fontWeight: 550, color: 'var(--text)' }}>pnpm store</div>
           <div
             style={{
               fontSize: 10.5,
@@ -86,12 +84,12 @@ export function PnpmStoreRow({ store, pruning, onPrune }: PnpmStoreRowProps): Re
           disabled={pruning}
           title="Remove packages no project references (pnpm store prune)"
           style={{
-            border: '1px solid rgba(255,255,255,0.14)',
+            border: '1px solid var(--surface-4)',
             cursor: pruning ? 'default' : 'pointer',
             padding: '4px 9px',
             borderRadius: 7,
-            background: 'rgba(255,255,255,0.06)',
-            color: pruning ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.85)',
+            background: 'var(--surface-1)',
+            color: pruning ? 'var(--text-dim)' : 'rgba(255,255,255,0.85)',
             fontSize: 11.5,
             fontWeight: 600,
             flex: 'none',

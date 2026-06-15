@@ -62,10 +62,7 @@ async function hasGit(dir: string): Promise<boolean> {
  * Results are memoized per directory in `cache` so monorepo siblings only
  * walk the tree once.
  */
-async function findRepoRoot(
-  startDir: string,
-  cache: Map<string, string | null>,
-): Promise<string | null> {
+async function findRepoRoot(startDir: string, cache: Map<string, string | null>): Promise<string | null> {
   const stop = homedir()
   const chain: string[] = []
   let dir = startDir
@@ -103,10 +100,7 @@ async function readPkgName(projectDir: string): Promise<string | null> {
  * Best display name for the project at `projectDir`. Cheap for specific folder
  * names; only reads the repo root / package.json when the folder is generic.
  */
-export async function resolveProjectName(
-  projectDir: string,
-  cache: Map<string, string | null>,
-): Promise<string> {
+export async function resolveProjectName(projectDir: string, cache: Map<string, string | null>): Promise<string> {
   const folder = basename(projectDir)
   if (!isGeneric(folder)) return folder
 
