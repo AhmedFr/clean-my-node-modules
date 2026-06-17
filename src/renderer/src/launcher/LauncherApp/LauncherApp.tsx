@@ -2,8 +2,10 @@ import { AppIcon } from '@renderer/components/AppIcon'
 import { Gauge } from '@renderer/components/Gauge'
 import { Kbd } from '@renderer/components/Kbd'
 import { Row } from '@renderer/components/Row'
+import { Segmented } from '@renderer/components/Segmented'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
+import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
 import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
@@ -11,10 +13,11 @@ import { mixColor, statusColor } from '@renderer/lib/colors'
 import { formatSizeStr, GB } from '@renderer/lib/format'
 import type { Project } from '@shared/project.types'
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { CachesView } from '../views/CachesView'
 import { EmptyView } from '../views/EmptyView'
 import { ScanningView } from '../views/ScanningView'
 import { SettingsView } from '../views/SettingsView'
-import type { LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
+import type { LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
 import { SortTab } from './SortTab'
 
 const NEXT_SCAN_LABEL: Record<string, string> = {
@@ -41,10 +44,12 @@ export function LauncherApp(): ReactNode {
   const [sortBy, setSortBy] = useState<SortKey>('used')
   const [sel, setSel] = useState(0)
   const [view, setView] = useState<LauncherView>('list')
+  const [tab, setTab] = useState<LauncherTab>('projects')
   const [deleting, setDeleting] = useState<Set<string>>(() => new Set())
   const [confirm, setConfirm] = useState<Project | null>(null)
   const [reclaimed, setReclaimed] = useState(0)
   const { toast, flashToast } = useToast<LauncherToast>()
+  const { store, pruning, prune } = usePnpmStore()
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -83,10 +88,10 @@ export function LauncherApp(): ReactNode {
     setListMaxH(VISIBLE_ROWS * rowH + (VISIBLE_ROWS - 1) * ROW_GAP + LIST_PADDING * 2 + peek)
   }, [filtered, deleting, settings.density, settings.sizeStyle])
 
-  // sliding highlight
+  // sliding highlight (projects list only)
   const [hl, setHl] = useState({ top: 0, height: 0, on: false })
   useLayoutEffect(() => {
-    if (view !== 'list') {
+    if (view !== 'list' || tab !== 'projects') {
       setHl((h) => ({ ...h, on: false }))
       return
     }
@@ -94,7 +99,7 @@ export function LauncherApp(): ReactNode {
     const el = p && rowEls.current[p.id]
     if (el) setHl({ top: el.offsetTop, height: el.offsetHeight, on: true })
     else setHl((h) => ({ ...h, on: false }))
-  }, [sel, filtered, view, settings.density, settings.sizeStyle, query])
+  }, [sel, filtered, view, tab, settings.density, settings.sizeStyle, query])
 
   const doOpen = useCallback(
     (p: Project | undefined) => {
@@ -137,6 +142,17 @@ export function LauncherApp(): ReactNode {
 
   const rescan = useCallback(() => setView('scanning'), [])
 
+  const handlePrune = useCallback(async () => {
+    const res = await prune()
+    if (res?.ok) {
+      flashToast({
+        icon: UIIcon.checkCircle,
+        text: `Reclaimed ${formatSizeStr(res.freedBytes)} · pnpm store`,
+        tone: 'good',
+      })
+    }
+  }, [prune, flashToast])
+
   // keyboard
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
@@ -150,6 +166,13 @@ export function LauncherApp(): ReactNode {
       if (meta && (e.key === 'r' || e.key === 'R')) {
         e.preventDefault()
         rescan()
+        return
+      }
+      if (meta && (e.key === '1' || e.key === '2')) {
+        e.preventDefault()
+        setTab(e.key === '1' ? 'projects' : 'caches')
+        setSel(0)
+        setConfirm(null)
         return
       }
       if (e.key === 'Escape') {
@@ -176,6 +199,20 @@ export function LauncherApp(): ReactNode {
         return
       }
       if (view !== 'list') return
+      if (tab === 'caches') {
+        const cacheCount = store?.available ? 1 : 0
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          setSel((s) => Math.min(cacheCount - 1, s + 1))
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          setSel((s) => Math.max(0, s - 1))
+        } else if (e.key === 'Enter') {
+          e.preventDefault()
+          if (store?.available && !pruning) void handlePrune()
+        }
+        return
+      }
       if (e.key === 'ArrowDown') {
         e.preventDefault()
         setSel((s) => Math.min(filtered.length - 1, s + 1))
@@ -193,11 +230,26 @@ export function LauncherApp(): ReactNode {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [filtered, sel, view, confirm, query, commitDelete, doOpen, rescan])
+  }, [filtered, sel, view, tab, confirm, query, commitDelete, doOpen, rescan, store, pruning, handlePrune])
 
-  // keep selected row in view
+  // The window is hidden (not destroyed) on blur/esc, so it keeps its React
+  // state. Reset to a clean search every time it regains focus, like Spotlight.
   useEffect(() => {
-    if (view !== 'list') return
+    const onFocus = (): void => {
+      setView('list')
+      setTab('projects')
+      setConfirm(null)
+      setQuery('')
+      setSel(0)
+      requestAnimationFrame(() => inputRef.current?.focus())
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [])
+
+  // keep selected row in view (projects list only)
+  useEffect(() => {
+    if (view !== 'list' || tab !== 'projects') return
     const p = filtered[sel]
     const el = p && rowEls.current[p.id]
     const c = listRef.current
@@ -207,7 +259,7 @@ export function LauncherApp(): ReactNode {
       if (top < c.scrollTop) c.scrollTop = top - 6
       else if (bot > c.scrollTop + c.clientHeight) c.scrollTop = bot - c.clientHeight + 6
     }
-  }, [sel, view, filtered])
+  }, [sel, view, tab, filtered])
 
   const isEmpty = projects.length === 0
   const overBy = totalUsed - threshold
@@ -235,7 +287,7 @@ export function LauncherApp(): ReactNode {
               setQuery(e.target.value)
               setSel(0)
             }}
-            placeholder="Search node_modules by project or path…"
+            placeholder={tab === 'projects' ? 'Search node_modules by project or path…' : 'Search caches…'}
           />
           <Gauge used={totalUsed} threshold={threshold} accent={accent} />
           <button
@@ -271,77 +323,91 @@ export function LauncherApp(): ReactNode {
       {/* ---------- Body ---------- */}
       {view === 'scanning' && <ScanningView accent={accent} onDone={() => setView('list')} />}
       {view === 'settings' && <SettingsView settings={settings} setSetting={setSetting} accent={accent} />}
-      {view === 'list' && isEmpty && (
-        <EmptyView reclaimedTotal={reclaimed} nextScanLabel={NEXT_SCAN_LABEL[settings.scanInterval]} />
-      )}
-      {view === 'list' && !isEmpty && (
+      {view === 'list' && (
         <>
           <div className="cc-listhead">
-            <span
-              style={{
-                fontSize: 11.5,
-                fontWeight: 600,
-                letterSpacing: '.04em',
-                textTransform: 'uppercase',
-                color: 'var(--text-faint)',
+            <Segmented
+              small
+              accent={accent}
+              value={tab}
+              onChange={(t) => {
+                setTab(t)
+                setSel(0)
+                setConfirm(null)
               }}
-            >
-              {filtered.length} folder{filtered.length !== 1 ? 's' : ''}
-              {query ? ' found' : ' · reclaimable'}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <span style={{ fontSize: 11, color: 'var(--text-faint)', marginRight: 4 }}>Sort</span>
-              <SortTab label="Last used" active={sortBy === 'used'} onClick={() => setSortBy('used')} />
-              <SortTab label="Size" active={sortBy === 'size'} onClick={() => setSortBy('size')} />
-              <SortTab label="Name" active={sortBy === 'name'} onClick={() => setSortBy('name')} />
-            </div>
+              options={[
+                { value: 'projects', label: 'Projects' },
+                { value: 'caches', label: 'Caches' },
+              ]}
+            />
+            {tab === 'projects' && !isEmpty && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <span style={{ fontSize: 11, color: 'var(--text-faint)', marginRight: 4 }}>Sort</span>
+                <SortTab label="Last used" active={sortBy === 'used'} onClick={() => setSortBy('used')} />
+                <SortTab label="Size" active={sortBy === 'size'} onClick={() => setSortBy('size')} />
+                <SortTab label="Name" active={sortBy === 'name'} onClick={() => setSortBy('name')} />
+              </div>
+            )}
           </div>
-          <div ref={listRef} className="cc-list" style={listMaxH ? { maxHeight: listMaxH } : undefined}>
-            <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
-              <div
-                className="cc-hl"
-                style={{
-                  top: hl.top,
-                  height: hl.height,
-                  opacity: hl.on ? 1 : 0,
-                  background: 'var(--surface-2)',
-                  boxShadow: 'inset 0 0 0 1px var(--hairline)',
-                }}
-              />
-              {filtered.length === 0 ? (
+          {tab === 'caches' ? (
+            <CachesView
+              store={store}
+              pruning={pruning}
+              selectedIndex={sel}
+              query={query}
+              onSelectIndex={setSel}
+              onPrune={handlePrune}
+            />
+          ) : isEmpty ? (
+            <EmptyView reclaimedTotal={reclaimed} nextScanLabel={NEXT_SCAN_LABEL[settings.scanInterval]} />
+          ) : (
+            <div ref={listRef} className="cc-list" style={listMaxH ? { maxHeight: listMaxH } : undefined}>
+              <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
                 <div
+                  className="cc-hl"
                   style={{
-                    padding: '40px 20px',
-                    textAlign: 'center',
-                    color: 'var(--text-dim)',
-                    fontSize: 13,
+                    top: hl.top,
+                    height: hl.height,
+                    opacity: hl.on ? 1 : 0,
+                    background: 'var(--surface-2)',
+                    boxShadow: 'inset 0 0 0 1px var(--hairline)',
                   }}
-                >
-                  No folders match “{query}”.
-                </div>
-              ) : (
-                filtered.map((p, i) => (
-                  <Row
-                    key={p.id}
-                    p={p}
-                    selected={i === sel}
-                    density={settings.density}
-                    sizeStyle={settings.sizeStyle}
-                    maxBytes={maxBytes}
-                    accent={accent}
-                    deleting={deleting.has(p.id)}
-                    rowRef={(el) => {
-                      if (el) rowEls.current[p.id] = el
+                />
+                {filtered.length === 0 ? (
+                  <div
+                    style={{
+                      padding: '40px 20px',
+                      textAlign: 'center',
+                      color: 'var(--text-dim)',
+                      fontSize: 13,
                     }}
-                    onSelect={() => setSel(i)}
-                    onOpen={() => doOpen(p)}
-                    onFinder={() => doFinder(p)}
-                    onDelete={() => setConfirm(p)}
-                  />
-                ))
-              )}
+                  >
+                    No folders match “{query}”.
+                  </div>
+                ) : (
+                  filtered.map((p, i) => (
+                    <Row
+                      key={p.id}
+                      p={p}
+                      selected={i === sel}
+                      density={settings.density}
+                      sizeStyle={settings.sizeStyle}
+                      maxBytes={maxBytes}
+                      accent={accent}
+                      deleting={deleting.has(p.id)}
+                      rowRef={(el) => {
+                        if (el) rowEls.current[p.id] = el
+                      }}
+                      onSelect={() => setSel(i)}
+                      onOpen={() => doOpen(p)}
+                      onFinder={() => doFinder(p)}
+                      onDelete={() => setConfirm(p)}
+                    />
+                  ))
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
 
@@ -405,7 +471,7 @@ export function LauncherApp(): ReactNode {
             )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            {view === 'list' && !isEmpty && (
+            {view === 'list' && tab === 'projects' && !isEmpty && (
               <div className="cc-hints">
                 <span>
                   {UIIcon.arrowUp({ size: 12 })}
@@ -420,6 +486,20 @@ export function LauncherApp(): ReactNode {
                 <span>
                   <Kbd wide>⌘</Kbd>
                   <Kbd wide>⌫</Kbd> delete
+                </span>
+              </div>
+            )}
+            {view === 'list' && tab === 'caches' && store?.available && (
+              <div className="cc-hints">
+                <span>
+                  {UIIcon.arrowUp({ size: 12 })}
+                  {UIIcon.arrowDown({ size: 12 })} navigate
+                </span>
+                <span>
+                  <Kbd>
+                    <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
+                  </Kbd>{' '}
+                  prune
                 </span>
               </div>
             )}

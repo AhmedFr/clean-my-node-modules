@@ -15,9 +15,9 @@
 const STATUS = {
   app: "Clean my node_modules",
   version: "0.1.0",
-  updated: "2026-06-16",
-  phase: "Going public: OSS + $9 signed binary, repo live with CI — all open PRs merged to main (pnpm store, landing page, launcher polish, showcase video)",
-  summary: "Business model is settled (issue #1): open source, $9 one-time for the signed binary. The repo is public at github.com/AhmedFr/clean-my-node-modules with CI on every PR. Everything is now merged to main: the pnpm store cleaner (issue #2 M1), the landing page, the 7-row launcher fix, and a Remotion showcase video. Your side: fetch the Apple signing credentials (docs/SIGNING.md), create the Lemon Squeezy product, and post the showcase video.",
+  updated: "2026-06-17",
+  phase: "Launcher polish (branch feat/launcher-caches-tab): the main window now reopens instantly with no gray flash, dismisses on blur like Spotlight, and the footer no longer clips — plus a new Projects / Caches tab that surfaces the global pnpm store + a one-click safe prune (issue #2), with npm/yarn/bun shown as 'soon'.",
+  summary: "Repo is public (github.com/AhmedFr/clean-my-node-modules), OSS + $9 signed binary, CI on every PR, Apple notarization cleared. This session: fixed three launcher-window UX bugs (instant reopen, dismiss-on-blur, footer fit) and added a Caches tab to the launcher that surfaces the global pnpm store with a one-click safe prune — the launcher home for issue #2's npm/yarn/bun caches (shown disabled as 'soon'). Spec lives in docs/superpowers/specs/. Your side still: Apple signing creds (docs/SIGNING.md), the Lemon Squeezy product, and posting the showcase video.",
 
   milestones: [
     {
@@ -33,7 +33,8 @@ const STATUS = {
         { label: "Row actions", detail: "Reveal in Finder, open in editor", status: "done" },
         { label: "Runtime tray icon", detail: "Cube glyph rasterized at runtime (glyph-raster.ts + own PNG encoder) — zero image assets", status: "done" },
         { label: "Settings persistence", detail: "Plain JSON in userData; GB limit, schedule, etc.", status: "done" },
-        { label: "Launcher list shows ~7 rows with breathing room", detail: "List measures a real row and caps at ~7 rows across densities (4px gap + kept y-padding); long project paths truncate with an ellipsis; the window is clamped to the screen so the footer never clips", status: "done" }
+        { label: "Launcher list shows ~7 rows with breathing room", detail: "List measures a real row and caps at ~7 rows across densities (4px gap + kept y-padding); long project paths truncate with an ellipsis; the window is clamped to the screen so the footer never clips", status: "done" },
+        { label: "Launcher window behaves like Spotlight", detail: "Kept alive (hide, not destroy) so reopening is an instant show() with no renderer reload or gray/white flash; dismisses on blur like esc; footer no longer clipped — auto-height now measures offsetHeight, immune to the open animation's scale() transform. Reopen resets to a clean Projects search", status: "done" }
       ]
     },
     {
@@ -56,6 +57,7 @@ const STATUS = {
       note: "Package-manager caches, pnpm first",
       items: [
         { label: "M1 — pnpm store size + prune in the panel", detail: "Merged (was PR #3): Caches section, safe 'pnpm store prune' (never deletes the store), works even when launched outside a shell PATH", status: "done" },
+        { label: "M1b — pnpm store surfaced in the launcher (Caches tab)", detail: "New Projects / Caches segmented tab in the launcher (⌘1/⌘2): pnpm store size + safe Prune (↵), with npm/yarn/bun as disabled 'soon' rows. The launcher home for the rest of issue #2. Branch feat/launcher-caches-tab", status: "done" },
         { label: "M2 — npm / yarn / bun global caches", detail: "Same Caches section, after #3 lands", status: "planned" },
         { label: "M3 — per-project build outputs (.next, dist, …)", detail: "Behind a settings toggle", status: "planned" },
         { label: "M4 — beyond JS (venv, target/, DerivedData)", detail: "Only if scope grows", status: "planned" }
@@ -100,6 +102,7 @@ const STATUS = {
     { id: "ext-apple-creds", category: "external", label: "Fetch your 3 Apple signing credentials", detail: "docs/SIGNING.md has the exact steps: Developer ID Application cert (via Xcode), Team ID, app-specific password → .env.signing. Then 'pnpm release' ships signed+notarized." },
     { id: "ext-lemon-squeezy", category: "external", label: "Create the Lemon Squeezy product ($9)", detail: "lemonsqueezy.com — recommended over Stripe because they're the merchant of record (VAT handled). Paste the product URL and Claude wires it into the landing buy button." },
     { id: "e2e-dev-pass", category: "testing", label: "Run the app and do a real pass", detail: "pnpm dev — open the tray dropdown, check sizes look right, try the launcher (⌘O), search, keyboard nav." },
+    { id: "test-launcher-polish", category: "testing", label: "Verify the launcher window fixes + new Caches tab", detail: "⌘O: footer fully visible, click away dismisses it, reopen is instant with no flash. Switch to Caches (⌘2 or the tab), check the pnpm store size, run Prune (button or ↵), confirm the 'Reclaimed …' toast. npm/yarn/bun should show greyed as 'soon'." },
     { id: "test-trash-delete", category: "testing", label: "Verify deletion really goes to Trash", detail: "Delete a node_modules you don't care about, then check the Trash. This is the one destructive path — it deserves your own eyes." },
     { id: "test-notification", category: "testing", label: "Check the threshold notification fires", detail: "Set the GB limit below your current total in Settings and wait for / trigger a scan." },
     { id: "test-packaged-app", category: "testing", label: "Try the packaged app", detail: "pnpm package, then launch the .app from out/ (right-click → Open, it's unsigned). Does the tray behave the same as in dev?" },
@@ -118,7 +121,9 @@ const STATUS = {
     { date: "2026-06-15", text: "Merged everything to main: PR #3 (pnpm store prune), #4 (landing page), #5 (7-row launcher list), #6 (showcase video). main is now the integrated state." },
     { date: "2026-06-15", text: "Three enhancements: panel over-limit now a two-line no-wrap stack (GB limit / GB over) so the narrow menu-bar panel never reflows; smarter project names (generic folders qualified with repo/parent); landing page gained a 'node_modules lifecycle' section with an npm-vs-pnpm duplication diagram. Apple notarization still stuck in a multi-hour backlog on Apple's side." },
     { date: "2026-06-16", text: "Apple notarization finally cleared — all submissions Accepted (~13h Apple-side backlog). Did a senior architectural review (verdict: sound architecture, readability hurt by inline-style walls) and shipped readability pass 1: color design tokens (CSS vars) across global.css + both app shells." },
-    { date: "2026-06-16", text: "Worked through the full review remediation: color tokens across the whole renderer, main-process hardening (validated IPC, lifecycle teardown, in-flight scan dedup), Biome lint+format wired into CI (with video typecheck), tests up to 48, and started the shell decomposition (DiskSummary out of PanelApp). LauncherApp's hook extraction left for an interactive (running-app) session." }
+    { date: "2026-06-16", text: "Worked through the full review remediation: color tokens across the whole renderer, main-process hardening (validated IPC, lifecycle teardown, in-flight scan dedup), Biome lint+format wired into CI (with video typecheck), tests up to 48, and started the shell decomposition (DiskSummary out of PanelApp). LauncherApp's hook extraction left for an interactive (running-app) session." },
+    { date: "2026-06-17", text: "Fixed three launcher-window UX bugs: footer no longer clipped (auto-height now measures offsetHeight, immune to the open animation's scale transform); window dismisses on blur like Spotlight; and it's kept alive (hide, not destroy) so reopening is instant with no gray/white flash. Reopen resets to a clean Projects search. On branch feat/launcher-caches-tab." },
+    { date: "2026-06-17", text: "Added a Projects / Caches tab to the launcher (brainstormed + spec'd in docs/superpowers/specs/): the Caches tab surfaces the global pnpm store with a one-click safe Prune (⌘1/⌘2 to switch, ↑↓ + ↵ to prune), and shows npm/yarn/bun as disabled 'soon' rows — the launcher home for issue #2. Reuses the existing usePnpmStore/Segmented; new CacheRow + CachesView. Tests at 50." }
   ]
 };
 </script>

@@ -35,9 +35,19 @@ export class LauncherWindow {
       },
     })
     this.win.setWindowButtonVisibility?.(false)
-    this.win.once('ready-to-show', () => this.win?.show())
+    this.win.once('ready-to-show', () => {
+      this.win?.show()
+      this.win?.focus()
+    })
     this.win.on('closed', () => {
       this.win = null
+    })
+    // Spotlight-style dismissal: losing focus hides the launcher (same as esc).
+    // We hide rather than destroy so the next open is an instant show() with no
+    // renderer reload or flash. Ignore devtools focus so inspecting won't hide it.
+    this.win.on('blur', () => {
+      if (this.win?.webContents.isDevToolsFocused()) return
+      this.win?.hide()
     })
     if (is.dev && process.env.ELECTRON_RENDERER_URL) {
       this.win.loadURL(`${process.env.ELECTRON_RENDERER_URL}/launcher.html`)
@@ -47,8 +57,8 @@ export class LauncherWindow {
     return this.win
   }
 
-  close(): void {
-    this.win?.close()
+  hide(): void {
+    this.win?.hide()
   }
 
   get browserWindow(): BrowserWindow | null {

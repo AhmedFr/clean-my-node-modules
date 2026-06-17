@@ -48,6 +48,7 @@ export function registerIpc(ctx: AppContext): void {
   ipcMain.handle(IPC.closeWindow, (e) => {
     const win = BrowserWindow.fromWebContents(e.sender)
     if (win === ctx.panel.browserWindow) ctx.panel.hide()
+    else if (win === ctx.launcher.browserWindow) ctx.launcher.hide()
     else win?.close()
   })
 
