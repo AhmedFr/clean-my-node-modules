@@ -7,3 +7,6 @@ dist/
 *.zip
 .claude/
 .env.signing
+
+# Visual brainstorming companion
+.superpowers/
