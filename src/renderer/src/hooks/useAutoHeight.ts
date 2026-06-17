@@ -5,7 +5,11 @@ export function useAutoHeight(ref: RefObject<HTMLElement | null>): void {
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const sync = (): void => window.clean.setWindowHeight(el.getBoundingClientRect().height)
+    // offsetHeight, not getBoundingClientRect(): the latter returns the visual
+    // (transformed) box, so the open scale() animation would report a height a
+    // few px short and clip the footer. offsetHeight is the layout box, immune
+    // to transforms, so the measurement is correct whether or not it's animating.
+    const sync = (): void => window.clean.setWindowHeight(el.offsetHeight)
     sync()
     const observer = new ResizeObserver(sync)
     observer.observe(el)
