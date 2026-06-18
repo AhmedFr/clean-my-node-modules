@@ -1,6 +1,6 @@
 import { mixColor } from '@renderer/lib/colors'
 import { type ReactNode, useRef } from 'react'
-import { STEPPER_CELLS, gbToIndex, indexToGb, nudgeGb } from './PixelStepper.constants'
+import { gbToIndex, indexToGb, nudgeGb, STEPPER_CELLS } from './PixelStepper.constants'
 import type { PixelStepperProps } from './PixelStepper.types'
 
 /** Pixel-rectangle stepper for the alert threshold — each block is one GB step. */

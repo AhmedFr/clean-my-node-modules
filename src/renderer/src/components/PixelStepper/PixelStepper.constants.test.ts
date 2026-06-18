@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { STEPPER_CELLS, clampGb, gbToIndex, indexToGb, nudgeGb } from './PixelStepper.constants'
+import { clampGb, gbToIndex, indexToGb, nudgeGb, STEPPER_CELLS } from './PixelStepper.constants'
 
 describe('PixelStepper helpers', () => {
   it('exposes 10 whole-GB cells', () => {
