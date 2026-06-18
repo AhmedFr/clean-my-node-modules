@@ -34,6 +34,13 @@ describe('coerceSetting', () => {
     expect(coerceSetting('notify', 'true')).toBeNull()
   })
 
+  it('coerces the onboarded boolean flag', () => {
+    expect(coerceSetting('onboarded', true)).toEqual({ key: 'onboarded', value: true })
+    expect(coerceSetting('onboarded', false)).toEqual({ key: 'onboarded', value: false })
+    expect(coerceSetting('onboarded', 'yes')).toBeNull()
+    expect(coerceSetting('onboarded', 1)).toBeNull()
+  })
+
   it('rejects unknown keys', () => {
     expect(coerceSetting('__proto__', {})).toBeNull()
     expect(coerceSetting('nope', 1)).toBeNull()

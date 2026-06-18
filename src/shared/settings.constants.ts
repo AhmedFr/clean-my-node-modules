@@ -7,6 +7,7 @@ export const DEFAULT_SETTINGS: Settings = {
   thresholdGB: 5,
   scanInterval: 'daily',
   notify: true,
+  onboarded: false,
 }
 
 export const SCAN_INTERVAL_MS: Record<Exclude<Settings['scanInterval'], 'manual'>, number> = {
