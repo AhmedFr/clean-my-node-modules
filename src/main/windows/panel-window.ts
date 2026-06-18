@@ -33,6 +33,10 @@ export class PanelWindow {
       },
     })
     this.win.setWindowButtonVisibility?.(false)
+    // Appear on whichever Space (virtual desktop) is active instead of yanking the
+    // user back to the Space the app launched on. skipTransformProcessType keeps the
+    // dock-hidden (LSUIElement) process type so the Dock / Cmd-Tab don't flicker.
+    this.win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
     this.win.on('blur', () => this.hide())
     if (is.dev && process.env.ELECTRON_RENDERER_URL) {
       this.win.loadURL(`${process.env.ELECTRON_RENDERER_URL}/panel.html`)

@@ -35,6 +35,10 @@ export class LauncherWindow {
       },
     })
     this.win.setWindowButtonVisibility?.(false)
+    // Open on whichever Space (virtual desktop) is active instead of switching the
+    // user to the Space where the launcher was first created. skipTransformProcessType
+    // keeps the dock-hidden (LSUIElement) process type so the Dock / Cmd-Tab don't flicker.
+    this.win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
     this.win.once('ready-to-show', () => {
       this.win?.show()
       this.win?.focus()
