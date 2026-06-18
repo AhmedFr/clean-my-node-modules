@@ -59,8 +59,41 @@ First notarization takes a few minutes (Apple's queue). Verify the result:
 spctl -a -vv "dist/mac/Clean my node_modules.app"   # → "accepted, source=Notarized Developer ID"
 ```
 
-## Later (optional, for CI releases)
+## CI releases (GitHub Actions)
 
-When we want GitHub Actions to build releases, the same three values go into repo
-secrets, plus the certificate exported as a base64 `.p12` (`CSC_LINK` /
-`CSC_KEY_PASSWORD`). Not needed for local releases — ask Claude when you want this.
+`.github/workflows/release.yml` builds, signs, notarizes, and uploads a **draft**
+release whenever you push a `vX.Y.Z` tag. The built-in `GITHUB_TOKEN` publishes the
+release — no personal access token needed.
+
+### One-time: add the repo secrets
+
+Repo → **Settings → Secrets and variables → Actions → New repository secret**:
+
+| Secret | Value |
+| --- | --- |
+| `CSC_LINK` | base64 of your Developer ID Application `.p12` (see below) |
+| `CSC_KEY_PASSWORD` | the password you set when exporting the `.p12` |
+| `APPLE_ID` | your Apple Developer Apple ID email |
+| `APPLE_APP_SPECIFIC_PASSWORD` | the `notarytool` app-specific password |
+| `APPLE_TEAM_ID` | your 10-character Team ID |
+
+**Exporting the certificate to `CSC_LINK`:**
+
+1. Keychain Access → find **Developer ID Application: &lt;your name&gt; (&lt;team id&gt;)**.
+2. Right-click → **Export…** → save as a `.p12`, set an export password.
+3. Base64 it and copy to the clipboard:
+   ```sh
+   base64 -i cert.p12 | pbcopy
+   ```
+4. Paste into the `CSC_LINK` secret; put the export password in `CSC_KEY_PASSWORD`.
+
+### Cutting a release
+
+```sh
+pnpm version patch        # 0.1.0 → 0.1.1: bumps package.json, commits, tags v0.1.1
+git push --follow-tags    # pushes the commit + tag → triggers the workflow
+```
+
+Watch **Actions → Release**. On success a **draft release** with the signed, notarized
+arm64 DMG + ZIP (and `latest-mac.yml`) appears under **Releases**. Open it, click
+**Generate release notes**, then **Publish**.
