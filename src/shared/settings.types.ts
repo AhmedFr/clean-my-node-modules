@@ -9,4 +9,5 @@ export interface Settings {
   thresholdGB: number
   scanInterval: ScanInterval
   notify: boolean
+  onboarded: boolean
 }

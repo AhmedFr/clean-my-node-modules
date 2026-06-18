@@ -12,13 +12,14 @@ import { CleanStaleCta } from './CleanStaleCta'
 import { DiskSummary } from './DiskSummary'
 import { STALE_DAYS, VISIBLE_ROWS } from './PanelApp.constants'
 import type { PanelToast, PanelView } from './PanelApp.types'
+import { PanelEmpty } from './PanelEmpty'
 import { PanelSettings } from './PanelSettings'
 import { PnpmStoreRow } from './PnpmStoreRow'
 import { ScanPanel } from './ScanPanel'
 import { Separator } from './Separator'
 
 export function PanelApp(): ReactNode {
-  const [settings, setSetting] = useSettings()
+  const [settings, setSetting, settingsLoaded] = useSettings()
   const projects = useProjects()
   const accent = settings.accent
   const threshold = settings.thresholdGB * GB
@@ -149,27 +150,14 @@ export function PanelApp(): ReactNode {
           />
           <Separator />
           {projects.length === 0 ? (
-            <div style={{ padding: '26px 20px 30px', textAlign: 'center' }}>
-              <div
-                style={{
-                  width: 46,
-                  height: 46,
-                  margin: '0 auto',
-                  borderRadius: '50%',
-                  background: 'var(--good-wash)',
-                  color: 'var(--good)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {UIIcon.checkCircle({ size: 26 })}
-              </div>
-              <div style={{ fontSize: 14.5, fontWeight: 650, color: '#fff', marginTop: 10 }}>All clean</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>
-                Reclaimed {formatSizeStr(reclaimed)} this session.
-              </div>
-            </div>
+            settingsLoaded ? (
+              <PanelEmpty
+                onboarded={settings.onboarded}
+                reclaimed={reclaimed}
+                accent={accent}
+                onOpenSetup={() => void window.clean.openLauncher()}
+              />
+            ) : null
           ) : (
             <>
               <div

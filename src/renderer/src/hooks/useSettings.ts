@@ -4,14 +4,18 @@ import { useCallback, useEffect, useState } from 'react'
 
 export type SetSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => void
 
-/** Live settings synced with the main process. */
-export function useSettings(): [Settings, SetSetting] {
+/** Live settings synced with the main process; `loaded` is false until the first fetch resolves. */
+export function useSettings(): [Settings, SetSetting, boolean] {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     let alive = true
     window.clean.getSettings().then((s) => {
-      if (alive) setSettings(s)
+      if (alive) {
+        setSettings(s)
+        setLoaded(true)
+      }
     })
     const unsubscribe = window.clean.onSettingsChanged(setSettings)
     return () => {
@@ -25,5 +29,5 @@ export function useSettings(): [Settings, SetSetting] {
     void window.clean.setSetting(key, value)
   }, [])
 
-  return [settings, setSetting]
+  return [settings, setSetting, loaded]
 }

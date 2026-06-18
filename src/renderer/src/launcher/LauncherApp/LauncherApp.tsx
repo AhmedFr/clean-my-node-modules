@@ -15,6 +15,7 @@ import type { Project } from '@shared/project.types'
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { CachesView } from '../views/CachesView'
 import { EmptyView } from '../views/EmptyView'
+import { Onboarding } from '../views/Onboarding'
 import { ScanningView } from '../views/ScanningView'
 import { SettingsView } from '../views/SettingsView'
 import type { LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
@@ -24,7 +25,6 @@ const NEXT_SCAN_LABEL: Record<string, string> = {
   '6h': '6 hours',
   daily: '18 hours',
   weekly: '5 days',
-  manual: 'manual mode',
 }
 
 /** How many project rows stay visible before the list scrolls. */
@@ -35,7 +35,7 @@ const ROW_GAP = 4
 const LIST_PADDING = 6
 
 export function LauncherApp(): ReactNode {
-  const [settings, setSetting] = useSettings()
+  const [settings, setSetting, settingsLoaded] = useSettings()
   const projects = useProjects()
   const accent = settings.accent
   const threshold = settings.thresholdGB * GB
@@ -274,247 +274,265 @@ export function LauncherApp(): ReactNode {
         }`,
       }}
     >
-      {/* ---------- Header ---------- */}
-      {view === 'list' ? (
-        <div className="cc-header">
-          <AppIcon accent={accent} />
-          <input
-            ref={inputRef}
-            className="cc-input"
-            autoFocus
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              setSel(0)
-            }}
-            placeholder={tab === 'projects' ? 'Search node_modules by project or path…' : 'Search caches…'}
-          />
-          <Gauge used={totalUsed} threshold={threshold} accent={accent} />
-          <button
-            className="cc-close"
-            onClick={() => void window.clean.closeWindow()}
-            title="Close (esc)"
-            aria-label="Close"
-          >
-            {UIIcon.x({ size: 14 })}
-          </button>
-        </div>
+      {!settingsLoaded ? null : !settings.onboarded ? (
+        <Onboarding
+          settings={settings}
+          setSetting={setSetting}
+          accent={accent}
+          onComplete={() => {
+            setView('scanning')
+            setSetting('onboarded', true)
+          }}
+        />
       ) : (
-        <div className="cc-header">
-          <button className="cc-back" onClick={() => setView('list')} aria-label="Back">
-            {UIIcon.chevronLeft({ size: 18 })}
-          </button>
-          <div style={{ fontSize: 14.5, fontWeight: 650, color: 'var(--text)' }}>
-            {view === 'settings' ? 'Settings' : 'Scanning'}
-          </div>
-          <div style={{ flex: 1 }} />
-          <button
-            className="cc-close"
-            onClick={() => void window.clean.closeWindow()}
-            title="Close (esc)"
-            aria-label="Close"
-          >
-            {UIIcon.x({ size: 14 })}
-          </button>
-        </div>
-      )}
-      <div className="cc-divider" />
-
-      {/* ---------- Body ---------- */}
-      {view === 'scanning' && <ScanningView accent={accent} onDone={() => setView('list')} />}
-      {view === 'settings' && <SettingsView settings={settings} setSetting={setSetting} accent={accent} />}
-      {view === 'list' && (
         <>
-          <div className="cc-listhead">
-            <Segmented
-              small
-              accent={accent}
-              value={tab}
-              onChange={(t) => {
-                setTab(t)
-                setSel(0)
-                setConfirm(null)
-              }}
-              options={[
-                { value: 'projects', label: 'Projects' },
-                { value: 'caches', label: 'Caches' },
-              ]}
-            />
-            {tab === 'projects' && !isEmpty && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <span style={{ fontSize: 11, color: 'var(--text-faint)', marginRight: 4 }}>Sort</span>
-                <SortTab label="Last used" active={sortBy === 'used'} onClick={() => setSortBy('used')} />
-                <SortTab label="Size" active={sortBy === 'size'} onClick={() => setSortBy('size')} />
-                <SortTab label="Name" active={sortBy === 'name'} onClick={() => setSortBy('name')} />
-              </div>
-            )}
-          </div>
-          {tab === 'caches' ? (
-            <CachesView
-              store={store}
-              pruning={pruning}
-              selectedIndex={sel}
-              query={query}
-              onSelectIndex={setSel}
-              onPrune={handlePrune}
-            />
-          ) : isEmpty ? (
-            <EmptyView reclaimedTotal={reclaimed} nextScanLabel={NEXT_SCAN_LABEL[settings.scanInterval]} />
+          {/* ---------- Header ---------- */}
+          {view === 'list' ? (
+            <div className="cc-header">
+              <AppIcon accent={accent} />
+              <input
+                ref={inputRef}
+                className="cc-input"
+                autoFocus
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  setSel(0)
+                }}
+                placeholder={tab === 'projects' ? 'Search node_modules by project or path…' : 'Search caches…'}
+              />
+              <Gauge used={totalUsed} threshold={threshold} accent={accent} />
+              <button
+                className="cc-close"
+                onClick={() => void window.clean.closeWindow()}
+                title="Close (esc)"
+                aria-label="Close"
+              >
+                {UIIcon.x({ size: 14 })}
+              </button>
+            </div>
           ) : (
-            <div ref={listRef} className="cc-list" style={listMaxH ? { maxHeight: listMaxH } : undefined}>
-              <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
-                <div
-                  className="cc-hl"
-                  style={{
-                    top: hl.top,
-                    height: hl.height,
-                    opacity: hl.on ? 1 : 0,
-                    background: 'var(--surface-2)',
-                    boxShadow: 'inset 0 0 0 1px var(--hairline)',
+            <div className="cc-header">
+              <button className="cc-back" onClick={() => setView('list')} aria-label="Back">
+                {UIIcon.chevronLeft({ size: 18 })}
+              </button>
+              <div style={{ fontSize: 14.5, fontWeight: 650, color: 'var(--text)' }}>
+                {view === 'settings' ? 'Settings' : 'Scanning'}
+              </div>
+              <div style={{ flex: 1 }} />
+              <button
+                className="cc-close"
+                onClick={() => void window.clean.closeWindow()}
+                title="Close (esc)"
+                aria-label="Close"
+              >
+                {UIIcon.x({ size: 14 })}
+              </button>
+            </div>
+          )}
+          <div className="cc-divider" />
+
+          {/* ---------- Body ---------- */}
+          {view === 'scanning' && <ScanningView accent={accent} onDone={() => setView('list')} />}
+          {view === 'settings' && <SettingsView settings={settings} setSetting={setSetting} accent={accent} />}
+          {view === 'list' && (
+            <>
+              <div className="cc-listhead">
+                <Segmented
+                  small
+                  accent={accent}
+                  value={tab}
+                  onChange={(t) => {
+                    setTab(t)
+                    setSel(0)
+                    setConfirm(null)
                   }}
+                  options={[
+                    { value: 'projects', label: 'Projects' },
+                    { value: 'caches', label: 'Caches' },
+                  ]}
                 />
-                {filtered.length === 0 ? (
-                  <div
+                {tab === 'projects' && !isEmpty && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-faint)', marginRight: 4 }}>Sort</span>
+                    <SortTab label="Last used" active={sortBy === 'used'} onClick={() => setSortBy('used')} />
+                    <SortTab label="Size" active={sortBy === 'size'} onClick={() => setSortBy('size')} />
+                    <SortTab label="Name" active={sortBy === 'name'} onClick={() => setSortBy('name')} />
+                  </div>
+                )}
+              </div>
+              {tab === 'caches' ? (
+                <CachesView
+                  store={store}
+                  pruning={pruning}
+                  selectedIndex={sel}
+                  query={query}
+                  onSelectIndex={setSel}
+                  onPrune={handlePrune}
+                />
+              ) : isEmpty ? (
+                <EmptyView
+                  reclaimedTotal={reclaimed}
+                  nextScanLabel={NEXT_SCAN_LABEL[settings.scanInterval] ?? null}
+                  accent={accent}
+                />
+              ) : (
+                <div ref={listRef} className="cc-list" style={listMaxH ? { maxHeight: listMaxH } : undefined}>
+                  <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
+                    <div
+                      className="cc-hl"
+                      style={{
+                        top: hl.top,
+                        height: hl.height,
+                        opacity: hl.on ? 1 : 0,
+                        background: 'var(--surface-2)',
+                        boxShadow: 'inset 0 0 0 1px var(--hairline)',
+                      }}
+                    />
+                    {filtered.length === 0 ? (
+                      <div
+                        style={{
+                          padding: '40px 20px',
+                          textAlign: 'center',
+                          color: 'var(--text-dim)',
+                          fontSize: 13,
+                        }}
+                      >
+                        No folders match “{query}”.
+                      </div>
+                    ) : (
+                      filtered.map((p, i) => (
+                        <Row
+                          key={p.id}
+                          p={p}
+                          selected={i === sel}
+                          density={settings.density}
+                          sizeStyle={settings.sizeStyle}
+                          maxBytes={maxBytes}
+                          accent={accent}
+                          deleting={deleting.has(p.id)}
+                          rowRef={(el) => {
+                            if (el) rowEls.current[p.id] = el
+                          }}
+                          onSelect={() => setSel(i)}
+                          onOpen={() => doOpen(p)}
+                          onFinder={() => doFinder(p)}
+                          onDelete={() => setConfirm(p)}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ---------- Toast ---------- */}
+          {toast && (
+            <div
+              className="cc-toast"
+              style={{ borderColor: toast.tone === 'good' ? 'var(--good-line)' : 'var(--surface-3)' }}
+            >
+              <span style={{ color: toast.tone === 'good' ? 'var(--good)' : 'var(--text-3)', display: 'flex' }}>
+                {toast.icon({ size: 15 })}
+              </span>
+              <span style={{ fontSize: 12.5, color: 'var(--text)', fontWeight: 550 }}>{toast.text}</span>
+            </div>
+          )}
+
+          <div className="cc-divider" />
+          {/* ---------- Footer ---------- */}
+          {confirm ? (
+            <div className="cc-footer" style={{ background: mixColor('rgba(255,99,99,0)', accent, 0.1) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+                <span style={{ color: accent, display: 'flex' }}>{UIIcon.trash({ size: 16 })}</span>
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: 'var(--text)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  Delete <b>{confirm.name}</b>’s node_modules? Frees{' '}
+                  <b style={{ color: '#fff' }}>{formatSizeStr(confirm.size)}</b>.
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button className="cc-btn ghost" onClick={() => setConfirm(null)}>
+                  Cancel <Kbd wide>esc</Kbd>
+                </button>
+                <button className="cc-btn danger" style={{ background: accent }} onClick={() => commitDelete(confirm)}>
+                  Delete <Kbd wide>↵</Kbd>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="cc-footer">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                <AppIcon accent={accent} size={20} />
+                {view === 'list' && !isEmpty && (
+                  <span
                     style={{
-                      padding: '40px 20px',
-                      textAlign: 'center',
-                      color: 'var(--text-dim)',
-                      fontSize: 13,
+                      fontSize: 12.5,
+                      color: ratio > 1 ? mixColor('#fff', accent, 0.5) : 'var(--text-muted)',
+                      fontWeight: 550,
                     }}
                   >
-                    No folders match “{query}”.
-                  </div>
-                ) : (
-                  filtered.map((p, i) => (
-                    <Row
-                      key={p.id}
-                      p={p}
-                      selected={i === sel}
-                      density={settings.density}
-                      sizeStyle={settings.sizeStyle}
-                      maxBytes={maxBytes}
-                      accent={accent}
-                      deleting={deleting.has(p.id)}
-                      rowRef={(el) => {
-                        if (el) rowEls.current[p.id] = el
-                      }}
-                      onSelect={() => setSel(i)}
-                      onOpen={() => doOpen(p)}
-                      onFinder={() => doFinder(p)}
-                      onDelete={() => setConfirm(p)}
-                    />
-                  ))
+                    {ratio > 1
+                      ? `${formatSizeStr(overBy)} over your ${settings.thresholdGB} GB limit`
+                      : `${(ratio * 100).toFixed(0)}% of your ${settings.thresholdGB} GB limit`}
+                  </span>
                 )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                {view === 'list' && tab === 'projects' && !isEmpty && (
+                  <div className="cc-hints">
+                    <span>
+                      {UIIcon.arrowUp({ size: 12 })}
+                      {UIIcon.arrowDown({ size: 12 })} navigate
+                    </span>
+                    <span>
+                      <Kbd>
+                        <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
+                      </Kbd>{' '}
+                      open
+                    </span>
+                    <span>
+                      <Kbd wide>⌘</Kbd>
+                      <Kbd wide>⌫</Kbd> delete
+                    </span>
+                  </div>
+                )}
+                {view === 'list' && tab === 'caches' && store?.available && (
+                  <div className="cc-hints">
+                    <span>
+                      {UIIcon.arrowUp({ size: 12 })}
+                      {UIIcon.arrowDown({ size: 12 })} navigate
+                    </span>
+                    <span>
+                      <Kbd>
+                        <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
+                      </Kbd>{' '}
+                      prune
+                    </span>
+                  </div>
+                )}
+                <button className="cc-iconbtn" title="Rescan (⌘R)" onClick={rescan}>
+                  {UIIcon.refresh({ size: 15 })}
+                </button>
+                <button
+                  className="cc-iconbtn"
+                  title="Settings (⌘,)"
+                  onClick={() => setView(view === 'settings' ? 'list' : 'settings')}
+                >
+                  {UIIcon.gear({ size: 16 })}
+                </button>
               </div>
             </div>
           )}
         </>
-      )}
-
-      {/* ---------- Toast ---------- */}
-      {toast && (
-        <div
-          className="cc-toast"
-          style={{ borderColor: toast.tone === 'good' ? 'var(--good-line)' : 'var(--surface-3)' }}
-        >
-          <span style={{ color: toast.tone === 'good' ? 'var(--good)' : 'var(--text-3)', display: 'flex' }}>
-            {toast.icon({ size: 15 })}
-          </span>
-          <span style={{ fontSize: 12.5, color: 'var(--text)', fontWeight: 550 }}>{toast.text}</span>
-        </div>
-      )}
-
-      <div className="cc-divider" />
-      {/* ---------- Footer ---------- */}
-      {confirm ? (
-        <div className="cc-footer" style={{ background: mixColor('rgba(255,99,99,0)', accent, 0.1) }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
-            <span style={{ color: accent, display: 'flex' }}>{UIIcon.trash({ size: 16 })}</span>
-            <span
-              style={{
-                fontSize: 13,
-                color: 'var(--text)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              Delete <b>{confirm.name}</b>’s node_modules? Frees{' '}
-              <b style={{ color: '#fff' }}>{formatSizeStr(confirm.size)}</b>.
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button className="cc-btn ghost" onClick={() => setConfirm(null)}>
-              Cancel <Kbd wide>esc</Kbd>
-            </button>
-            <button className="cc-btn danger" style={{ background: accent }} onClick={() => commitDelete(confirm)}>
-              Delete <Kbd wide>↵</Kbd>
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="cc-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-            <AppIcon accent={accent} size={20} />
-            {view === 'list' && !isEmpty && (
-              <span
-                style={{
-                  fontSize: 12.5,
-                  color: ratio > 1 ? mixColor('#fff', accent, 0.5) : 'var(--text-muted)',
-                  fontWeight: 550,
-                }}
-              >
-                {ratio > 1
-                  ? `${formatSizeStr(overBy)} over your ${settings.thresholdGB} GB limit`
-                  : `${(ratio * 100).toFixed(0)}% of your ${settings.thresholdGB} GB limit`}
-              </span>
-            )}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            {view === 'list' && tab === 'projects' && !isEmpty && (
-              <div className="cc-hints">
-                <span>
-                  {UIIcon.arrowUp({ size: 12 })}
-                  {UIIcon.arrowDown({ size: 12 })} navigate
-                </span>
-                <span>
-                  <Kbd>
-                    <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
-                  </Kbd>{' '}
-                  open
-                </span>
-                <span>
-                  <Kbd wide>⌘</Kbd>
-                  <Kbd wide>⌫</Kbd> delete
-                </span>
-              </div>
-            )}
-            {view === 'list' && tab === 'caches' && store?.available && (
-              <div className="cc-hints">
-                <span>
-                  {UIIcon.arrowUp({ size: 12 })}
-                  {UIIcon.arrowDown({ size: 12 })} navigate
-                </span>
-                <span>
-                  <Kbd>
-                    <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
-                  </Kbd>{' '}
-                  prune
-                </span>
-              </div>
-            )}
-            <button className="cc-iconbtn" title="Rescan (⌘R)" onClick={rescan}>
-              {UIIcon.refresh({ size: 15 })}
-            </button>
-            <button
-              className="cc-iconbtn"
-              title="Settings (⌘,)"
-              onClick={() => setView(view === 'settings' ? 'list' : 'settings')}
-            >
-              {UIIcon.gear({ size: 16 })}
-            </button>
-          </div>
-        </div>
       )}
     </div>
   )

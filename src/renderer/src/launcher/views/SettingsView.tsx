@@ -1,3 +1,4 @@
+import { PixelStepper } from '@renderer/components/PixelStepper'
 import { Segmented } from '@renderer/components/Segmented'
 import { Toggle } from '@renderer/components/Toggle'
 import type { SetSetting } from '@renderer/hooks/useSettings'
@@ -50,35 +51,30 @@ export function SettingsView({ settings, setSetting, accent }: SettingsViewProps
             { value: '6h', label: '6h' },
             { value: 'daily', label: 'Daily' },
             { value: 'weekly', label: 'Weekly' },
-            { value: 'manual', label: 'Manual' },
+            { value: 'manual', label: 'Off' },
           ]}
         />
       </SettingsRow>
       <div style={{ height: 1, background: 'var(--surface-1)' }} />
       <SettingsRow
         label="Alert threshold"
-        hint={`Notify me when node_modules folders exceed ${gb.toFixed(1)} GB total`}
+        hint={`Notify me when node_modules folders exceed ${gb.toFixed(0)} GB total`}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <input
-            type="range"
-            min="1"
-            max="10"
-            step="0.5"
-            value={gb}
-            onChange={(e) => setSetting('thresholdGB', parseFloat(e.target.value))}
-            style={{ width: 150, accentColor: accent }}
-          />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, width: 230 }}>
+          <div style={{ flex: 1 }}>
+            <PixelStepper valueGB={gb} accent={accent} onChange={(v) => setSetting('thresholdGB', v)} />
+          </div>
           <span
             style={{
               fontVariantNumeric: 'tabular-nums',
               fontWeight: 650,
               fontSize: 13,
               color: 'var(--text)',
-              minWidth: 48,
+              minWidth: 42,
+              textAlign: 'right',
             }}
           >
-            {gb.toFixed(1)} GB
+            {gb.toFixed(0)} GB
           </span>
         </div>
       </SettingsRow>
