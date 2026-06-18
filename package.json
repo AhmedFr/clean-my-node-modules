@@ -16,8 +16,9 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "test": "vitest run",
+    "icon": "node scripts/make-icon.mjs",
     "package": "electron-vite build && electron-builder --mac --dir",
-    "release": "electron-vite build && electron-builder --mac dmg zip",
+    "release": "electron-vite build && bash scripts/release-mac.sh",
     "video:studio": "remotion studio video/index.ts",
     "video:render": "remotion render video/index.ts ShowcaseSquare out/showcase.mp4",
     "video:still": "remotion still video/index.ts ShowcaseSquare out/still.png --frame=130",
@@ -53,6 +54,7 @@
     "productName": "Clean my node_modules",
     "mac": {
       "category": "public.app-category.developer-tools",
+      "icon": "build/icon.png",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
