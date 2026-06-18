@@ -347,6 +347,13 @@ input[type="range"] {
     opacity: 1;
   }
 }
+@keyframes ping-soft {
+  70%,
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
 @keyframes ccpopwin {
   from {
     opacity: 0;
