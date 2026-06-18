@@ -67,6 +67,10 @@
     "dmg": {
       "artifactName": "${productName}-${version}.${ext}"
     },
+    "publish": {
+      "provider": "github",
+      "releaseType": "draft"
+    },
     "files": [
       "out/**"
     ]
