@@ -66,11 +66,14 @@ app.whenReady().then(() => {
   registerIpc({ projects, settings, panel, launcher, runScan })
   syncDerivedState()
 
-  // first launch: populate inventory right away
-  if (projects.all.length === 0) void runScan()
-
-  // dev convenience: show the launcher without needing the tray
-  if (is.dev) launcher.open()
+  // First launch: show onboarding front-and-center; it triggers the first scan.
+  // Returning users: refresh inventory if empty, and keep the dev convenience.
+  if (!settings.get().onboarded) {
+    launcher.open()
+  } else {
+    if (projects.all.length === 0) void runScan()
+    if (is.dev) launcher.open()
+  }
 
   // menu bar app: keep running with no windows open
   app.on('window-all-closed', () => {})
