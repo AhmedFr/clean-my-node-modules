@@ -25,7 +25,6 @@ const NEXT_SCAN_LABEL: Record<string, string> = {
   '6h': '6 hours',
   daily: '18 hours',
   weekly: '5 days',
-  manual: 'manual mode',
 }
 
 /** How many project rows stay visible before the list scrolls. */
@@ -372,7 +371,11 @@ export function LauncherApp(): ReactNode {
                   onPrune={handlePrune}
                 />
               ) : isEmpty ? (
-                <EmptyView reclaimedTotal={reclaimed} nextScanLabel={NEXT_SCAN_LABEL[settings.scanInterval]} />
+                <EmptyView
+                  reclaimedTotal={reclaimed}
+                  nextScanLabel={NEXT_SCAN_LABEL[settings.scanInterval] ?? null}
+                  accent={accent}
+                />
               ) : (
                 <div ref={listRef} className="cc-list" style={listMaxH ? { maxHeight: listMaxH } : undefined}>
                   <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
