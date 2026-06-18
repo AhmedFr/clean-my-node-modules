@@ -15,9 +15,9 @@
 const STATUS = {
   app: "Clean my node_modules",
   version: "0.1.0",
-  updated: "2026-06-18",
-  phase: "First-run onboarding + honest states: a guided 2-step setup (welcome → alert limit on a new pixel stepper + scan cadence incl. Off) on first launch, truthful empty/scanning states with a subtle ping (no more 'All clean' before a scan), and the panel/launcher now open on the active Space instead of forcing a desktop switch.",
-  summary: "Repo is public (github.com/AhmedFr/clean-my-node-modules), OSS + $9 signed binary, CI on every PR, Apple notarization cleared. This session: shipped a guided 2-step onboarding, a pixel-rectangle alert-threshold stepper (replaces the range slider in both settings surfaces), an explicit 'Off' for automatic scanning, honest empty/scanning states with a subtle Tailwind-style ping, and a macOS Spaces fix so clicking the tray no longer yanks you to another desktop. Spec + plan in docs/superpowers/. Your side still: Apple signing creds (docs/SIGNING.md), the Lemon Squeezy product, and posting the showcase video.",
+  updated: "2026-06-19",
+  phase: "Release engineering: the .app now carries the cube icon, 'pnpm release' is fixed (loads .env.signing, no GitHub-publish crash), and a tag-triggered GitHub Actions pipeline signs + notarizes the arm64 app into a draft GitHub Release. Paid tier dropped for now — OSS/free until there's traction.",
+  summary: "Repo is public (github.com/AhmedFr/clean-my-node-modules), OSS and free for now (a paid signed tier is deferred until there's traction), with a signed + notarized macOS app and CI on every PR. This session: gave the .app its cube icon, fixed 'pnpm release', and built a release pipeline (push a vX.Y.Z tag → signed/notarized arm64 DMG → draft GitHub Release). Your side: add the 5 release secrets + cut the first tag (docs/SIGNING.md). Next up: rebuild the landing as a Next.js + shadcn app on Vercel (paid tier removed), then post the showcase video.",
 
   milestones: [
     {

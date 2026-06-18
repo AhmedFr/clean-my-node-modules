@@ -5,15 +5,18 @@ on:
     tags:
       - 'v*'
 
-# Allow the built-in GITHUB_TOKEN to create the release.
-permissions:
-  contents: write
-
 jobs:
   release:
     runs-on: macos-latest
+    # Least privilege: only this job needs write access, so the built-in
+    # GITHUB_TOKEN can create the release.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The job publishes via the API token in env, never via git push.
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v4
 
