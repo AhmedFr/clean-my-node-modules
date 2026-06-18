@@ -1,3 +1,4 @@
+import { PingBadge } from '@renderer/components/PingBadge'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { useScanProgress } from '@renderer/hooks/useScanProgress'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
@@ -33,31 +34,7 @@ export function ScanPanel({ accent, onDone }: ScanPanelProps): ReactNode {
         gap: 16,
       }}
     >
-      <div style={{ position: 'relative', width: 56, height: 56 }}>
-        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid var(--border)' }} />
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            borderRadius: '50%',
-            border: '2px solid transparent',
-            borderTopColor: accent,
-            animation: 'mbspin .8s linear infinite',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: accent,
-          }}
-        >
-          {UIIcon.search({ size: 22, stroke: 1.9 })}
-        </div>
-      </div>
+      <PingBadge icon={UIIcon.search} tone="accent" accent={accent} size={56} iconSize={24} />
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 14.5, fontWeight: 650, color: '#fff' }}>Scanning your disk…</div>
         <div
