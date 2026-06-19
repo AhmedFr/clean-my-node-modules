@@ -65,7 +65,7 @@
       }
     },
     "dmg": {
-      "artifactName": "${productName}-${version}.${ext}"
+      "artifactName": "clean-my-node-modules-${arch}.${ext}"
     },
     "publish": {
       "provider": "github",
