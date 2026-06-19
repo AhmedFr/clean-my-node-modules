@@ -3,6 +3,7 @@ import { promisify } from 'node:util'
 import type { PnpmPruneResult, PnpmStoreInfo } from '@shared/pnpm-store.types'
 import { abbreviateHome } from '../lib/abbreviate-home'
 import { folderSize } from '../lib/folder-size'
+import { pnpmExecEnv } from './find-node'
 import { findPnpm } from './find-pnpm'
 
 const execFileAsync = promisify(execFile)
@@ -30,7 +31,8 @@ export async function prunePnpmStore(): Promise<PnpmPruneResult> {
   const before = await getPnpmStoreInfo(true)
   if (!pnpm || !before.available) return { ok: false, freedBytes: 0 }
   try {
-    await execFileAsync(pnpm, ['store', 'prune'], { timeout: PRUNE_TIMEOUT_MS })
+    const env = await pnpmExecEnv()
+    await execFileAsync(pnpm, ['store', 'prune'], { timeout: PRUNE_TIMEOUT_MS, env })
   } catch {
     return { ok: false, freedBytes: 0 }
   }
@@ -49,7 +51,8 @@ async function readStoreInfo(): Promise<PnpmStoreInfo> {
   const pnpm = await findPnpm()
   if (!pnpm) return unavailable
   try {
-    const { stdout } = await execFileAsync(pnpm, ['store', 'path'], { timeout: 10_000 })
+    const env = await pnpmExecEnv()
+    const { stdout } = await execFileAsync(pnpm, ['store', 'path'], { timeout: 10_000, env })
     const path = stdout.trim()
     if (!path) return unavailable
     return {
