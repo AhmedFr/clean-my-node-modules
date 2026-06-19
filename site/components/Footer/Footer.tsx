@@ -21,9 +21,9 @@ export function Footer() {
           <div className="fcol">
             <h5>Product</h5>
             <a href="#features">Features</a>
-            <a href="#why">Why</a>
             <a href="#how">How it works</a>
             <a href="#download">Download</a>
+            <a href="#download">Get the app</a>
           </div>
           <div className="fcol">
             <h5>Open source</h5>
