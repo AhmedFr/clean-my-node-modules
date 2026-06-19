@@ -1,5 +1,5 @@
 import { Icon } from "@/components/Icon";
-import { PixelMeter } from "@/components/PixelMeter";
+import { AppPanel } from "@/components/AppPanel";
 import { REPO_URL, DOWNLOAD_URL } from "@/lib/links";
 
 export function Hero() {
@@ -66,97 +66,9 @@ export function Hero() {
             </div>
           </div>
 
-          {/* dropdown */}
+          {/* dropdown — recreation of the real menu-bar panel */}
           <div className="scene-dropdown glass-panel">
-            <div className="ui-pad">
-              <div className="ui-eyebrow">node_modules on disk</div>
-              <div className="ui-total">
-                <span className="big">5.42 GB</span>
-                <span className="ui-status over">
-                  <Icon id="i-alert" />
-                  430 MB over your 5 GB limit
-                </span>
-              </div>
-              <PixelMeter
-                used={5.42}
-                threshold={5}
-                cells={32}
-                style={{ marginTop: 13 }}
-              />
-            </div>
-            <div className="ui-sep" />
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "8px 15px 4px",
-              }}
-            >
-              <span className="ui-eyebrow">Reclaimable · oldest first</span>
-              <span style={{ fontSize: 11, color: "var(--ink-4)" }}>
-                12 total
-              </span>
-            </div>
-            <div className="ui-rows" style={{ padding: "0 0 2px" }}>
-              <div className="ui-row">
-                <svg className="fw" viewBox="0 0 24 24">
-                  <use href="#fw-react" />
-                </svg>
-                <div className="meta">
-                  <div className="nm">legacy-dashboard</div>
-                  <div className="sub">1 year ago</div>
-                </div>
-                <div className="sz">
-                  612<span className="u">MB</span>
-                </div>
-              </div>
-              <div className="ui-row">
-                <svg className="fw" viewBox="0 0 24 24">
-                  <use href="#fw-expo" />
-                </svg>
-                <div className="meta">
-                  <div className="nm">recipe-app-old</div>
-                  <div className="sub">7 months ago</div>
-                </div>
-                <div className="sz">
-                  903<span className="u">MB</span>
-                </div>
-              </div>
-              <div className="ui-row">
-                <svg className="fw" viewBox="0 0 24 24">
-                  <use href="#fw-node" />
-                </svg>
-                <div className="meta">
-                  <div className="nm">hackathon-bot</div>
-                  <div className="sub">9 months ago</div>
-                </div>
-                <div className="sz">
-                  441<span className="u">MB</span>
-                </div>
-              </div>
-            </div>
-            <div className="ui-cta">
-              <span className="t">Clean 5 stale folders</span>
-              <span className="s">Frees 2.2 GB · keeps your active projects</span>
-            </div>
-            <div className="ui-sep" />
-            <div style={{ padding: "5px 0" }}>
-              <div className="ui-mitem">
-                <Icon id="i-search" />
-                Open full window…<span className="sc">⌘O</span>
-              </div>
-              <div className="ui-mitem">
-                <Icon id="i-refresh" />
-                Scan now<span className="sc">⌘R</span>
-              </div>
-              <div className="ui-mitem">
-                <Icon id="i-gear" />
-                Settings…<span className="sc">⌘,</span>
-              </div>
-            </div>
-            <div className="ui-sep" />
-            <div className="ui-foot-note">Last scan 6 min ago · next in 18 h</div>
+            <AppPanel />
           </div>
 
           {/* floating toast */}
@@ -165,7 +77,7 @@ export function Hero() {
               <use href="#i-checkcircle" />
             </svg>
             <span>
-              <b>612 MB moved to Trash</b> &nbsp;
+              <b>Reclaimed 612 MB</b> &nbsp;
               <span className="s">legacy-dashboard</span>
             </span>
           </div>

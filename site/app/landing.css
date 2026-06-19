@@ -147,6 +147,25 @@ code { font-family: var(--mono); font-size: 0.88em; color: var(--ink); backgroun
 .scene-toast b { font-weight: 600; }
 .scene-toast .s { color: var(--ink-3); font-size: 13px; }
 
+/* ===== real app panel recreation (hero) — renderer design tokens, scoped ===== */
+.app-panel {
+  --accent: #ff6363;
+  --good: #34d399;
+  --text: rgba(255,255,255,0.9);
+  --text-2: rgba(255,255,255,0.8);
+  --text-3: rgba(255,255,255,0.7);
+  --text-muted: rgba(255,255,255,0.5);
+  --text-dim: rgba(255,255,255,0.4);
+  --hairline: rgba(255,255,255,0.07);
+  --surface-1: rgba(255,255,255,0.06);
+  --surface-2: rgba(255,255,255,0.08);
+  --surface-3: rgba(255,255,255,0.12);
+  --surface-4: rgba(255,255,255,0.14);
+  border-radius: 16px; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
 /* ============ product UI primitives (dropdown + launcher) ============ */
 .ui-pad { padding: 14px 16px; }
 .ui-eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); font-family: var(--ui); }
