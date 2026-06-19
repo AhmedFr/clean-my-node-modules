@@ -1,3 +1,7 @@
+// Cabinet Grotesk / General Sans are Fontshare fonts (not in next/font), and
+// these <head> links live in the root layout so they load site-wide — the
+// no-page-custom-font rule's pages/_document premise does not apply here.
+/* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata } from "next";
 import "./globals.css";
 import "./landing.css";
