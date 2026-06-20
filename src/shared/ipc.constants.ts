@@ -12,6 +12,7 @@ export const IPC = {
   closeWindow: 'window:close-self',
   setWindowHeight: 'window:set-height',
   quitApp: 'app:quit',
+  uninstall: 'app:uninstall',
   getLastScanTime: 'scan:last-time',
   getPnpmStore: 'pnpm-store:get',
   prunePnpmStore: 'pnpm-store:prune',
