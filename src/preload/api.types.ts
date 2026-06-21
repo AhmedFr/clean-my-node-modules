@@ -17,6 +17,7 @@ export interface CleanApi {
   closeWindow(): Promise<void>
   setWindowHeight(height: number): void
   quitApp(): void
+  uninstall(): Promise<void>
   onScanProgress(fn: (p: ScanProgress) => void): () => void
   onProjectsChanged(fn: (projects: Project[]) => void): () => void
   onSettingsChanged(fn: (settings: Settings) => void): () => void

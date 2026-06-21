@@ -82,6 +82,16 @@ export function SettingsView({ settings, setSetting, accent }: SettingsViewProps
       <SettingsRow label="Threshold notifications" hint="Show a desktop alert the moment you cross the limit">
         <Toggle on={settings.notify} accent={accent} onToggle={() => setSetting('notify', !settings.notify)} />
       </SettingsRow>
+      <div style={{ height: 1, background: 'var(--surface-1)' }} />
+      <SettingsRow label="Uninstall" hint="Move Clean and its preferences to the Trash">
+        <button
+          className="cc-btn danger"
+          style={{ background: '#d4483f' }}
+          onClick={() => void window.clean.uninstall()}
+        >
+          Uninstall…
+        </button>
+      </SettingsRow>
     </div>
   )
 }
