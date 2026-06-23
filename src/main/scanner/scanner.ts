@@ -4,7 +4,7 @@ import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import type { Project, ScanProgress } from '@shared/project.types'
 import { abbreviateHome } from '../lib/abbreviate-home'
-import { folderSize } from '../lib/folder-size'
+import { measureNodeModules } from '../lib/folder-size'
 import { detectKind } from './detect-kind'
 import { findProjectIcon } from './find-project-icon'
 import { resolveProjectName } from './resolve-name'
@@ -84,8 +84,8 @@ async function buildProject(
 ): Promise<Project | null> {
   const projectDir = dirname(nodeModulesPath)
   try {
-    const [size, lastUsed, kind, iconDataUrl, name] = await Promise.all([
-      folderSize(nodeModulesPath),
+    const [sizes, lastUsed, kind, iconDataUrl, name] = await Promise.all([
+      measureNodeModules(nodeModulesPath),
       lastUsedTime(projectDir),
       detectKind(projectDir),
       findProjectIcon(projectDir),
@@ -97,7 +97,8 @@ async function buildProject(
       path: abbreviateHome(projectDir),
       absPath: projectDir,
       kind,
-      size,
+      size: sizes.apparent,
+      uniqueSize: sizes.unique,
       lastUsed,
       iconDataUrl,
     }

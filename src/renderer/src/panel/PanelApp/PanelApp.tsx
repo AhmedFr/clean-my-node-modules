@@ -29,6 +29,7 @@ export function PanelApp(): ReactNode {
   const [reclaimed, setReclaimed] = useState(0)
   const [lastScan, setLastScan] = useState(0)
   const { toast, flashToast } = useToast<PanelToast>()
+  const { store, pruning, prune } = usePnpmStore()
   const rootRef = useRef<HTMLDivElement>(null)
   useAutoHeight(rootRef)
 
@@ -36,7 +37,10 @@ export function PanelApp(): ReactNode {
     void window.clean.getLastScanTime().then(setLastScan)
   }, [view, projects])
 
-  const totalUsed = useMemo(() => projects.reduce((a, p) => a + p.size, 0), [projects])
+  // "Real" disk: each project's own freeable bytes plus the pnpm store counted once.
+  const storeBytes = store?.available ? store.sizeBytes : 0
+  const totalUsed = useMemo(() => projects.reduce((a, p) => a + p.uniqueSize, 0) + storeBytes, [projects, storeBytes])
+  const linkedTotal = useMemo(() => projects.reduce((a, p) => a + (p.size - p.uniqueSize), 0), [projects])
   const usedGB = totalUsed / GB
 
   // high-water mark keeps the meter scale stable while deleting (no render-time
@@ -48,7 +52,7 @@ export function PanelApp(): ReactNode {
   const oldest = useMemo(() => [...projects].sort((a, b) => a.lastUsed - b.lastUsed), [projects])
   const visible = oldest.slice(0, VISIBLE_ROWS)
   const staleSet = useMemo(() => projects.filter((p) => (Date.now() - p.lastUsed) / DAY > STALE_DAYS), [projects])
-  const freeable = staleSet.reduce((a, p) => a + p.size, 0)
+  const freeable = staleSet.reduce((a, p) => a + p.uniqueSize, 0)
 
   const removeMany = useCallback(
     async (ids: string[], label?: string) => {
@@ -66,7 +70,6 @@ export function PanelApp(): ReactNode {
     [flashToast],
   )
 
-  const { store, pruning, prune } = usePnpmStore()
   const pruneStore = useCallback(async () => {
     const result = await prune()
     if (result?.ok) {
@@ -147,6 +150,7 @@ export function PanelApp(): ReactNode {
             usedGB={usedGB}
             trackMaxGB={trackMaxGB}
             accent={accent}
+            linkedBytes={linkedTotal}
           />
           <Separator />
           {projects.length === 0 ? (

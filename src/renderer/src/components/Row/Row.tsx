@@ -114,7 +114,15 @@ export function Row({
         {relativeTime(p.lastUsed)}
       </div>
       <div style={{ display: showActions && sizeStyle !== 'plain' ? 'none' : 'flex', justifyContent: 'flex-end' }}>
-        <SizeViz style={sizeStyle} bytes={p.size} maxBytes={maxBytes} stale={stale} accent={accent} density={density} />
+        <SizeViz
+          style={sizeStyle}
+          bytes={p.uniqueSize}
+          apparentBytes={p.size}
+          maxBytes={maxBytes}
+          stale={stale}
+          accent={accent}
+          density={density}
+        />
       </div>
       {showActions && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

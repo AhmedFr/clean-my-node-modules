@@ -10,8 +10,10 @@ export interface Project {
   absPath: string
   /** Detected framework kind, drives the row icon. */
   kind: FrameworkKind
-  /** Size of node_modules in bytes. */
+  /** Apparent size of node_modules in bytes (≈ what `du`/Finder show). */
   size: number
+  /** Bytes actually freed by deleting node_modules now (apparent minus the pnpm-store-backed `.pnpm` subtree). */
+  uniqueSize: number
   /** Last-used timestamp (ms since epoch). */
   lastUsed: number
   /** Project's own favicon/logo as a data URL, when one was found. */
