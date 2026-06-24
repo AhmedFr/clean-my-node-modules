@@ -43,8 +43,12 @@ export async function measureNodeModules(nmPath: string): Promise<NodeModulesSiz
 async function pnpmStoreBackedSize(pnpmDir: string): Promise<number> {
   try {
     if (!(await stat(pnpmDir)).isDirectory()) return 0
-  } catch {
-    return 0
+  } catch (err) {
+    // Only a missing path means "not pnpm-managed". Let real I/O failures
+    // (EPERM, EIO, EMFILE…) propagate so we never overstate freeable bytes.
+    const code = (err as NodeJS.ErrnoException).code
+    if (code === 'ENOENT' || code === 'ENOTDIR') return 0
+    throw err
   }
   return folderSize(pnpmDir)
 }

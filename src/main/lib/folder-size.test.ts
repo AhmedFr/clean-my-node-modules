@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { folderSize, measureNodeModules, parseDuKb } from './folder-size'
 
 describe('parseDuKb', () => {
@@ -58,5 +58,42 @@ describe('measureNodeModules', () => {
     const { apparent, unique } = await measureNodeModules(plain)
     expect(apparent).toBeGreaterThan(0)
     expect(unique).toBe(apparent)
+  })
+
+  describe('when stat on .pnpm fails', () => {
+    afterEach(() => {
+      vi.doUnmock('node:fs/promises')
+      vi.resetModules()
+    })
+
+    async function loadWithStatError(code: string) {
+      vi.resetModules()
+      vi.doMock('node:fs/promises', async (importOriginal) => {
+        const actual = await importOriginal<typeof import('node:fs/promises')>()
+        return {
+          ...actual,
+          stat: vi.fn(async (p: Parameters<typeof actual.stat>[0]) => {
+            if (String(p).endsWith('.pnpm')) {
+              const err = new Error(`stat failed: ${code}`) as NodeJS.ErrnoException
+              err.code = code
+              throw err
+            }
+            return actual.stat(p)
+          }),
+        }
+      })
+      return (await import('./folder-size')).measureNodeModules
+    }
+
+    it('returns 0 shared (fully unique) on a missing-path error', async () => {
+      const measure = await loadWithStatError('ENOTDIR')
+      const { apparent, unique } = await measure(nm)
+      expect(unique).toBe(apparent) // .pnpm treated as absent
+    })
+
+    it('propagates real I/O errors instead of overstating freeable bytes', async () => {
+      const measure = await loadWithStatError('EACCES')
+      await expect(measure(nm)).rejects.toMatchObject({ code: 'EACCES' })
+    })
   })
 })
