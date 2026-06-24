@@ -50,7 +50,7 @@ export function LauncherApp(): ReactNode {
   const [confirm, setConfirm] = useState<Project | null>(null)
   const [reclaimed, setReclaimed] = useState(0)
   const { toast, flashToast } = useToast<LauncherToast>()
-  const { store, pruning, prune } = usePnpmStore()
+  const { store, pruning, prune, refresh } = usePnpmStore()
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -346,7 +346,15 @@ export function LauncherApp(): ReactNode {
 
           {/* ---------- Body ---------- */}
           {view === 'scanning' && <ScanningView accent={accent} onDone={() => setView('list')} />}
-          {view === 'settings' && <SettingsView settings={settings} setSetting={setSetting} accent={accent} />}
+          {view === 'settings' && (
+            <SettingsView
+              settings={settings}
+              setSetting={setSetting}
+              accent={accent}
+              store={store}
+              onRefreshStore={() => void refresh()}
+            />
+          )}
           {view === 'list' && (
             <>
               <div className="cc-listhead">

@@ -1,7 +1,9 @@
 import { PixelStepper } from '@renderer/components/PixelStepper'
+import { PnpmStoreSettings } from '@renderer/components/PnpmStoreSettings'
 import { Segmented } from '@renderer/components/Segmented'
 import { Toggle } from '@renderer/components/Toggle'
 import type { SetSetting } from '@renderer/hooks/useSettings'
+import type { PnpmStoreInfo } from '@shared/pnpm-store.types'
 import type { Settings } from '@shared/settings.types'
 import type { ReactNode } from 'react'
 
@@ -35,10 +37,12 @@ interface SettingsViewProps {
   settings: Settings
   setSetting: SetSetting
   accent: string
+  store: PnpmStoreInfo | null
+  onRefreshStore: () => void
 }
 
 /** Full-window settings view. */
-export function SettingsView({ settings, setSetting, accent }: SettingsViewProps): ReactNode {
+export function SettingsView({ settings, setSetting, accent, store, onRefreshStore }: SettingsViewProps): ReactNode {
   const gb = settings.thresholdGB
   return (
     <div style={{ padding: '12px 18px 22px' }}>
@@ -82,6 +86,14 @@ export function SettingsView({ settings, setSetting, accent }: SettingsViewProps
       <SettingsRow label="Threshold notifications" hint="Show a desktop alert the moment you cross the limit">
         <Toggle on={settings.notify} accent={accent} onToggle={() => setSetting('notify', !settings.notify)} />
       </SettingsRow>
+      <div style={{ height: 1, background: 'var(--surface-1)' }} />
+      <div style={{ padding: '13px 4px 4px' }}>
+        <div style={{ fontSize: 13.5, fontWeight: 550, color: 'var(--text)' }}>pnpm store</div>
+        <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 2 }}>
+          Override detection if the store or pnpm can't be found automatically
+        </div>
+      </div>
+      <PnpmStoreSettings settings={settings} setSetting={setSetting} store={store} onRefresh={onRefreshStore} />
       <div style={{ height: 1, background: 'var(--surface-1)' }} />
       <SettingsRow label="Uninstall" hint="Move Clean and its preferences to the Trash">
         <button
