@@ -20,8 +20,14 @@ export function registerIpc(ctx: AppContext): void {
 
   ipcMain.handle(IPC.scan, () => ctx.runScan())
 
-  ipcMain.handle(IPC.getPnpmStore, (_e, force?: boolean) => getPnpmStoreInfo(force))
-  ipcMain.handle(IPC.prunePnpmStore, () => prunePnpmStore())
+  ipcMain.handle(IPC.getPnpmStore, (_e, force?: boolean) => {
+    const s = ctx.settings.get()
+    return getPnpmStoreInfo(force, { storePath: s.pnpmStorePath, binaryPath: s.pnpmBinaryPath })
+  })
+  ipcMain.handle(IPC.prunePnpmStore, () => {
+    const s = ctx.settings.get()
+    return prunePnpmStore({ storePath: s.pnpmStorePath, binaryPath: s.pnpmBinaryPath })
+  })
 
   ipcMain.handle(IPC.deleteNodeModules, async (_e, id: string) => {
     const project = ctx.projects.all.find((p) => p.id === id)
