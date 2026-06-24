@@ -1,7 +1,8 @@
 import { constants } from 'node:fs'
-import { access, readdir } from 'node:fs/promises'
+import { access } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { delimiter, dirname, join } from 'node:path'
+import { nvmNodeBins, versionManagerBinDirs } from './runtime-bins'
 
 /**
  * Candidate `node` binary locations, PATH first, then well-known installs.
@@ -11,38 +12,11 @@ import { delimiter, dirname, join } from 'node:path'
  * PATH, which usually has neither a version-manager node (nvm/volta/asdf)
  * nor Homebrew's bin — so PATH alone is not enough.
  *
- * `nvmNodeBins` is the list of nvm version `bin` dirs (newest first); it is
- * passed in so the pure candidate ordering stays testable.
+ * `nvmBins` is the list of nvm version `bin` dirs (newest first); it is passed
+ * in so the pure candidate ordering stays testable.
  */
-export function nodeCandidates(env: NodeJS.ProcessEnv, home: string, nvmNodeBins: string[] = []): string[] {
-  const fromPath = (env.PATH ?? '')
-    .split(delimiter)
-    .filter(Boolean)
-    .map((dir) => join(dir, 'node'))
-  const wellKnown = [
-    env.PNPM_HOME ? join(env.PNPM_HOME, 'node') : null,
-    ...nvmNodeBins.map((dir) => join(dir, 'node')),
-    join(home, '.volta', 'bin', 'node'),
-    join(home, '.asdf', 'shims', 'node'),
-    '/opt/homebrew/bin/node',
-    '/usr/local/bin/node',
-    '/usr/bin/node',
-  ].filter((p): p is string => p !== null)
-  return [...new Set([...fromPath, ...wellKnown])]
-}
-
-/** nvm keeps each version under ~/.nvm/versions/node/<v>/bin; newest first. */
-async function nvmNodeBins(home: string): Promise<string[]> {
-  const base = join(home, '.nvm', 'versions', 'node')
-  try {
-    const versions = await readdir(base)
-    return versions
-      .sort()
-      .reverse()
-      .map((v) => join(base, v, 'bin'))
-  } catch {
-    return []
-  }
+export function nodeCandidates(env: NodeJS.ProcessEnv, home: string, nvmBins: string[] = []): string[] {
+  return versionManagerBinDirs(env, home, nvmBins).map((dir) => join(dir, 'node'))
 }
 
 let resolved: string | null | undefined
