@@ -60,9 +60,9 @@ export class ProjectStore {
   private load(): void {
     try {
       const raw = JSON.parse(readFileSync(this.filePath, 'utf8')) as CacheShape
-      // Backfill uniqueSize for caches written before the real-vs-linked split;
-      // the next scan replaces these with accurate values.
-      this.projects = (raw.projects ?? []).map((p) => ({ ...p, uniqueSize: p.uniqueSize ?? p.size }))
+      // Pre-split caches have no uniqueSize; leave it undefined (= unknown) so
+      // the UI can prompt a rescan instead of pretending the split is 0.
+      this.projects = raw.projects ?? []
       this.lastScan = raw.lastScanTime ?? 0
     } catch {
       this.projects = []

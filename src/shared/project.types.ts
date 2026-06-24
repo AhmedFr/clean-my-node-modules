@@ -12,8 +12,8 @@ export interface Project {
   kind: FrameworkKind
   /** Apparent size of node_modules in bytes (≈ what `du`/Finder show). */
   size: number
-  /** Bytes actually freed by deleting node_modules now (apparent minus the pnpm-store-backed `.pnpm` subtree). */
-  uniqueSize: number
+  /** Bytes actually freed by deleting node_modules now (apparent minus the pnpm-store-backed `.pnpm` subtree). Undefined for caches written before the real/linked split — rescan to populate. */
+  uniqueSize?: number
   /** Last-used timestamp (ms since epoch). */
   lastUsed: number
   /** Project's own favicon/logo as a data URL, when one was found. */
