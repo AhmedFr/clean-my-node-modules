@@ -13,7 +13,9 @@ const SOURCE_LABEL: Record<PnpmStoreInfo['source'], string> = {
 function statusLine(store: PnpmStoreInfo | null): string {
   if (!store) return 'Checking…'
   if (store.available) {
-    return `${store.displayPath} · ${formatSizeStr(store.sizeBytes)} · ${SOURCE_LABEL[store.source]}`
+    const label = SOURCE_LABEL[store.source]
+    const base = `${store.displayPath} · ${formatSizeStr(store.sizeBytes)}`
+    return label ? `${base} · ${label}` : base
   }
   return store.reason ?? 'pnpm store not found'
 }
@@ -75,9 +77,7 @@ function PathRow({
 /** Manual pnpm store / binary overrides with a live detection status line. */
 export function PnpmStoreSettings({ settings, setSetting, store, onRefresh }: PnpmStoreSettingsProps): ReactNode {
   const apply = (key: 'pnpmStorePath' | 'pnpmBinaryPath', value: string): void => {
-    void setSetting(key, value)
-    // give the main process a tick to persist before re-resolving
-    setTimeout(onRefresh, 50)
+    void setSetting(key, value).then(() => onRefresh())
   }
   return (
     <div>

@@ -2,7 +2,7 @@ import { DEFAULT_SETTINGS } from '@shared/settings.constants'
 import type { Settings } from '@shared/settings.types'
 import { useCallback, useEffect, useState } from 'react'
 
-export type SetSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => void
+export type SetSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => Promise<Settings>
 
 /** Live settings synced with the main process; `loaded` is false until the first fetch resolves. */
 export function useSettings(): [Settings, SetSetting, boolean] {
@@ -26,7 +26,7 @@ export function useSettings(): [Settings, SetSetting, boolean] {
 
   const setSetting = useCallback<SetSetting>((key, value) => {
     setSettings((prev) => ({ ...prev, [key]: value }))
-    void window.clean.setSetting(key, value)
+    return window.clean.setSetting(key, value)
   }, [])
 
   return [settings, setSetting, loaded]
