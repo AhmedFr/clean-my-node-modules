@@ -1,6 +1,7 @@
 import { AppIcon } from '@renderer/components/AppIcon'
 import { Gauge } from '@renderer/components/Gauge'
 import { Kbd } from '@renderer/components/Kbd'
+import { RescanHint } from '@renderer/components/RescanHint'
 import { Row } from '@renderer/components/Row'
 import { Segmented } from '@renderer/components/Segmented'
 import { UIIcon } from '@renderer/components/UIIcon'
@@ -68,6 +69,7 @@ export function LauncherApp(): ReactNode {
     () => projects.reduce((a, p) => a + (p.uniqueSize !== undefined ? p.size - p.uniqueSize : 0), 0),
     [projects],
   )
+  const needsRescan = useMemo(() => projects.some((p) => p.uniqueSize === undefined), [projects])
   const maxBytes = useMemo(() => Math.max(1, ...projects.map((p) => p.uniqueSize ?? p.size)), [projects])
   const ratio = totalUsed / threshold
   const status = statusColor(ratio, accent)
@@ -387,52 +389,55 @@ export function LauncherApp(): ReactNode {
                   accent={accent}
                 />
               ) : (
-                <div ref={listRef} className="cc-list" style={listMaxH ? { maxHeight: listMaxH } : undefined}>
-                  <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
-                    <div
-                      className="cc-hl"
-                      style={{
-                        top: hl.top,
-                        height: hl.height,
-                        opacity: hl.on ? 1 : 0,
-                        background: 'var(--surface-2)',
-                        boxShadow: 'inset 0 0 0 1px var(--hairline)',
-                      }}
-                    />
-                    {filtered.length === 0 ? (
+                <>
+                  {needsRescan && <RescanHint accent={accent} onRescan={rescan} />}
+                  <div ref={listRef} className="cc-list" style={listMaxH ? { maxHeight: listMaxH } : undefined}>
+                    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
                       <div
+                        className="cc-hl"
                         style={{
-                          padding: '40px 20px',
-                          textAlign: 'center',
-                          color: 'var(--text-dim)',
-                          fontSize: 13,
+                          top: hl.top,
+                          height: hl.height,
+                          opacity: hl.on ? 1 : 0,
+                          background: 'var(--surface-2)',
+                          boxShadow: 'inset 0 0 0 1px var(--hairline)',
                         }}
-                      >
-                        No folders match “{query}”.
-                      </div>
-                    ) : (
-                      filtered.map((p, i) => (
-                        <Row
-                          key={p.id}
-                          p={p}
-                          selected={i === sel}
-                          density={settings.density}
-                          sizeStyle={settings.sizeStyle}
-                          maxBytes={maxBytes}
-                          accent={accent}
-                          deleting={deleting.has(p.id)}
-                          rowRef={(el) => {
-                            if (el) rowEls.current[p.id] = el
+                      />
+                      {filtered.length === 0 ? (
+                        <div
+                          style={{
+                            padding: '40px 20px',
+                            textAlign: 'center',
+                            color: 'var(--text-dim)',
+                            fontSize: 13,
                           }}
-                          onSelect={() => setSel(i)}
-                          onOpen={() => doOpen(p)}
-                          onFinder={() => doFinder(p)}
-                          onDelete={() => setConfirm(p)}
-                        />
-                      ))
-                    )}
+                        >
+                          No folders match “{query}”.
+                        </div>
+                      ) : (
+                        filtered.map((p, i) => (
+                          <Row
+                            key={p.id}
+                            p={p}
+                            selected={i === sel}
+                            density={settings.density}
+                            sizeStyle={settings.sizeStyle}
+                            maxBytes={maxBytes}
+                            accent={accent}
+                            deleting={deleting.has(p.id)}
+                            rowRef={(el) => {
+                              if (el) rowEls.current[p.id] = el
+                            }}
+                            onSelect={() => setSel(i)}
+                            onOpen={() => doOpen(p)}
+                            onFinder={() => doFinder(p)}
+                            onDelete={() => setConfirm(p)}
+                          />
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </>
           )}

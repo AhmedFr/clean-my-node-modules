@@ -1,5 +1,6 @@
 import { MItem } from '@renderer/components/MItem'
 import { MiniRow } from '@renderer/components/MiniRow'
+import { RescanHint } from '@renderer/components/RescanHint'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
@@ -55,6 +56,7 @@ export function PanelApp(): ReactNode {
   useEffect(() => setMaxSeenGB((m) => Math.max(m, usedGB)), [usedGB])
   const trackMaxGB = Math.max(settings.thresholdGB * 1.5, Math.max(maxSeenGB, usedGB) * 1.06)
 
+  const needsRescan = useMemo(() => projects.some((p) => p.uniqueSize === undefined), [projects])
   const oldest = useMemo(() => [...projects].sort((a, b) => a.lastUsed - b.lastUsed), [projects])
   const visible = oldest.slice(0, VISIBLE_ROWS)
   const staleSet = useMemo(() => projects.filter((p) => (Date.now() - p.lastUsed) / DAY > STALE_DAYS), [projects])
@@ -159,6 +161,7 @@ export function PanelApp(): ReactNode {
             linkedBytes={linkedTotal}
           />
           <Separator />
+          {needsRescan && <RescanHint accent={accent} onRescan={() => setView('scan')} />}
           {projects.length === 0 ? (
             settingsLoaded ? (
               <PanelEmpty
