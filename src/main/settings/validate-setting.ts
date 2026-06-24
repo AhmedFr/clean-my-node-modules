@@ -38,6 +38,9 @@ export function coerceSetting(
       return typeof value === 'number' && Number.isFinite(value)
         ? { key, value: Math.min(MAX_THRESHOLD_GB, Math.max(MIN_THRESHOLD_GB, value)) }
         : null
+    case 'pnpmStorePath':
+    case 'pnpmBinaryPath':
+      return typeof value === 'string' ? { key, value: value.trim() } : null
     default:
       return null
   }

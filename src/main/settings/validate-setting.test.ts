@@ -46,3 +46,27 @@ describe('coerceSetting', () => {
     expect(coerceSetting('nope', 1)).toBeNull()
   })
 })
+
+describe('coerceSetting — pnpm overrides', () => {
+  it('accepts and trims a pnpm store path', () => {
+    expect(coerceSetting('pnpmStorePath', '  /Users/me/Library/pnpm/store/v11  ')).toEqual({
+      key: 'pnpmStorePath',
+      value: '/Users/me/Library/pnpm/store/v11',
+    })
+  })
+
+  it('accepts a pnpm binary path', () => {
+    expect(coerceSetting('pnpmBinaryPath', '/opt/homebrew/bin/pnpm')).toEqual({
+      key: 'pnpmBinaryPath',
+      value: '/opt/homebrew/bin/pnpm',
+    })
+  })
+
+  it('clears an override when given an empty/whitespace string', () => {
+    expect(coerceSetting('pnpmStorePath', '   ')).toEqual({ key: 'pnpmStorePath', value: '' })
+  })
+
+  it('rejects a non-string override', () => {
+    expect(coerceSetting('pnpmBinaryPath', 42)).toBeNull()
+  })
+})
