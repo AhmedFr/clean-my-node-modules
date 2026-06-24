@@ -23,6 +23,7 @@ export function Row({
 }: RowProps): ReactNode {
   const [hover, setHover] = useState(false)
   const stale = staleness(p.lastUsed)
+  const real = p.uniqueSize ?? p.size
   const roomy = density === 'roomy'
   const showActions = selected || hover
 
@@ -116,7 +117,7 @@ export function Row({
       <div style={{ display: showActions && sizeStyle !== 'plain' ? 'none' : 'flex', justifyContent: 'flex-end' }}>
         <SizeViz
           style={sizeStyle}
-          bytes={p.uniqueSize}
+          bytes={real}
           apparentBytes={p.size}
           maxBytes={maxBytes}
           stale={stale}

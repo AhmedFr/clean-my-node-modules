@@ -39,8 +39,14 @@ export function PanelApp(): ReactNode {
 
   // "Real" disk: each project's own freeable bytes plus the pnpm store counted once.
   const storeBytes = store?.available ? store.sizeBytes : 0
-  const totalUsed = useMemo(() => projects.reduce((a, p) => a + p.uniqueSize, 0) + storeBytes, [projects, storeBytes])
-  const linkedTotal = useMemo(() => projects.reduce((a, p) => a + (p.size - p.uniqueSize), 0), [projects])
+  const totalUsed = useMemo(
+    () => projects.reduce((a, p) => a + (p.uniqueSize ?? p.size), 0) + storeBytes,
+    [projects, storeBytes],
+  )
+  const linkedTotal = useMemo(
+    () => projects.reduce((a, p) => a + (p.uniqueSize !== undefined ? p.size - p.uniqueSize : 0), 0),
+    [projects],
+  )
   const usedGB = totalUsed / GB
 
   // high-water mark keeps the meter scale stable while deleting (no render-time
@@ -52,7 +58,7 @@ export function PanelApp(): ReactNode {
   const oldest = useMemo(() => [...projects].sort((a, b) => a.lastUsed - b.lastUsed), [projects])
   const visible = oldest.slice(0, VISIBLE_ROWS)
   const staleSet = useMemo(() => projects.filter((p) => (Date.now() - p.lastUsed) / DAY > STALE_DAYS), [projects])
-  const freeable = staleSet.reduce((a, p) => a + p.uniqueSize, 0)
+  const freeable = staleSet.reduce((a, p) => a + (p.uniqueSize ?? p.size), 0)
 
   const removeMany = useCallback(
     async (ids: string[], label?: string) => {

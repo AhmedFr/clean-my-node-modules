@@ -9,9 +9,11 @@ import type { MiniRowProps } from './MiniRow.types'
 export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProps): ReactNode {
   const [h, setH] = useState(false)
   const stale = staleness(p.lastUsed)
-  const linked = p.size > p.uniqueSize ? p.size - p.uniqueSize : 0
+  const known = p.uniqueSize !== undefined
+  const real = p.uniqueSize ?? p.size
+  const linked = known && p.size > real ? p.size - real : 0
   const sizeTip = linked
-    ? `${formatSizeStr(p.uniqueSize)} freeable now · ${formatSizeStr(linked)} linked to the pnpm store`
+    ? `${formatSizeStr(real)} freeable now · ${formatSizeStr(linked)} linked to the pnpm store`
     : undefined
   return (
     <div
@@ -84,7 +86,7 @@ export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProp
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {formatSizeStr(p.uniqueSize)}
+            {formatSizeStr(real)}
           </span>
           {linked > 0 && (
             <span

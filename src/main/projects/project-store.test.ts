@@ -16,7 +16,10 @@ describe('ProjectStore legacy cache', () => {
   it('leaves uniqueSize undefined for entries written before the real/linked split', () => {
     writeFileSync(
       file,
-      JSON.stringify({ projects: [{ id: 'a', name: 'x', path: '~/x', absPath: '/x', kind: 'node', size: 100, lastUsed: 1 }], lastScanTime: 5 }),
+      JSON.stringify({
+        projects: [{ id: 'a', name: 'x', path: '~/x', absPath: '/x', kind: 'node', size: 100, lastUsed: 1 }],
+        lastScanTime: 5,
+      }),
     )
     const store = new ProjectStore(file)
     expect(store.all[0].uniqueSize).toBeUndefined()
@@ -25,7 +28,12 @@ describe('ProjectStore legacy cache', () => {
   it('preserves a real uniqueSize when present', () => {
     writeFileSync(
       file,
-      JSON.stringify({ projects: [{ id: 'a', name: 'x', path: '~/x', absPath: '/x', kind: 'node', size: 100, uniqueSize: 40, lastUsed: 1 }], lastScanTime: 5 }),
+      JSON.stringify({
+        projects: [
+          { id: 'a', name: 'x', path: '~/x', absPath: '/x', kind: 'node', size: 100, uniqueSize: 40, lastUsed: 1 },
+        ],
+        lastScanTime: 5,
+      }),
     )
     const store = new ProjectStore(file)
     expect(store.all[0].uniqueSize).toBe(40)

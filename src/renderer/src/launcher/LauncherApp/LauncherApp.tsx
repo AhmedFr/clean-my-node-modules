@@ -60,9 +60,15 @@ export function LauncherApp(): ReactNode {
   // "Real" disk: each project's own freeable bytes plus the pnpm store counted once
   // (package content shared across projects lives in the store, never double-counted).
   const storeBytes = store?.available ? store.sizeBytes : 0
-  const totalUsed = useMemo(() => projects.reduce((a, p) => a + p.uniqueSize, 0) + storeBytes, [projects, storeBytes])
-  const linkedTotal = useMemo(() => projects.reduce((a, p) => a + (p.size - p.uniqueSize), 0), [projects])
-  const maxBytes = useMemo(() => Math.max(1, ...projects.map((p) => p.uniqueSize)), [projects])
+  const totalUsed = useMemo(
+    () => projects.reduce((a, p) => a + (p.uniqueSize ?? p.size), 0) + storeBytes,
+    [projects, storeBytes],
+  )
+  const linkedTotal = useMemo(
+    () => projects.reduce((a, p) => a + (p.uniqueSize !== undefined ? p.size - p.uniqueSize : 0), 0),
+    [projects],
+  )
+  const maxBytes = useMemo(() => Math.max(1, ...projects.map((p) => p.uniqueSize ?? p.size)), [projects])
   const ratio = totalUsed / threshold
   const status = statusColor(ratio, accent)
 
@@ -70,7 +76,7 @@ export function LauncherApp(): ReactNode {
     const q = query.trim().toLowerCase()
     const arr = projects.filter((p) => !q || p.name.toLowerCase().includes(q) || p.path.toLowerCase().includes(q))
     return [...arr].sort((a, b) => {
-      if (sortBy === 'size') return b.uniqueSize - a.uniqueSize
+      if (sortBy === 'size') return (b.uniqueSize ?? b.size) - (a.uniqueSize ?? a.size)
       if (sortBy === 'name') return a.name.localeCompare(b.name)
       return a.lastUsed - b.lastUsed // oldest first
     })
@@ -136,7 +142,7 @@ export function LauncherApp(): ReactNode {
         setReclaimed((r) => r + freed)
         flashToast({
           icon: UIIcon.checkCircle,
-          text: `Reclaimed ${formatSizeStr(freed || p.uniqueSize)} · ${p.name}`,
+          text: `Reclaimed ${formatSizeStr(freed || (p.uniqueSize ?? p.size))} · ${p.name}`,
           tone: 'good',
         })
       })
@@ -459,9 +465,9 @@ export function LauncherApp(): ReactNode {
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  Delete <b>{confirm.name}</b>’s node_modules? Frees{' '}
-                  <b style={{ color: '#fff' }}>{formatSizeStr(confirm.uniqueSize)}</b>
-                  {confirm.size > confirm.uniqueSize ? (
+                  Delete <b>{confirm.name}</b>'s node_modules? Frees{' '}
+                  <b style={{ color: '#fff' }}>{formatSizeStr(confirm.uniqueSize ?? confirm.size)}</b>
+                  {confirm.uniqueSize !== undefined && confirm.size > confirm.uniqueSize ? (
                     <span style={{ color: 'var(--text-dim)' }}>
                       {' '}
                       ({formatSizeStr(confirm.size - confirm.uniqueSize)} linked stays in the pnpm store)
