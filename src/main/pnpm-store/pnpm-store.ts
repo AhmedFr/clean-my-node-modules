@@ -47,6 +47,8 @@ async function readStoreInfo(): Promise<PnpmStoreInfo> {
     displayPath: '',
     sizeBytes: 0,
     checkedAt: Date.now(),
+    source: 'none',
+    canPrune: false,
   }
   const pnpm = await findPnpm()
   if (!pnpm) return unavailable
@@ -61,6 +63,8 @@ async function readStoreInfo(): Promise<PnpmStoreInfo> {
       displayPath: abbreviateHome(path),
       sizeBytes: await folderSize(path),
       checkedAt: Date.now(),
+      source: 'pnpm',
+      canPrune: true,
     }
   } catch {
     return unavailable
