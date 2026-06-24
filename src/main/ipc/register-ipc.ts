@@ -1,6 +1,7 @@
 import { IPC } from '@shared/ipc.constants'
 import { app, BrowserWindow, ipcMain, screen } from 'electron'
 import { uninstallApp } from '../actions/app-actions'
+import { pickPath } from '../actions/pick-path'
 import { deleteNodeModules, openProject, revealInFinder } from '../actions/project-actions'
 import type { AppContext } from '../app-context.types'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
@@ -62,6 +63,7 @@ export function registerIpc(ctx: AppContext): void {
   ipcMain.on(IPC.quitApp, () => app.quit())
 
   ipcMain.handle(IPC.uninstall, () => uninstallApp())
+  ipcMain.handle(IPC.pickPath, (_e, mode: 'file' | 'folder') => pickPath(mode))
 
   ipcMain.on(IPC.setWindowHeight, (e, height: number) => {
     const win = BrowserWindow.fromWebContents(e.sender)

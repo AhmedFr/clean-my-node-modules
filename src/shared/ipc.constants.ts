@@ -16,6 +16,7 @@ export const IPC = {
   getLastScanTime: 'scan:last-time',
   getPnpmStore: 'pnpm-store:get',
   prunePnpmStore: 'pnpm-store:prune',
+  pickPath: 'dialog:pick-path',
   // events (main -> renderer)
   onScanProgress: 'scan:progress',
   onProjectsChanged: 'projects:changed',
