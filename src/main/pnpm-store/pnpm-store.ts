@@ -1,8 +1,11 @@
 import { execFile } from 'node:child_process'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
+import { dirname, join } from 'node:path'
 import { promisify } from 'node:util'
 import type { PnpmPruneResult, PnpmStoreInfo } from '@shared/pnpm-store.types'
+import { app } from 'electron'
 import { abbreviateHome } from '../lib/abbreviate-home'
 import { folderSize } from '../lib/folder-size'
 import { pnpmExecEnv } from './find-node'
@@ -11,8 +14,6 @@ import { inferStoreDir } from './infer-store'
 
 const execFileAsync = promisify(execFile)
 
-/** Sizing a multi-GB store with du isn't free; reuse results briefly. */
-const INFO_TTL_MS = 5 * 60_000
 /** `pnpm store prune` rewrites the store index and can be slow on big stores. */
 const PRUNE_TIMEOUT_MS = 10 * 60_000
 
@@ -21,17 +22,69 @@ export interface StoreOverrides {
   binaryPath?: string
 }
 
+// Sizing a multi-GB store with `du` costs seconds, so the result is cached in
+// memory AND persisted to disk: a launch shows the last-known size instantly and
+// only recomputes when forced (a scan finished, a prune, or a manual refresh).
+interface StoreCache {
+  key: string
+  info: PnpmStoreInfo
+}
+
 let cached: PnpmStoreInfo | null = null
 let cachedKey = ''
+let diskLoaded = false
+let inFlight: Promise<PnpmStoreInfo> | null = null
+let inFlightKey = ''
 
 const keyOf = (o: StoreOverrides): string => `${o.storePath ?? ''}|${o.binaryPath ?? ''}`
+const cacheFile = (): string => join(app.getPath('userData'), 'pnpm-store-cache.json')
+
+function loadDiskCache(): void {
+  if (diskLoaded) return
+  diskLoaded = true
+  try {
+    const raw = JSON.parse(readFileSync(cacheFile(), 'utf8')) as StoreCache
+    if (raw?.info) {
+      cached = raw.info
+      cachedKey = raw.key ?? ''
+    }
+  } catch {
+    // no cache on disk yet
+  }
+}
+
+function saveDiskCache(): void {
+  if (!cached) return
+  try {
+    const file = cacheFile()
+    mkdirSync(dirname(file), { recursive: true })
+    writeFileSync(file, JSON.stringify({ key: cachedKey, info: cached } satisfies StoreCache))
+  } catch (err) {
+    console.error('Failed to persist pnpm store cache', err)
+  }
+}
 
 export async function getPnpmStoreInfo(force = false, overrides: StoreOverrides = {}): Promise<PnpmStoreInfo> {
+  loadDiskCache()
   const key = keyOf(overrides)
-  if (!force && cached && key === cachedKey && Date.now() - cached.checkedAt < INFO_TTL_MS) return cached
-  cached = await readStoreInfo(overrides)
-  cachedKey = key
-  return cached
+  // Unforced: return the cached size instantly (from memory or disk) when keys match.
+  if (!force && cached && key === cachedKey) return cached
+  // Coalesce concurrent recomputes for the same target (e.g. a scan + a manual refresh).
+  if (inFlight && inFlightKey === key) return inFlight
+
+  const pending = (async (): Promise<PnpmStoreInfo> => {
+    const info = await readStoreInfo(overrides)
+    cached = info
+    cachedKey = key
+    saveDiskCache()
+    return info
+  })()
+  inFlight = pending
+  inFlightKey = key
+  void pending.finally(() => {
+    if (inFlight === pending) inFlight = null
+  })
+  return pending
 }
 
 async function isDir(path: string): Promise<boolean> {

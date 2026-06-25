@@ -1,5 +1,5 @@
 import { IPC } from '@shared/ipc.constants'
-import { app, BrowserWindow, ipcMain, screen } from 'electron'
+import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import { uninstallApp } from '../actions/app-actions'
 import { pickPath } from '../actions/pick-path'
 import { deleteNodeModules, openProject, revealInFinder } from '../actions/project-actions'
@@ -29,6 +29,11 @@ export function registerIpc(ctx: AppContext): void {
     const s = ctx.settings.get()
     return prunePnpmStore({ storePath: s.pnpmStorePath, binaryPath: s.pnpmBinaryPath })
   })
+
+  ipcMain.handle(IPC.getPackages, () => ctx.packages.get())
+  ipcMain.handle(IPC.computePackages, (_e, force?: boolean) =>
+    ctx.packages.compute(ctx.projects.all, ctx.settings.get(), force),
+  )
 
   ipcMain.handle(IPC.deleteNodeModules, async (_e, id: string) => {
     const project = ctx.projects.all.find((p) => p.id === id)
@@ -61,6 +66,11 @@ export function registerIpc(ctx: AppContext): void {
   })
 
   ipcMain.on(IPC.quitApp, () => app.quit())
+
+  ipcMain.handle(IPC.openExternal, (_e, url: unknown) => {
+    // Only ever hand https URLs to the OS — never arbitrary schemes from the renderer.
+    if (typeof url === 'string' && /^https:\/\//.test(url)) return shell.openExternal(url)
+  })
 
   ipcMain.handle(IPC.uninstall, () => uninstallApp())
   ipcMain.handle(IPC.pickPath, (_e, mode: 'file' | 'folder') => pickPath(mode))

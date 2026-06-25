@@ -5,6 +5,7 @@ import { dirname, join } from 'node:path'
 import type { Project, ScanProgress } from '@shared/project.types'
 import { abbreviateHome } from '../lib/abbreviate-home'
 import { measureNodeModules } from '../lib/folder-size'
+import { mapLimit } from '../lib/map-limit'
 import { detectKind } from './detect-kind'
 import { findProjectIcon } from './find-project-icon'
 import { resolveProjectName } from './resolve-name'
@@ -121,17 +122,4 @@ async function lastUsedTime(projectDir: string): Promise<number> {
   )
   const max = Math.max(...times)
   return max > 0 ? max : Date.now()
-}
-
-async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
-  const results: R[] = new Array(items.length)
-  let next = 0
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (next < items.length) {
-      const i = next++
-      results[i] = await fn(items[i])
-    }
-  })
-  await Promise.all(workers)
-  return results
 }

@@ -30,3 +30,5 @@ export type UIIconName =
   | 'x'
   | 'hdd'
   | 'power'
+  | 'box'
+  | 'externalLink'

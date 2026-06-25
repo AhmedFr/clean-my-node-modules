@@ -34,6 +34,8 @@ export function coerceSetting(
       return typeof value === 'boolean' ? { key, value } : null
     case 'onboarded':
       return typeof value === 'boolean' ? { key, value } : null
+    case 'checkUpdates':
+      return typeof value === 'boolean' ? { key, value } : null
     case 'thresholdGB':
       return typeof value === 'number' && Number.isFinite(value)
         ? { key, value: Math.min(MAX_THRESHOLD_GB, Math.max(MIN_THRESHOLD_GB, value)) }

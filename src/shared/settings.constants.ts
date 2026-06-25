@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
   scanInterval: 'daily',
   notify: true,
   onboarded: false,
+  checkUpdates: true,
 }
 
 export const SCAN_INTERVAL_MS: Record<Exclude<Settings['scanInterval'], 'manual'>, number> = {

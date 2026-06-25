@@ -6,16 +6,19 @@ import type { GaugeProps } from './Gauge.types'
 const CELLS = 16
 
 /** Header threshold gauge — pixel-cell bar matching the menu meter. */
-export function Gauge({ used, threshold, accent, linkedBytes = 0 }: GaugeProps): ReactNode {
+export function Gauge({ used, threshold, accent, linkedBytes = 0, calculating = false }: GaugeProps): ReactNode {
   const usedGB = used / GB
   const thresholdGB = threshold / GB
-  const usedTip =
-    linkedBytes > 0
+  const usedTip = calculating
+    ? 'Still calculating — a background scan / pnpm store sizing is in progress, so this total will grow.'
+    : linkedBytes > 0
       ? `Real disk used (packages counted once). A further ${formatSizeStr(linkedBytes)} is linked to the pnpm store and shared across projects.`
       : undefined
   const trackMaxGB = Math.max(thresholdGB * 1.5, usedGB * 1.05)
   const limitPos = Math.min(0.94, thresholdGB / trackMaxGB)
   const limitCellIdx = Math.min(CELLS - 1, Math.max(0, Math.floor(limitPos * CELLS)))
+  // Where the filled cells end — the ghost shimmer covers the rest while computing.
+  const filledFrac = Math.min(1, Math.max(0, usedGB / trackMaxGB))
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
@@ -31,7 +34,7 @@ export function Gauge({ used, threshold, accent, linkedBytes = 0 }: GaugeProps):
       >
         {formatSizeStr(used)}
       </div>
-      <div style={{ display: 'flex', gap: 1.5, width: 132 }}>
+      <div style={{ position: 'relative', display: 'flex', gap: 1.5, width: 132 }}>
         {Array.from({ length: CELLS }).map((_, i) => {
           const p = ((i + 0.5) / CELLS) * trackMaxGB
           const filled = p <= usedGB
@@ -67,6 +70,21 @@ export function Gauge({ used, threshold, accent, linkedBytes = 0 }: GaugeProps):
             />
           )
         })}
+        {calculating && (
+          <div
+            className="cc-ghost"
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: `${filledFrac * 100}%`,
+              right: 0,
+              borderRadius: 2,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
       </div>
     </div>
   )
