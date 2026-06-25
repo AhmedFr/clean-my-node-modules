@@ -64,6 +64,14 @@ export function LauncherApp(): ReactNode {
   const scanning = !!scanProgress && !scanProgress.done
   const calculating = storeLoading || scanning
 
+  // The pnpm store can change during a scan (new installs), so re-size it once a
+  // scan finishes. The cached size shows instantly meanwhile; this refreshes it.
+  const wasScanning = useRef(false)
+  useEffect(() => {
+    if (wasScanning.current && !scanning) void refresh()
+    wasScanning.current = scanning
+  }, [scanning, refresh])
+
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const rowEls = useRef<Record<string, HTMLDivElement>>({})
