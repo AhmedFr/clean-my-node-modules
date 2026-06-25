@@ -1,4 +1,5 @@
 import { PackageRow, PackageRowSkeleton } from '@renderer/components/PackageRow'
+import { Spinner } from '@renderer/components/Spinner'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { relativeTime } from '@renderer/lib/format'
 import type { PackageEntry } from '@shared/package.types'
@@ -36,23 +37,6 @@ function formatAgo(ts: number): string {
   const h = Math.floor(m / 60)
   if (h < 24) return `${h}h ago`
   return relativeTime(ts)
-}
-
-function Spinner({ size = 12 }: { size?: number }): ReactNode {
-  return (
-    <span
-      style={{
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        border: '1.5px solid var(--surface-3)',
-        borderTopColor: 'var(--text-muted)',
-        animation: 'ccspin 0.7s linear infinite',
-        flex: 'none',
-        display: 'inline-block',
-      }}
-    />
-  )
 }
 
 /** Top bar: package count + last-scanned time + a rescan button. */

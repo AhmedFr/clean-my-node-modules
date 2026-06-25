@@ -17,15 +17,14 @@ export function Gauge({ used, threshold, accent, linkedBytes = 0, calculating = 
   const trackMaxGB = Math.max(thresholdGB * 1.5, usedGB * 1.05)
   const limitPos = Math.min(0.94, thresholdGB / trackMaxGB)
   const limitCellIdx = Math.min(CELLS - 1, Math.max(0, Math.floor(limitPos * CELLS)))
+  // Where the filled cells end — the ghost shimmer covers the rest while computing.
+  const filledFrac = Math.min(1, Math.max(0, usedGB / trackMaxGB))
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
       <div
         title={usedTip}
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
           fontSize: 13,
           fontWeight: 650,
           color: 'var(--text)',
@@ -33,21 +32,9 @@ export function Gauge({ used, threshold, accent, linkedBytes = 0, calculating = 
           whiteSpace: 'nowrap',
         }}
       >
-        {calculating && (
-          <span
-            style={{
-              width: 7,
-              height: 7,
-              borderRadius: '50%',
-              background: accent,
-              animation: 'ccpulse 1.2s ease-in-out infinite',
-              flex: 'none',
-            }}
-          />
-        )}
         {formatSizeStr(used)}
       </div>
-      <div style={{ display: 'flex', gap: 1.5, width: 132 }}>
+      <div style={{ position: 'relative', display: 'flex', gap: 1.5, width: 132 }}>
         {Array.from({ length: CELLS }).map((_, i) => {
           const p = ((i + 0.5) / CELLS) * trackMaxGB
           const filled = p <= usedGB
@@ -83,6 +70,21 @@ export function Gauge({ used, threshold, accent, linkedBytes = 0, calculating = 
             />
           )
         })}
+        {calculating && (
+          <div
+            className="cc-ghost"
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: `${filledFrac * 100}%`,
+              right: 0,
+              borderRadius: 2,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
       </div>
     </div>
   )

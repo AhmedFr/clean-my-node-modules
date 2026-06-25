@@ -4,6 +4,7 @@ import { Kbd } from '@renderer/components/Kbd'
 import { RescanHint } from '@renderer/components/RescanHint'
 import { Row } from '@renderer/components/Row'
 import { Segmented } from '@renderer/components/Segmented'
+import { Spinner } from '@renderer/components/Spinner'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { usePackages } from '@renderer/hooks/usePackages'
@@ -60,7 +61,8 @@ export function LauncherApp(): ReactNode {
   const scanProgress = useScanProgress()
   // Background work that grows the disk total after launch: a running scan, or the
   // pnpm store size still being measured (a du that can take a few seconds).
-  const calculating = storeLoading || (!!scanProgress && !scanProgress.done)
+  const scanning = !!scanProgress && !scanProgress.done
+  const calculating = storeLoading || scanning
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -609,25 +611,48 @@ export function LauncherApp(): ReactNode {
             <div className="cc-footer">
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                 <AppIcon accent={accent} size={20} />
-                {view === 'list' && !isEmpty && (
-                  <span
-                    style={{
-                      fontSize: 12.5,
-                      color: calculating
-                        ? 'var(--text-muted)'
-                        : ratio > 1
-                          ? mixColor('#fff', accent, 0.5)
-                          : 'var(--text-muted)',
-                      fontWeight: 550,
-                    }}
-                  >
-                    {calculating
-                      ? 'Calculating disk usage…'
-                      : ratio > 1
+                {view === 'list' &&
+                  !isEmpty &&
+                  (calculating ? (
+                    <span
+                      title={
+                        scanning
+                          ? 'Scanning your disk — the total is still updating.'
+                          : 'Sizing the pnpm store — the total is still updating.'
+                      }
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 7,
+                        padding: '3px 9px 3px 7px',
+                        borderRadius: 999,
+                        background: 'var(--surface-2)',
+                        boxShadow: 'inset 0 0 0 1px var(--hairline)',
+                      }}
+                    >
+                      <Spinner size={10} color={accent} />
+                      <span style={{ fontSize: 11.5, fontWeight: 650, color: 'var(--text-2)' }}>
+                        {scanning ? 'scanning' : 'pnpm'}
+                      </span>
+                      <span style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--text-dim)' }}>
+                        {scanning
+                          ? `${(scanProgress?.foldersChecked ?? 0).toLocaleString()} folders…`
+                          : 'sizing store…'}
+                      </span>
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: 12.5,
+                        color: ratio > 1 ? mixColor('#fff', accent, 0.5) : 'var(--text-muted)',
+                        fontWeight: 550,
+                      }}
+                    >
+                      {ratio > 1
                         ? `${formatSizeStr(overBy)} over your ${settings.thresholdGB} GB limit`
                         : `${(ratio * 100).toFixed(0)}% of your ${settings.thresholdGB} GB limit`}
-                  </span>
-                )}
+                    </span>
+                  ))}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 {view === 'list' && tab === 'projects' && !isEmpty && (

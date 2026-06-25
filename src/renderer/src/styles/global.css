@@ -393,14 +393,18 @@ input[type="range"] {
     transform: translateX(100%);
   }
 }
-@keyframes ccpulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.25;
-  }
+/* Transparent sweeping highlight — overlay on a still-computing area without hiding it. */
+.cc-ghost {
+  position: relative;
+  overflow: hidden;
+}
+.cc-ghost::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.16) 50%, transparent 100%);
+  animation: ccshimmer 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
