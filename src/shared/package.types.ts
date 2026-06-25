@@ -41,6 +41,8 @@ export interface PackageEntry {
   outdated?: boolean
   /** Worst-severity advisory hitting an in-use version, if any. */
   advisory?: PackageAdvisory
+  /** Worst advisory per in-use version (only versions that have one are present). */
+  advisoriesByVersion?: Record<string, PackageAdvisory>
 }
 
 /** The full inventory, persisted to disk and surfaced over IPC. */

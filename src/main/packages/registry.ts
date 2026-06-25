@@ -80,8 +80,16 @@ export async function enrichEntries(
     for (const entry of entries) versionsByName[entry.name] = inUseVersions(entry)
     const advisories = await client.fetchAdvisories(versionsByName)
     for (const entry of entries) {
-      const worst = pickWorstAdvisory(advisories[entry.name] ?? [], inUseVersions(entry))
+      const list = advisories[entry.name] ?? []
+      const versions = inUseVersions(entry)
+      const worst = pickWorstAdvisory(list, versions)
       if (worst) entry.advisory = worst
+      const byVersion: Record<string, PackageAdvisory> = {}
+      for (const version of versions) {
+        const advisory = pickWorstAdvisory(list, [version])
+        if (advisory) byVersion[version] = advisory
+      }
+      if (Object.keys(byVersion).length > 0) entry.advisoriesByVersion = byVersion
     }
     return {}
   } catch (err) {

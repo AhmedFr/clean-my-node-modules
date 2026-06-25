@@ -1,15 +1,8 @@
 import { UIIcon } from '@renderer/components/UIIcon'
 import { formatSizeStr } from '@renderer/lib/format'
-import type { AdvisorySeverity } from '@shared/package.types'
 import type { CSSProperties, ReactNode } from 'react'
+import { SEVERITY_COLOR } from './PackageRow.constants'
 import type { PackageRowProps } from './PackageRow.types'
-
-const SEVERITY_COLOR: Record<AdvisorySeverity, string> = {
-  critical: '#ef4444',
-  high: '#f87171',
-  moderate: '#fbbf24',
-  low: 'var(--text-muted)',
-}
 
 function Pill({ color, title, children }: { color: string; title?: string; children: ReactNode }): ReactNode {
   const style: CSSProperties = {
@@ -38,9 +31,10 @@ function Pill({ color, title, children }: { color: string; title?: string; child
 export function PackageRow({
   entry,
   selected = false,
+  expanded = false,
   showUpdates = true,
   onSelect,
-  onOpen,
+  onToggle,
   rowRef,
 }: PackageRowProps): ReactNode {
   const { name, versions, projectCount, multipleVersions, size, latest, outdated, advisory } = entry
@@ -57,8 +51,7 @@ export function PackageRow({
       onMouseMove={() => {
         if (!selected) onSelect?.()
       }}
-      onClick={onSelect}
-      onDoubleClick={onOpen}
+      onClick={onToggle}
       style={{
         position: 'relative',
         zIndex: 1,
@@ -131,6 +124,17 @@ export function PackageRow({
           }}
         >
           {size !== undefined ? formatSizeStr(size) : '—'}
+        </span>
+        <span
+          style={{
+            display: 'flex',
+            color: expanded ? 'var(--text-2)' : 'var(--text-faint)',
+            transition: 'transform 0.15s ease',
+            transform: expanded ? 'rotate(90deg)' : 'none',
+            flex: 'none',
+          }}
+        >
+          {UIIcon.chevronRight({ size: 14 })}
         </span>
       </div>
     </div>

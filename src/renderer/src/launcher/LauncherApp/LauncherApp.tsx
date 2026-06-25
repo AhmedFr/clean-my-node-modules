@@ -49,6 +49,7 @@ export function LauncherApp(): ReactNode {
   const [query, setQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortKey>('used')
   const [pkgSortBy, setPkgSortBy] = useState<PackageSortKey>('used')
+  const [expandedPkg, setExpandedPkg] = useState<string | null>(null)
   const [sel, setSel] = useState(0)
   const [view, setView] = useState<LauncherView>('list')
   const [tab, setTab] = useState<LauncherTab>('projects')
@@ -236,11 +237,16 @@ export function LauncherApp(): ReactNode {
         setTab(e.key === '1' ? 'projects' : e.key === '2' ? 'caches' : 'packages')
         setSel(0)
         setConfirm(null)
+        setExpandedPkg(null)
         return
       }
       if (e.key === 'Escape') {
         if (confirm) {
           setConfirm(null)
+          return
+        }
+        if (view === 'list' && tab === 'packages' && expandedPkg) {
+          setExpandedPkg(null)
           return
         }
         if (view !== 'list') {
@@ -285,7 +291,11 @@ export function LauncherApp(): ReactNode {
           setSel((s) => Math.max(0, s - 1))
         } else if (e.key === 'Enter') {
           e.preventDefault()
-          openNpm(pkgFiltered[sel])
+          const p = pkgFiltered[sel]
+          if (!p) return
+          // ⌘↵ opens npm; plain ↵ toggles the detail panel.
+          if (meta) openNpm(p)
+          else setExpandedPkg((prev) => (prev === p.name ? null : p.name))
         }
         return
       }
@@ -322,6 +332,7 @@ export function LauncherApp(): ReactNode {
     pkgFiltered,
     openNpm,
     refreshPackages,
+    expandedPkg,
   ])
 
   // The window is hidden (not destroyed) on blur/esc, so it keeps its React
@@ -333,6 +344,7 @@ export function LauncherApp(): ReactNode {
       setConfirm(null)
       setQuery('')
       setSel(0)
+      setExpandedPkg(null)
       requestAnimationFrame(() => inputRef.current?.focus())
     }
     window.addEventListener('focus', onFocus)
@@ -390,6 +402,7 @@ export function LauncherApp(): ReactNode {
                 onChange={(e) => {
                   setQuery(e.target.value)
                   setSel(0)
+                  setExpandedPkg(null)
                 }}
                 placeholder={
                   tab === 'projects'
@@ -458,6 +471,7 @@ export function LauncherApp(): ReactNode {
                     setTab(t)
                     setSel(0)
                     setConfirm(null)
+                    setExpandedPkg(null)
                   }}
                   options={[
                     { value: 'projects', label: 'Projects' },
@@ -493,7 +507,9 @@ export function LauncherApp(): ReactNode {
                   enrichmentError={inventory?.enrichmentError}
                   query={query}
                   selectedIndex={sel}
+                  expandedName={expandedPkg}
                   onSelectIndex={setSel}
+                  onToggleExpand={(name) => setExpandedPkg((prev) => (prev === name ? null : name))}
                   onOpen={openNpm}
                   onRefresh={() => void refreshPackages()}
                 />
@@ -702,6 +718,13 @@ export function LauncherApp(): ReactNode {
                       {UIIcon.arrowDown({ size: 12 })} navigate
                     </span>
                     <span>
+                      <Kbd>
+                        <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
+                      </Kbd>{' '}
+                      details
+                    </span>
+                    <span>
+                      <Kbd wide>⌘</Kbd>
                       <Kbd>
                         <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
                       </Kbd>{' '}

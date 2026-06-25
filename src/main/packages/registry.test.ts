@@ -70,6 +70,20 @@ describe('enrichEntries', () => {
     expect(entries[1].advisory?.severity).toBe('high')
   })
 
+  it('records the worst advisory per in-use version', async () => {
+    const entries = [entry('lodash', [u('4.17.15'), u('4.17.21')])]
+    const client: RegistryClient = {
+      fetchLatest: async () => '4.17.21',
+      fetchAdvisories: async () => ({
+        lodash: [{ title: 'Prototype Pollution', severity: 'high', vulnerable_versions: '<4.17.21', url: 'u' }],
+      }),
+    }
+    await enrichEntries(entries, client)
+    // 4.17.15 is vulnerable, 4.17.21 is not
+    expect(entries[0].advisoriesByVersion?.['4.17.15']?.severity).toBe('high')
+    expect(entries[0].advisoriesByVersion?.['4.17.21']).toBeUndefined()
+  })
+
   it('reports an enrichmentError and preserves local data when the client throws', async () => {
     const entries = [entry('react', [u('18.0.0')])]
     entries[0].size = 1234 // local data must survive

@@ -1,4 +1,4 @@
-import { PackageRow, PackageRowSkeleton } from '@renderer/components/PackageRow'
+import { PackageDetails, PackageRow, PackageRowSkeleton } from '@renderer/components/PackageRow'
 import { Spinner } from '@renderer/components/Spinner'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { relativeTime } from '@renderer/lib/format'
@@ -21,7 +21,10 @@ interface PackagesViewProps {
   enrichmentError?: string
   query: string
   selectedIndex: number
+  /** Name of the package whose detail panel is open, if any. */
+  expandedName: string | null
   onSelectIndex: (i: number) => void
+  onToggleExpand: (name: string) => void
   onOpen: (entry: PackageEntry) => void
   /** Recompute the inventory from scratch. */
   onRefresh: () => void
@@ -116,7 +119,9 @@ export function PackagesView({
   enrichmentError,
   query,
   selectedIndex,
+  expandedName,
   onSelectIndex,
+  onToggleExpand,
   onOpen,
   onRefresh,
 }: PackagesViewProps): ReactNode {
@@ -128,7 +133,8 @@ export function PackagesView({
     const el = entry && rowEls.current[entry.name]
     if (el) setHl({ top: el.offsetTop, height: el.offsetHeight, on: true })
     else setHl((h) => ({ ...h, on: false }))
-  }, [items, selectedIndex])
+    // expandedName affects row offsets (a panel pushes rows down) → re-measure.
+  }, [items, selectedIndex, expandedName])
 
   // First compute, nothing cached yet → skeleton list (communicates shape + progress).
   if (computing && totalCount === 0) {
@@ -182,17 +188,23 @@ export function PackagesView({
             }}
           />
           {items.map((entry, i) => (
-            <PackageRow
-              key={entry.name}
-              entry={entry}
-              selected={i === selectedIndex}
-              showUpdates={checkUpdates}
-              rowRef={(el) => {
-                if (el) rowEls.current[entry.name] = el
-              }}
-              onSelect={() => onSelectIndex(i)}
-              onOpen={() => onOpen(entry)}
-            />
+            <div key={entry.name}>
+              <PackageRow
+                entry={entry}
+                selected={i === selectedIndex}
+                expanded={entry.name === expandedName}
+                showUpdates={checkUpdates}
+                rowRef={(el) => {
+                  if (el) rowEls.current[entry.name] = el
+                }}
+                onSelect={() => onSelectIndex(i)}
+                onToggle={() => {
+                  onSelectIndex(i)
+                  onToggleExpand(entry.name)
+                }}
+              />
+              {entry.name === expandedName && <PackageDetails entry={entry} onOpen={() => onOpen(entry)} />}
+            </div>
           ))}
         </div>
       )}
