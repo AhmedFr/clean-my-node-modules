@@ -130,10 +130,12 @@ export function PackagesView({
   const [hl, setHl] = useState({ top: 0, height: 0, on: false })
   useLayoutEffect(() => {
     const entry = items[selectedIndex]
-    const el = entry && rowEls.current[entry.name]
+    // The expanded row is its own solid card, so the sliding highlight skips it
+    // (a translucent highlight would otherwise double up on its header).
+    const el = entry && entry.name !== expandedName ? rowEls.current[entry.name] : undefined
     if (el) setHl({ top: el.offsetTop, height: el.offsetHeight, on: true })
     else setHl((h) => ({ ...h, on: false }))
-    // expandedName affects row offsets (a panel pushes rows down) → re-measure.
+    // expandedName also affects row offsets (a panel pushes rows down) → re-measure.
   }, [items, selectedIndex, expandedName])
 
   // First compute, nothing cached yet → skeleton list (communicates shape + progress).
@@ -187,25 +189,44 @@ export function PackagesView({
               boxShadow: 'inset 0 0 0 1px var(--hairline)',
             }}
           />
-          {items.map((entry, i) => (
-            <div key={entry.name}>
-              <PackageRow
-                entry={entry}
-                selected={i === selectedIndex}
-                expanded={entry.name === expandedName}
-                showUpdates={checkUpdates}
-                rowRef={(el) => {
-                  if (el) rowEls.current[entry.name] = el
-                }}
-                onSelect={() => onSelectIndex(i)}
-                onToggle={() => {
-                  onSelectIndex(i)
-                  onToggleExpand(entry.name)
-                }}
-              />
-              {entry.name === expandedName && <PackageDetails entry={entry} onOpen={() => onOpen(entry)} />}
-            </div>
-          ))}
+          {items.map((entry, i) => {
+            const open = entry.name === expandedName
+            return (
+              <div
+                key={entry.name}
+                // When open, the item itself becomes one solid rounded card (header +
+                // details share a single surface) — an accordion, not an appended box.
+                style={
+                  open
+                    ? {
+                        position: 'relative',
+                        zIndex: 1,
+                        background: 'var(--surface-2)',
+                        borderRadius: 10,
+                        boxShadow: 'inset 0 0 0 1px var(--hairline)',
+                        overflow: 'hidden',
+                      }
+                    : undefined
+                }
+              >
+                <PackageRow
+                  entry={entry}
+                  selected={i === selectedIndex}
+                  expanded={open}
+                  showUpdates={checkUpdates}
+                  rowRef={(el) => {
+                    if (el) rowEls.current[entry.name] = el
+                  }}
+                  onSelect={() => onSelectIndex(i)}
+                  onToggle={() => {
+                    onSelectIndex(i)
+                    onToggleExpand(entry.name)
+                  }}
+                />
+                {open && <PackageDetails entry={entry} onOpen={() => onOpen(entry)} />}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
