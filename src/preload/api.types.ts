@@ -18,6 +18,7 @@ export interface CleanApi {
   setWindowHeight(height: number): void
   quitApp(): void
   uninstall(): Promise<void>
+  pickPath(mode: 'file' | 'folder'): Promise<string | null>
   onScanProgress(fn: (p: ScanProgress) => void): () => void
   onProjectsChanged(fn: (projects: Project[]) => void): () => void
   onSettingsChanged(fn: (settings: Settings) => void): () => void

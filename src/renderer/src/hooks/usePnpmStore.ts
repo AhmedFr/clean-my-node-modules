@@ -5,6 +5,7 @@ interface UsePnpmStore {
   store: PnpmStoreInfo | null
   pruning: boolean
   prune: () => Promise<PnpmPruneResult | null>
+  refresh: () => Promise<void>
 }
 
 /** Global pnpm store size + prune action, synced with the main process. */
@@ -35,5 +36,9 @@ export function usePnpmStore(): UsePnpmStore {
     }
   }, [])
 
-  return { store, pruning, prune }
+  const refresh = useCallback(async (): Promise<void> => {
+    setStore(await window.clean.getPnpmStore(true))
+  }, [])
+
+  return { store, pruning, prune, refresh }
 }

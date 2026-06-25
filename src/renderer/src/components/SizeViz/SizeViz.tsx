@@ -1,12 +1,17 @@
 import { mixColor } from '@renderer/lib/colors'
-import { formatSize } from '@renderer/lib/format'
+import { formatSize, formatSizeStr } from '@renderer/lib/format'
 import type { ReactNode } from 'react'
 import type { SizeVizProps } from './SizeViz.types'
 
-export function SizeViz({ style, bytes, maxBytes, stale, accent, density }: SizeVizProps): ReactNode {
+export function SizeViz({ style, bytes, apparentBytes, maxBytes, stale, accent, density }: SizeVizProps): ReactNode {
   const s = formatSize(bytes)
   const ratio = Math.max(0.04, Math.min(1, bytes / maxBytes))
   const col = mixColor('#8a8f98', accent, stale)
+  const linked = apparentBytes && apparentBytes > bytes ? apparentBytes - bytes : 0
+  const tip = linked
+    ? `${formatSizeStr(bytes)} freeable now · ${formatSizeStr(linked)} linked to the pnpm store (shared across projects — reclaim it with pnpm store prune)`
+    : undefined
+
   const num = (
     <span
       style={{
@@ -21,13 +26,45 @@ export function SizeViz({ style, bytes, maxBytes, stale, accent, density }: Size
     </span>
   )
 
+  const linkedLine = linked ? (
+    <span
+      style={{
+        fontSize: 10,
+        fontWeight: 550,
+        color: 'var(--text-faint)',
+        whiteSpace: 'nowrap',
+        fontVariantNumeric: 'tabular-nums',
+      }}
+    >
+      {formatSizeStr(linked)} linked
+    </span>
+  ) : null
+
   if (style === 'plain') {
-    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', minWidth: 70 }}>{num}</div>
+    return (
+      <div
+        title={tip}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          gap: 1,
+          minWidth: 70,
+        }}
+      >
+        {num}
+        {linkedLine}
+      </div>
+    )
   }
 
   if (style === 'bar') {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, minWidth: 96 }}>
+      <div
+        title={tip}
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, minWidth: 96 }}
+      >
         {num}
         <div style={{ width: 88, height: 5, borderRadius: 3, background: 'var(--surface-2)', overflow: 'hidden' }}>
           <div
@@ -40,6 +77,7 @@ export function SizeViz({ style, bytes, maxBytes, stale, accent, density }: Size
             }}
           />
         </div>
+        {linkedLine}
       </div>
     )
   }
@@ -47,8 +85,14 @@ export function SizeViz({ style, bytes, maxBytes, stale, accent, density }: Size
   const R = 13
   const C = 2 * Math.PI * R
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 92, justifyContent: 'flex-end' }}>
-      {num}
+    <div
+      title={tip}
+      style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 92, justifyContent: 'flex-end' }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+        {num}
+        {linkedLine}
+      </div>
       <svg width="32" height="32" viewBox="0 0 32 32" style={{ flex: '0 0 auto' }}>
         <circle cx="16" cy="16" r={R} fill="none" stroke="var(--surface-2)" strokeWidth="3.5" />
         <circle

@@ -79,24 +79,26 @@ export function PnpmStoreRow({ store, pruning, onPrune }: PnpmStoreRowProps): Re
         >
           {formatSizeStr(store.sizeBytes)}
         </span>
-        <button
-          onClick={onPrune}
-          disabled={pruning}
-          title="Remove packages no project references (pnpm store prune)"
-          style={{
-            border: '1px solid var(--surface-4)',
-            cursor: pruning ? 'default' : 'pointer',
-            padding: '4px 9px',
-            borderRadius: 7,
-            background: 'var(--surface-1)',
-            color: pruning ? 'var(--text-dim)' : 'rgba(255,255,255,0.85)',
-            fontSize: 11.5,
-            fontWeight: 600,
-            flex: 'none',
-          }}
-        >
-          {pruning ? 'Pruning…' : 'Prune'}
-        </button>
+        {store.canPrune && (
+          <button
+            onClick={onPrune}
+            disabled={pruning}
+            title="Remove packages no project references (pnpm store prune)"
+            style={{
+              border: '1px solid var(--surface-4)',
+              cursor: pruning ? 'default' : 'pointer',
+              padding: '4px 9px',
+              borderRadius: 7,
+              background: 'var(--surface-1)',
+              color: pruning ? 'var(--text-dim)' : 'rgba(255,255,255,0.85)',
+              fontSize: 11.5,
+              fontWeight: 600,
+              flex: 'none',
+            }}
+          >
+            {pruning ? 'Pruning…' : 'Prune'}
+          </button>
+        )}
       </div>
     </>
   )

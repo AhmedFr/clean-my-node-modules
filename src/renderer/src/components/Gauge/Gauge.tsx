@@ -6,9 +6,13 @@ import type { GaugeProps } from './Gauge.types'
 const CELLS = 16
 
 /** Header threshold gauge — pixel-cell bar matching the menu meter. */
-export function Gauge({ used, threshold, accent }: GaugeProps): ReactNode {
+export function Gauge({ used, threshold, accent, linkedBytes = 0 }: GaugeProps): ReactNode {
   const usedGB = used / GB
   const thresholdGB = threshold / GB
+  const usedTip =
+    linkedBytes > 0
+      ? `Real disk used (packages counted once). A further ${formatSizeStr(linkedBytes)} is linked to the pnpm store and shared across projects.`
+      : undefined
   const trackMaxGB = Math.max(thresholdGB * 1.5, usedGB * 1.05)
   const limitPos = Math.min(0.94, thresholdGB / trackMaxGB)
   const limitCellIdx = Math.min(CELLS - 1, Math.max(0, Math.floor(limitPos * CELLS)))
@@ -16,6 +20,7 @@ export function Gauge({ used, threshold, accent }: GaugeProps): ReactNode {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
       <div
+        title={usedTip}
         style={{
           fontSize: 13,
           fontWeight: 650,

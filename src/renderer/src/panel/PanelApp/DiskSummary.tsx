@@ -12,6 +12,8 @@ interface DiskSummaryProps {
   usedGB: number
   trackMaxGB: number
   accent: string
+  /** Bytes linked to the pnpm store across projects (shared, counted once). */
+  linkedBytes?: number
 }
 
 /** Panel header: total node_modules size, the limit + over/free lines, and the meter. */
@@ -22,6 +24,7 @@ export function DiskSummary({
   usedGB,
   trackMaxGB,
   accent,
+  linkedBytes = 0,
 }: DiskSummaryProps): ReactNode {
   const over = totalUsed > threshold
   const status = statusColor(totalUsed / threshold, accent)
@@ -41,6 +44,11 @@ export function DiskSummary({
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 5 }}>
         <span
+          title={
+            linkedBytes > 0
+              ? `Real disk used (packages counted once). A further ${formatSizeStr(linkedBytes)} is linked to the pnpm store and shared across projects.`
+              : undefined
+          }
           style={{
             fontSize: 27,
             fontWeight: 700,
@@ -102,6 +110,11 @@ export function DiskSummary({
           )}
         </div>
       </div>
+      {linkedBytes > 0 && (
+        <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4 }}>
+          + {formatSizeStr(linkedBytes)} linked in pnpm store · shared
+        </div>
+      )}
       <PixelMeter usedGB={usedGB} thresholdGB={thresholdGB} trackMaxGB={trackMaxGB} accent={accent} cells={32} />
     </div>
   )

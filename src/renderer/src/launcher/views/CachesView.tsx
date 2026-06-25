@@ -41,13 +41,13 @@ export function CachesView({
                 ? 'Pruning unreferenced packages…'
                 : storeAvailable
                   ? (store?.displayPath ?? '')
-                  : 'pnpm not found on your PATH'
+                  : (store?.reason ?? 'pnpm store not found')
             }
             size={storeAvailable ? store?.sizeBytes : undefined}
             selected={selectedIndex === 0 && storeAvailable}
             disabled={!storeAvailable}
             busy={pruning}
-            actionLabel="Prune"
+            actionLabel={store?.canPrune ? 'Prune' : undefined}
             onSelect={() => onSelectIndex(0)}
             onAction={onPrune}
           />

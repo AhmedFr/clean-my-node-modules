@@ -1,6 +1,7 @@
 import { AppIcon } from '@renderer/components/AppIcon'
 import { Gauge } from '@renderer/components/Gauge'
 import { Kbd } from '@renderer/components/Kbd'
+import { RescanHint } from '@renderer/components/RescanHint'
 import { Row } from '@renderer/components/Row'
 import { Segmented } from '@renderer/components/Segmented'
 import { UIIcon } from '@renderer/components/UIIcon'
@@ -49,7 +50,7 @@ export function LauncherApp(): ReactNode {
   const [confirm, setConfirm] = useState<Project | null>(null)
   const [reclaimed, setReclaimed] = useState(0)
   const { toast, flashToast } = useToast<LauncherToast>()
-  const { store, pruning, prune } = usePnpmStore()
+  const { store, pruning, prune, refresh } = usePnpmStore()
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -57,8 +58,19 @@ export function LauncherApp(): ReactNode {
   const rootRef = useRef<HTMLDivElement>(null)
   useAutoHeight(rootRef)
 
-  const totalUsed = useMemo(() => projects.reduce((a, p) => a + p.size, 0), [projects])
-  const maxBytes = useMemo(() => Math.max(1, ...projects.map((p) => p.size)), [projects])
+  // "Real" disk: each project's own freeable bytes plus the pnpm store counted once
+  // (package content shared across projects lives in the store, never double-counted).
+  const storeBytes = store?.available ? store.sizeBytes : 0
+  const totalUsed = useMemo(
+    () => projects.reduce((a, p) => a + (p.uniqueSize ?? p.size), 0) + storeBytes,
+    [projects, storeBytes],
+  )
+  const linkedTotal = useMemo(
+    () => projects.reduce((a, p) => a + (p.uniqueSize !== undefined ? p.size - p.uniqueSize : 0), 0),
+    [projects],
+  )
+  const needsRescan = useMemo(() => projects.some((p) => p.uniqueSize === undefined), [projects])
+  const maxBytes = useMemo(() => Math.max(1, ...projects.map((p) => p.uniqueSize ?? p.size)), [projects])
   const ratio = totalUsed / threshold
   const status = statusColor(ratio, accent)
 
@@ -66,7 +78,7 @@ export function LauncherApp(): ReactNode {
     const q = query.trim().toLowerCase()
     const arr = projects.filter((p) => !q || p.name.toLowerCase().includes(q) || p.path.toLowerCase().includes(q))
     return [...arr].sort((a, b) => {
-      if (sortBy === 'size') return b.size - a.size
+      if (sortBy === 'size') return (b.uniqueSize ?? b.size) - (a.uniqueSize ?? a.size)
       if (sortBy === 'name') return a.name.localeCompare(b.name)
       return a.lastUsed - b.lastUsed // oldest first
     })
@@ -132,7 +144,7 @@ export function LauncherApp(): ReactNode {
         setReclaimed((r) => r + freed)
         flashToast({
           icon: UIIcon.checkCircle,
-          text: `Reclaimed ${formatSizeStr(freed || p.size)} · ${p.name}`,
+          text: `Reclaimed ${formatSizeStr(freed || (p.uniqueSize ?? p.size))} · ${p.name}`,
           tone: 'good',
         })
       })
@@ -301,7 +313,7 @@ export function LauncherApp(): ReactNode {
                 }}
                 placeholder={tab === 'projects' ? 'Search node_modules by project or path…' : 'Search caches…'}
               />
-              <Gauge used={totalUsed} threshold={threshold} accent={accent} />
+              <Gauge used={totalUsed} threshold={threshold} accent={accent} linkedBytes={linkedTotal} />
               <button
                 className="cc-close"
                 onClick={() => void window.clean.closeWindow()}
@@ -334,7 +346,15 @@ export function LauncherApp(): ReactNode {
 
           {/* ---------- Body ---------- */}
           {view === 'scanning' && <ScanningView accent={accent} onDone={() => setView('list')} />}
-          {view === 'settings' && <SettingsView settings={settings} setSetting={setSetting} accent={accent} />}
+          {view === 'settings' && (
+            <SettingsView
+              settings={settings}
+              setSetting={setSetting}
+              accent={accent}
+              store={store}
+              onRefreshStore={() => void refresh()}
+            />
+          )}
           {view === 'list' && (
             <>
               <div className="cc-listhead">
@@ -377,52 +397,55 @@ export function LauncherApp(): ReactNode {
                   accent={accent}
                 />
               ) : (
-                <div ref={listRef} className="cc-list" style={listMaxH ? { maxHeight: listMaxH } : undefined}>
-                  <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
-                    <div
-                      className="cc-hl"
-                      style={{
-                        top: hl.top,
-                        height: hl.height,
-                        opacity: hl.on ? 1 : 0,
-                        background: 'var(--surface-2)',
-                        boxShadow: 'inset 0 0 0 1px var(--hairline)',
-                      }}
-                    />
-                    {filtered.length === 0 ? (
+                <>
+                  {needsRescan && <RescanHint accent={accent} onRescan={rescan} />}
+                  <div ref={listRef} className="cc-list" style={listMaxH ? { maxHeight: listMaxH } : undefined}>
+                    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
                       <div
+                        className="cc-hl"
                         style={{
-                          padding: '40px 20px',
-                          textAlign: 'center',
-                          color: 'var(--text-dim)',
-                          fontSize: 13,
+                          top: hl.top,
+                          height: hl.height,
+                          opacity: hl.on ? 1 : 0,
+                          background: 'var(--surface-2)',
+                          boxShadow: 'inset 0 0 0 1px var(--hairline)',
                         }}
-                      >
-                        No folders match “{query}”.
-                      </div>
-                    ) : (
-                      filtered.map((p, i) => (
-                        <Row
-                          key={p.id}
-                          p={p}
-                          selected={i === sel}
-                          density={settings.density}
-                          sizeStyle={settings.sizeStyle}
-                          maxBytes={maxBytes}
-                          accent={accent}
-                          deleting={deleting.has(p.id)}
-                          rowRef={(el) => {
-                            if (el) rowEls.current[p.id] = el
+                      />
+                      {filtered.length === 0 ? (
+                        <div
+                          style={{
+                            padding: '40px 20px',
+                            textAlign: 'center',
+                            color: 'var(--text-dim)',
+                            fontSize: 13,
                           }}
-                          onSelect={() => setSel(i)}
-                          onOpen={() => doOpen(p)}
-                          onFinder={() => doFinder(p)}
-                          onDelete={() => setConfirm(p)}
-                        />
-                      ))
-                    )}
+                        >
+                          No folders match “{query}”.
+                        </div>
+                      ) : (
+                        filtered.map((p, i) => (
+                          <Row
+                            key={p.id}
+                            p={p}
+                            selected={i === sel}
+                            density={settings.density}
+                            sizeStyle={settings.sizeStyle}
+                            maxBytes={maxBytes}
+                            accent={accent}
+                            deleting={deleting.has(p.id)}
+                            rowRef={(el) => {
+                              if (el) rowEls.current[p.id] = el
+                            }}
+                            onSelect={() => setSel(i)}
+                            onOpen={() => doOpen(p)}
+                            onFinder={() => doFinder(p)}
+                            onDelete={() => setConfirm(p)}
+                          />
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </>
           )}
@@ -455,8 +478,16 @@ export function LauncherApp(): ReactNode {
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  Delete <b>{confirm.name}</b>’s node_modules? Frees{' '}
-                  <b style={{ color: '#fff' }}>{formatSizeStr(confirm.size)}</b>.
+                  Delete <b>{confirm.name}</b>'s node_modules? Frees{' '}
+                  <b style={{ color: '#fff' }}>{formatSizeStr(confirm.uniqueSize ?? confirm.size)}</b>
+                  {confirm.uniqueSize !== undefined && confirm.size > confirm.uniqueSize ? (
+                    <span style={{ color: 'var(--text-dim)' }}>
+                      {' '}
+                      ({formatSizeStr(confirm.size - confirm.uniqueSize)} linked stays in the pnpm store)
+                    </span>
+                  ) : (
+                    '.'
+                  )}
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

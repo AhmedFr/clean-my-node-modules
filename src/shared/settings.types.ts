@@ -10,4 +10,8 @@ export interface Settings {
   scanInterval: ScanInterval
   notify: boolean
   onboarded: boolean
+  /** Manual override: path to the pnpm content-addressable store dir. */
+  pnpmStorePath?: string
+  /** Manual override: path to the pnpm executable. */
+  pnpmBinaryPath?: string
 }

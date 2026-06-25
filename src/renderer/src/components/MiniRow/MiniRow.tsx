@@ -9,6 +9,12 @@ import type { MiniRowProps } from './MiniRow.types'
 export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProps): ReactNode {
   const [h, setH] = useState(false)
   const stale = staleness(p.lastUsed)
+  const known = p.uniqueSize !== undefined
+  const real = p.uniqueSize ?? p.size
+  const linked = known && p.size > real ? p.size - real : 0
+  const sizeTip = linked
+    ? `${formatSizeStr(real)} freeable now · ${formatSizeStr(linked)} linked to the pnpm store`
+    : undefined
   return (
     <div
       onMouseEnter={() => setH(true)}
@@ -71,16 +77,25 @@ export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProp
           {UIIcon.trash({ size: 14 })}
         </button>
       ) : (
-        <span
-          style={{
-            fontSize: 12.5,
-            fontWeight: 650,
-            color: 'rgba(255,255,255,0.82)',
-            fontVariantNumeric: 'tabular-nums',
-          }}
-        >
-          {formatSizeStr(p.size)}
-        </span>
+        <div title={sizeTip} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+          <span
+            style={{
+              fontSize: 12.5,
+              fontWeight: 650,
+              color: 'rgba(255,255,255,0.82)',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {formatSizeStr(real)}
+          </span>
+          {linked > 0 && (
+            <span
+              style={{ fontSize: 9.5, fontWeight: 550, color: 'var(--text-faint)', fontVariantNumeric: 'tabular-nums' }}
+            >
+              {formatSizeStr(linked)} linked
+            </span>
+          )}
+        </div>
       )}
     </div>
   )

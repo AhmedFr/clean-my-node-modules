@@ -26,6 +26,7 @@ const api: CleanApi = {
   setWindowHeight: (height) => ipcRenderer.send(IPC.setWindowHeight, height),
   quitApp: () => ipcRenderer.send(IPC.quitApp),
   uninstall: () => ipcRenderer.invoke(IPC.uninstall),
+  pickPath: (mode) => ipcRenderer.invoke(IPC.pickPath, mode),
   onScanProgress: subscribe(IPC.onScanProgress),
   onProjectsChanged: subscribe(IPC.onProjectsChanged),
   onSettingsChanged: subscribe(IPC.onSettingsChanged),
