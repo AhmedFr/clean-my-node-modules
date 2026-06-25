@@ -6,20 +6,23 @@ import { Row } from '@renderer/components/Row'
 import { Segmented } from '@renderer/components/Segmented'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
+import { usePackages } from '@renderer/hooks/usePackages'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
 import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
 import { mixColor, statusColor } from '@renderer/lib/colors'
 import { formatSizeStr, GB } from '@renderer/lib/format'
+import type { PackageEntry } from '@shared/package.types'
 import type { Project } from '@shared/project.types'
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { CachesView } from '../views/CachesView'
 import { EmptyView } from '../views/EmptyView'
 import { Onboarding } from '../views/Onboarding'
+import { PackagesView } from '../views/PackagesView'
 import { ScanningView } from '../views/ScanningView'
 import { SettingsView } from '../views/SettingsView'
-import type { LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
+import type { LauncherTab, LauncherToast, LauncherView, PackageSortKey, SortKey } from './LauncherApp.types'
 import { SortTab } from './SortTab'
 
 const NEXT_SCAN_LABEL: Record<string, string> = {
@@ -43,6 +46,7 @@ export function LauncherApp(): ReactNode {
 
   const [query, setQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortKey>('used')
+  const [pkgSortBy, setPkgSortBy] = useState<PackageSortKey>('used')
   const [sel, setSel] = useState(0)
   const [view, setView] = useState<LauncherView>('list')
   const [tab, setTab] = useState<LauncherTab>('projects')
@@ -51,6 +55,7 @@ export function LauncherApp(): ReactNode {
   const [reclaimed, setReclaimed] = useState(0)
   const { toast, flashToast } = useToast<LauncherToast>()
   const { store, pruning, prune, refresh } = usePnpmStore()
+  const { inventory, computing: pkgComputing, ensure: ensurePackages, refresh: refreshPackages } = usePackages()
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -87,6 +92,36 @@ export function LauncherApp(): ReactNode {
   useEffect(() => {
     if (sel >= filtered.length) setSel(Math.max(0, filtered.length - 1))
   }, [filtered.length, sel])
+
+  // Packages tab: filter by name + sort by the active package sort key.
+  const pkgFiltered = useMemo(() => {
+    const all = inventory?.packages ?? []
+    const q = query.trim().toLowerCase()
+    const arr = all.filter((p) => !q || p.name.toLowerCase().includes(q))
+    return [...arr].sort((a, b) => {
+      if (pkgSortBy === 'size') return (b.size ?? 0) - (a.size ?? 0)
+      if (pkgSortBy === 'name') return a.name.localeCompare(b.name)
+      if (pkgSortBy === 'updates') {
+        const score = (p: PackageEntry): number => (p.advisory ? 2 : 0) + (p.outdated ? 1 : 0)
+        return score(b) - score(a) || b.projectCount - a.projectCount
+      }
+      return b.projectCount - a.projectCount // 'used'
+    })
+  }, [inventory, query, pkgSortBy])
+
+  // Compute the inventory the first time the Packages tab is opened.
+  useEffect(() => {
+    if (view === 'list' && tab === 'packages') ensurePackages()
+  }, [view, tab, ensurePackages])
+
+  const openNpm = useCallback(
+    (entry: PackageEntry | undefined) => {
+      if (!entry) return
+      void window.clean.openExternal(`https://www.npmjs.com/package/${entry.name}`)
+      flashToast({ icon: UIIcon.externalLink, text: `Opening ${entry.name} on npm…`, tone: 'neutral' })
+    },
+    [flashToast],
+  )
 
   // Cap the list height to VISIBLE_ROWS by measuring a real row, so the count
   // holds across densities and the window stays short enough to show the footer.
@@ -177,12 +212,13 @@ export function LauncherApp(): ReactNode {
       }
       if (meta && (e.key === 'r' || e.key === 'R')) {
         e.preventDefault()
-        rescan()
+        if (tab === 'packages') void refreshPackages()
+        else rescan()
         return
       }
-      if (meta && (e.key === '1' || e.key === '2')) {
+      if (meta && (e.key === '1' || e.key === '2' || e.key === '3')) {
         e.preventDefault()
-        setTab(e.key === '1' ? 'projects' : 'caches')
+        setTab(e.key === '1' ? 'projects' : e.key === '2' ? 'caches' : 'packages')
         setSel(0)
         setConfirm(null)
         return
@@ -225,6 +261,19 @@ export function LauncherApp(): ReactNode {
         }
         return
       }
+      if (tab === 'packages') {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          setSel((s) => Math.min(pkgFiltered.length - 1, s + 1))
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          setSel((s) => Math.max(0, s - 1))
+        } else if (e.key === 'Enter') {
+          e.preventDefault()
+          openNpm(pkgFiltered[sel])
+        }
+        return
+      }
       if (e.key === 'ArrowDown') {
         e.preventDefault()
         setSel((s) => Math.min(filtered.length - 1, s + 1))
@@ -242,7 +291,23 @@ export function LauncherApp(): ReactNode {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [filtered, sel, view, tab, confirm, query, commitDelete, doOpen, rescan, store, pruning, handlePrune])
+  }, [
+    filtered,
+    sel,
+    view,
+    tab,
+    confirm,
+    query,
+    commitDelete,
+    doOpen,
+    rescan,
+    store,
+    pruning,
+    handlePrune,
+    pkgFiltered,
+    openNpm,
+    refreshPackages,
+  ])
 
   // The window is hidden (not destroyed) on blur/esc, so it keeps its React
   // state. Reset to a clean search every time it regains focus, like Spotlight.
@@ -311,7 +376,13 @@ export function LauncherApp(): ReactNode {
                   setQuery(e.target.value)
                   setSel(0)
                 }}
-                placeholder={tab === 'projects' ? 'Search node_modules by project or path…' : 'Search caches…'}
+                placeholder={
+                  tab === 'projects'
+                    ? 'Search node_modules by project or path…'
+                    : tab === 'packages'
+                      ? 'Search packages…'
+                      : 'Search caches…'
+                }
               />
               <Gauge used={totalUsed} threshold={threshold} accent={accent} linkedBytes={linkedTotal} />
               <button
@@ -370,6 +441,7 @@ export function LauncherApp(): ReactNode {
                   options={[
                     { value: 'projects', label: 'Projects' },
                     { value: 'caches', label: 'Caches' },
+                    { value: 'packages', label: 'Packages' },
                   ]}
                 />
                 {tab === 'projects' && !isEmpty && (
@@ -380,8 +452,29 @@ export function LauncherApp(): ReactNode {
                     <SortTab label="Name" active={sortBy === 'name'} onClick={() => setSortBy('name')} />
                   </div>
                 )}
+                {tab === 'packages' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-faint)', marginRight: 4 }}>Sort</span>
+                    <SortTab label="Used" active={pkgSortBy === 'used'} onClick={() => setPkgSortBy('used')} />
+                    <SortTab label="Size" active={pkgSortBy === 'size'} onClick={() => setPkgSortBy('size')} />
+                    <SortTab label="Name" active={pkgSortBy === 'name'} onClick={() => setPkgSortBy('name')} />
+                    <SortTab label="Updates" active={pkgSortBy === 'updates'} onClick={() => setPkgSortBy('updates')} />
+                  </div>
+                )}
               </div>
-              {tab === 'caches' ? (
+              {tab === 'packages' ? (
+                <PackagesView
+                  items={pkgFiltered}
+                  totalCount={inventory?.packages.length ?? 0}
+                  computing={pkgComputing}
+                  checkUpdates={settings.checkUpdates}
+                  enrichmentError={inventory?.enrichmentError}
+                  query={query}
+                  selectedIndex={sel}
+                  onSelectIndex={setSel}
+                  onOpen={openNpm}
+                />
+              ) : tab === 'caches' ? (
                 <CachesView
                   store={store}
                   pruning={pruning}
@@ -547,6 +640,20 @@ export function LauncherApp(): ReactNode {
                         <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
                       </Kbd>{' '}
                       prune
+                    </span>
+                  </div>
+                )}
+                {view === 'list' && tab === 'packages' && (inventory?.packages.length ?? 0) > 0 && (
+                  <div className="cc-hints">
+                    <span>
+                      {UIIcon.arrowUp({ size: 12 })}
+                      {UIIcon.arrowDown({ size: 12 })} navigate
+                    </span>
+                    <span>
+                      <Kbd>
+                        <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
+                      </Kbd>{' '}
+                      npm
                     </span>
                   </div>
                 )}

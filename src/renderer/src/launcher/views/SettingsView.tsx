@@ -87,6 +87,17 @@ export function SettingsView({ settings, setSetting, accent, store, onRefreshSto
         <Toggle on={settings.notify} accent={accent} onToggle={() => setSetting('notify', !settings.notify)} />
       </SettingsRow>
       <div style={{ height: 1, background: 'var(--surface-1)' }} />
+      <SettingsRow
+        label="Check npm for updates & advisories"
+        hint="In the Packages tab, look up latest versions and security warnings from npmjs.org"
+      >
+        <Toggle
+          on={settings.checkUpdates}
+          accent={accent}
+          onToggle={() => setSetting('checkUpdates', !settings.checkUpdates)}
+        />
+      </SettingsRow>
+      <div style={{ height: 1, background: 'var(--surface-1)' }} />
       <div style={{ padding: '13px 4px 4px' }}>
         <div style={{ fontSize: 13.5, fontWeight: 550, color: 'var(--text)' }}>pnpm store</div>
         <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 2 }}>
