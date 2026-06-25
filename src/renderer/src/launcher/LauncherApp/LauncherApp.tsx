@@ -9,6 +9,7 @@ import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { usePackages } from '@renderer/hooks/usePackages'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
+import { useScanProgress } from '@renderer/hooks/useScanProgress'
 import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
 import { mixColor, statusColor } from '@renderer/lib/colors'
@@ -54,8 +55,12 @@ export function LauncherApp(): ReactNode {
   const [confirm, setConfirm] = useState<Project | null>(null)
   const [reclaimed, setReclaimed] = useState(0)
   const { toast, flashToast } = useToast<LauncherToast>()
-  const { store, pruning, prune, refresh } = usePnpmStore()
+  const { store, loading: storeLoading, pruning, prune, refresh } = usePnpmStore()
   const { inventory, computing: pkgComputing, ensure: ensurePackages, refresh: refreshPackages } = usePackages()
+  const scanProgress = useScanProgress()
+  // Background work that grows the disk total after launch: a running scan, or the
+  // pnpm store size still being measured (a du that can take a few seconds).
+  const calculating = storeLoading || (!!scanProgress && !scanProgress.done)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -384,7 +389,13 @@ export function LauncherApp(): ReactNode {
                       : 'Search caches…'
                 }
               />
-              <Gauge used={totalUsed} threshold={threshold} accent={accent} linkedBytes={linkedTotal} />
+              <Gauge
+                used={totalUsed}
+                threshold={threshold}
+                accent={accent}
+                linkedBytes={linkedTotal}
+                calculating={calculating}
+              />
               <button
                 className="cc-close"
                 onClick={() => void window.clean.closeWindow()}
@@ -466,6 +477,7 @@ export function LauncherApp(): ReactNode {
                 <PackagesView
                   items={pkgFiltered}
                   totalCount={inventory?.packages.length ?? 0}
+                  computedAt={inventory?.computedAt}
                   computing={pkgComputing}
                   checkUpdates={settings.checkUpdates}
                   enrichmentError={inventory?.enrichmentError}
@@ -473,6 +485,7 @@ export function LauncherApp(): ReactNode {
                   selectedIndex={sel}
                   onSelectIndex={setSel}
                   onOpen={openNpm}
+                  onRefresh={() => void refreshPackages()}
                 />
               ) : tab === 'caches' ? (
                 <CachesView
@@ -600,13 +613,19 @@ export function LauncherApp(): ReactNode {
                   <span
                     style={{
                       fontSize: 12.5,
-                      color: ratio > 1 ? mixColor('#fff', accent, 0.5) : 'var(--text-muted)',
+                      color: calculating
+                        ? 'var(--text-muted)'
+                        : ratio > 1
+                          ? mixColor('#fff', accent, 0.5)
+                          : 'var(--text-muted)',
                       fontWeight: 550,
                     }}
                   >
-                    {ratio > 1
-                      ? `${formatSizeStr(overBy)} over your ${settings.thresholdGB} GB limit`
-                      : `${(ratio * 100).toFixed(0)}% of your ${settings.thresholdGB} GB limit`}
+                    {calculating
+                      ? 'Calculating disk usage…'
+                      : ratio > 1
+                        ? `${formatSizeStr(overBy)} over your ${settings.thresholdGB} GB limit`
+                        : `${(ratio * 100).toFixed(0)}% of your ${settings.thresholdGB} GB limit`}
                   </span>
                 )}
               </div>

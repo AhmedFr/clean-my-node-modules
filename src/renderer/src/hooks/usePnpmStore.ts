@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from 'react'
 
 interface UsePnpmStore {
   store: PnpmStoreInfo | null
+  /** True until the store size has been measured at least once (du can take seconds). */
+  loading: boolean
   pruning: boolean
   prune: () => Promise<PnpmPruneResult | null>
   refresh: () => Promise<void>
@@ -11,12 +13,16 @@ interface UsePnpmStore {
 /** Global pnpm store size + prune action, synced with the main process. */
 export function usePnpmStore(): UsePnpmStore {
   const [store, setStore] = useState<PnpmStoreInfo | null>(null)
+  const [loading, setLoading] = useState(true)
   const [pruning, setPruning] = useState(false)
 
   useEffect(() => {
     let alive = true
     void window.clean.getPnpmStore().then((info) => {
-      if (alive) setStore(info)
+      if (alive) {
+        setStore(info)
+        setLoading(false)
+      }
     })
     return () => {
       alive = false
@@ -37,8 +43,13 @@ export function usePnpmStore(): UsePnpmStore {
   }, [])
 
   const refresh = useCallback(async (): Promise<void> => {
-    setStore(await window.clean.getPnpmStore(true))
+    setLoading(true)
+    try {
+      setStore(await window.clean.getPnpmStore(true))
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  return { store, pruning, prune, refresh }
+  return { store, loading, pruning, prune, refresh }
 }

@@ -5,4 +5,6 @@ export interface GaugeProps {
   accent: string
   /** Bytes linked to the pnpm store across projects, for the tooltip. */
   linkedBytes?: number
+  /** A background scan / pnpm-store sizing is still running — the total is provisional. */
+  calculating?: boolean
 }

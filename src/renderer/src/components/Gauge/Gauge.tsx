@@ -6,11 +6,12 @@ import type { GaugeProps } from './Gauge.types'
 const CELLS = 16
 
 /** Header threshold gauge — pixel-cell bar matching the menu meter. */
-export function Gauge({ used, threshold, accent, linkedBytes = 0 }: GaugeProps): ReactNode {
+export function Gauge({ used, threshold, accent, linkedBytes = 0, calculating = false }: GaugeProps): ReactNode {
   const usedGB = used / GB
   const thresholdGB = threshold / GB
-  const usedTip =
-    linkedBytes > 0
+  const usedTip = calculating
+    ? 'Still calculating — a background scan / pnpm store sizing is in progress, so this total will grow.'
+    : linkedBytes > 0
       ? `Real disk used (packages counted once). A further ${formatSizeStr(linkedBytes)} is linked to the pnpm store and shared across projects.`
       : undefined
   const trackMaxGB = Math.max(thresholdGB * 1.5, usedGB * 1.05)
@@ -22,6 +23,9 @@ export function Gauge({ used, threshold, accent, linkedBytes = 0 }: GaugeProps):
       <div
         title={usedTip}
         style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
           fontSize: 13,
           fontWeight: 650,
           color: 'var(--text)',
@@ -29,6 +33,18 @@ export function Gauge({ used, threshold, accent, linkedBytes = 0 }: GaugeProps):
           whiteSpace: 'nowrap',
         }}
       >
+        {calculating && (
+          <span
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              background: accent,
+              animation: 'ccpulse 1.2s ease-in-out infinite',
+              flex: 'none',
+            }}
+          />
+        )}
         {formatSizeStr(used)}
       </div>
       <div style={{ display: 'flex', gap: 1.5, width: 132 }}>
