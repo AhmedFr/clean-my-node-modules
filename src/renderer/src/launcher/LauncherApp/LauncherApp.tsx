@@ -7,7 +7,7 @@ import { Segmented } from '@renderer/components/Segmented'
 import { Spinner } from '@renderer/components/Spinner'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
-import { usePackages } from '@renderer/hooks/usePackages'
+import { usePackagesTab } from '@renderer/hooks/usePackagesTab'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
 import { useScanProgress } from '@renderer/hooks/useScanProgress'
@@ -24,7 +24,7 @@ import { Onboarding } from '../views/Onboarding'
 import { PackagesView } from '../views/PackagesView'
 import { ScanningView } from '../views/ScanningView'
 import { SettingsView } from '../views/SettingsView'
-import type { LauncherTab, LauncherToast, LauncherView, PackageSortKey, SortKey } from './LauncherApp.types'
+import type { LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
 import { SortTab } from './SortTab'
 
 const NEXT_SCAN_LABEL: Record<string, string> = {
@@ -48,8 +48,6 @@ export function LauncherApp(): ReactNode {
 
   const [query, setQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortKey>('used')
-  const [pkgSortBy, setPkgSortBy] = useState<PackageSortKey>('used')
-  const [expandedPkg, setExpandedPkg] = useState<string | null>(null)
   const [sel, setSel] = useState(0)
   const [view, setView] = useState<LauncherView>('list')
   const [tab, setTab] = useState<LauncherTab>('projects')
@@ -58,7 +56,18 @@ export function LauncherApp(): ReactNode {
   const [reclaimed, setReclaimed] = useState(0)
   const { toast, flashToast } = useToast<LauncherToast>()
   const { store, loading: storeLoading, pruning, prune, refresh } = usePnpmStore()
-  const { inventory, computing: pkgComputing, ensure: ensurePackages, refresh: refreshPackages } = usePackages()
+  const pkgActive = view === 'list' && tab === 'packages'
+  const {
+    inventory,
+    computing: pkgComputing,
+    sortBy: pkgSortBy,
+    setSortBy: setPkgSortBy,
+    filtered: pkgFiltered,
+    expandedName: expandedPkg,
+    toggleExpand: togglePkgExpand,
+    collapse: collapsePkg,
+    refresh: refreshPackages,
+  } = usePackagesTab(query, pkgActive)
   const scanProgress = useScanProgress()
   // Background work that grows the disk total after launch: a running scan, or the
   // pnpm store size still being measured (a du that can take a few seconds).
@@ -108,27 +117,6 @@ export function LauncherApp(): ReactNode {
   useEffect(() => {
     if (sel >= filtered.length) setSel(Math.max(0, filtered.length - 1))
   }, [filtered.length, sel])
-
-  // Packages tab: filter by name + sort by the active package sort key.
-  const pkgFiltered = useMemo(() => {
-    const all = inventory?.packages ?? []
-    const q = query.trim().toLowerCase()
-    const arr = all.filter((p) => !q || p.name.toLowerCase().includes(q))
-    return [...arr].sort((a, b) => {
-      if (pkgSortBy === 'size') return (b.size ?? 0) - (a.size ?? 0)
-      if (pkgSortBy === 'name') return a.name.localeCompare(b.name)
-      if (pkgSortBy === 'updates') {
-        const score = (p: PackageEntry): number => (p.advisory ? 2 : 0) + (p.outdated ? 1 : 0)
-        return score(b) - score(a) || b.projectCount - a.projectCount
-      }
-      return b.projectCount - a.projectCount // 'used'
-    })
-  }, [inventory, query, pkgSortBy])
-
-  // Compute the inventory the first time the Packages tab is opened.
-  useEffect(() => {
-    if (view === 'list' && tab === 'packages') ensurePackages()
-  }, [view, tab, ensurePackages])
 
   const openNpm = useCallback(
     (entry: PackageEntry | undefined) => {
@@ -237,7 +225,7 @@ export function LauncherApp(): ReactNode {
         setTab(e.key === '1' ? 'projects' : e.key === '2' ? 'caches' : 'packages')
         setSel(0)
         setConfirm(null)
-        setExpandedPkg(null)
+        collapsePkg()
         return
       }
       if (e.key === 'Escape') {
@@ -246,7 +234,7 @@ export function LauncherApp(): ReactNode {
           return
         }
         if (view === 'list' && tab === 'packages' && expandedPkg) {
-          setExpandedPkg(null)
+          collapsePkg()
           return
         }
         if (view !== 'list') {
@@ -295,7 +283,7 @@ export function LauncherApp(): ReactNode {
           if (!p) return
           // ⌘↵ opens npm; plain ↵ toggles the detail panel.
           if (meta) openNpm(p)
-          else setExpandedPkg((prev) => (prev === p.name ? null : p.name))
+          else togglePkgExpand(p.name)
         }
         return
       }
@@ -333,6 +321,8 @@ export function LauncherApp(): ReactNode {
     openNpm,
     refreshPackages,
     expandedPkg,
+    togglePkgExpand,
+    collapsePkg,
   ])
 
   // The window is hidden (not destroyed) on blur/esc, so it keeps its React
@@ -344,12 +334,12 @@ export function LauncherApp(): ReactNode {
       setConfirm(null)
       setQuery('')
       setSel(0)
-      setExpandedPkg(null)
+      collapsePkg()
       requestAnimationFrame(() => inputRef.current?.focus())
     }
     window.addEventListener('focus', onFocus)
     return () => window.removeEventListener('focus', onFocus)
-  }, [])
+  }, [collapsePkg])
 
   // keep selected row in view (projects list only)
   useEffect(() => {
@@ -402,7 +392,6 @@ export function LauncherApp(): ReactNode {
                 onChange={(e) => {
                   setQuery(e.target.value)
                   setSel(0)
-                  setExpandedPkg(null)
                 }}
                 placeholder={
                   tab === 'projects'
@@ -471,7 +460,7 @@ export function LauncherApp(): ReactNode {
                     setTab(t)
                     setSel(0)
                     setConfirm(null)
-                    setExpandedPkg(null)
+                    collapsePkg()
                   }}
                   options={[
                     { value: 'projects', label: 'Projects' },
@@ -509,7 +498,7 @@ export function LauncherApp(): ReactNode {
                   selectedIndex={sel}
                   expandedName={expandedPkg}
                   onSelectIndex={setSel}
-                  onToggleExpand={(name) => setExpandedPkg((prev) => (prev === name ? null : name))}
+                  onToggleExpand={togglePkgExpand}
                   onOpen={openNpm}
                   onRefresh={() => void refreshPackages()}
                 />
