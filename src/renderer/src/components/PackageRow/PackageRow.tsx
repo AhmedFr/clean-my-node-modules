@@ -41,6 +41,7 @@ export function PackageRow({
   showUpdates = true,
   onSelect,
   onOpen,
+  rowRef,
 }: PackageRowProps): ReactNode {
   const { name, versions, projectCount, multipleVersions, size, latest, outdated, advisory } = entry
   const versionLabel =
@@ -49,17 +50,24 @@ export function PackageRow({
 
   return (
     <div
+      ref={rowRef}
+      role="option"
+      aria-selected={selected}
+      // Hover moves the selection so the list's sliding highlight follows the cursor.
+      onMouseMove={() => {
+        if (!selected) onSelect?.()
+      }}
       onClick={onSelect}
       onDoubleClick={onOpen}
       style={{
+        position: 'relative',
+        zIndex: 1,
         display: 'flex',
         alignItems: 'center',
         gap: 11,
         padding: '10px 12px',
         borderRadius: 10,
         cursor: 'pointer',
-        background: selected ? 'var(--surface-2)' : 'transparent',
-        boxShadow: selected ? 'inset 0 0 0 1px var(--hairline)' : 'none',
       }}
     >
       <span

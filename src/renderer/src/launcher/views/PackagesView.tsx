@@ -3,7 +3,7 @@ import { Spinner } from '@renderer/components/Spinner'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { relativeTime } from '@renderer/lib/format'
 import type { PackageEntry } from '@shared/package.types'
-import type { ReactNode } from 'react'
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
 import { PACKAGES_COPY, SKELETON_ROWS } from './PackagesView.constants'
 
 interface PackagesViewProps {
@@ -120,6 +120,16 @@ export function PackagesView({
   onOpen,
   onRefresh,
 }: PackagesViewProps): ReactNode {
+  // Sliding highlight that follows the selected/hovered row, like the projects list.
+  const rowEls = useRef<Record<string, HTMLDivElement>>({})
+  const [hl, setHl] = useState({ top: 0, height: 0, on: false })
+  useLayoutEffect(() => {
+    const entry = items[selectedIndex]
+    const el = entry && rowEls.current[entry.name]
+    if (el) setHl({ top: el.offsetTop, height: el.offsetHeight, on: true })
+    else setHl((h) => ({ ...h, on: false }))
+  }, [items, selectedIndex])
+
   // First compute, nothing cached yet → skeleton list (communicates shape + progress).
   if (computing && totalCount === 0) {
     return (
@@ -160,13 +170,26 @@ export function PackagesView({
       ) : items.length === 0 ? (
         <Centered text={`No packages match “${query}”.`} />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div
+            className="cc-hl"
+            style={{
+              top: hl.top,
+              height: hl.height,
+              opacity: hl.on ? 1 : 0,
+              background: 'var(--surface-2)',
+              boxShadow: 'inset 0 0 0 1px var(--hairline)',
+            }}
+          />
           {items.map((entry, i) => (
             <PackageRow
               key={entry.name}
               entry={entry}
               selected={i === selectedIndex}
               showUpdates={checkUpdates}
+              rowRef={(el) => {
+                if (el) rowEls.current[entry.name] = el
+              }}
               onSelect={() => onSelectIndex(i)}
               onOpen={() => onOpen(entry)}
             />
