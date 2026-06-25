@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { aggregatePackages } from './aggregate'
 import type { NamedUsage } from './read-manifest'
 
-const usage = (name: string, projectId: string, version: string, dev = false): NamedUsage => ({
+const usage = (name: string, projectId: string, version: string, dev = false, unresolved = false): NamedUsage => ({
   name,
-  usage: { projectId, projectName: projectId, version, dev },
+  usage: { projectId, projectName: projectId, version, dev, ...(unresolved ? { unresolved: true } : {}) },
 })
 
 describe('aggregatePackages', () => {
@@ -33,6 +33,17 @@ describe('aggregatePackages', () => {
     ])
     expect(out.find((p) => p.name === 'react')?.multipleVersions).toBe(true)
     expect(out.find((p) => p.name === 'vue')?.multipleVersions).toBe(false)
+  })
+
+  it('excludes unresolved (declared-but-not-installed) ranges from versions and the unify signal', () => {
+    const out = aggregatePackages([
+      usage('react', 'p1', '18.3.1'),
+      usage('react', 'p2', '^18.0.0', false, true), // declared, not installed → range, not a real version
+    ])
+    const react = out.find((p) => p.name === 'react')
+    expect(react?.versions).toEqual(['18.3.1']) // the range must not appear as a version
+    expect(react?.multipleVersions).toBe(false) // no real divergence → no false "unify"
+    expect(react?.projectCount).toBe(2) // still depended on by both projects
   })
 
   it('counts distinct projects, not raw usage rows', () => {

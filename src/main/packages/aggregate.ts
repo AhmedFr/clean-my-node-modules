@@ -12,8 +12,9 @@ export function compareVersions(a: string, b: string): number {
 
 /**
  * Folds per-project usages into one PackageEntry per package name. projectCount
- * is the number of distinct projects; versions are the distinct in-use versions,
- * sorted ascending. Entries are returned sorted by reach (projectCount desc, then name).
+ * is the number of distinct projects that depend on it; versions are the distinct
+ * INSTALLED versions (unresolved declared ranges are excluded so they never read
+ * as a real version or trigger a false "unify"). Sorted by reach, then name.
  */
 export function aggregatePackages(named: NamedUsage[]): PackageEntry[] {
   const byName = new Map<string, PackageUsage[]>()
@@ -26,7 +27,7 @@ export function aggregatePackages(named: NamedUsage[]): PackageEntry[] {
   const entries: PackageEntry[] = []
   for (const [name, usages] of byName) {
     const projectCount = new Set(usages.map((u) => u.projectId)).size
-    const versions = [...new Set(usages.map((u) => u.version))].sort(compareVersions)
+    const versions = [...new Set(usages.filter((u) => !u.unresolved).map((u) => u.version))].sort(compareVersions)
     entries.push({ name, usages, projectCount, versions, multipleVersions: versions.length > 1 })
   }
 
