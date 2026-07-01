@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { buildMeterCells } from "@/lib/meter";
 import type { PixelMeterProps } from "./PixelMeter.types";
 
-// Pure + deterministic, so it renders on the server (no client JS, no flash) —
+// Pure + deterministic, so it renders on the server (no client JS, no flash),
 // unlike the original landing.js which built cells in the browser.
 export function PixelMeter({
   used,

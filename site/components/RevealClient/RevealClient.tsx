@@ -14,7 +14,7 @@ export function RevealClient() {
     };
     onScrollNav();
 
-    // scroll reveals (scroll check — reliable everywhere)
+    // scroll reveals (scroll check, reliable everywhere)
     const revealEls = Array.prototype.slice.call(
       document.querySelectorAll(".reveal"),
     ) as HTMLElement[];

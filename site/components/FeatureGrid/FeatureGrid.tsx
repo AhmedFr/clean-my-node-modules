@@ -31,7 +31,7 @@ export function FeatureGrid() {
         <div className="lp-coming reveal">
           <span className="pill">Coming soon</span>
           <p>
-            npm, yarn &amp; bun caches — and per-project build outputs like{" "}
+            npm, yarn &amp; bun caches, plus per-project build outputs like{" "}
             <code>.next</code> and <code>dist</code>.
           </p>
         </div>

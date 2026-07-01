@@ -17,7 +17,7 @@ export function Hero() {
         <p className="lp-sub reveal d2">
           Clean my node_modules lives in your menu bar and tracks every{" "}
           <code>node_modules</code> folder, your pnpm store, and every package
-          you&apos;ve installed on your Mac — see what they cost, then reclaim it
+          you&apos;ve installed on your Mac. See what they cost, then reclaim it
           safely. To the Trash, never <code>rm -rf</code>.
         </p>
         <div className="lp-cta-row reveal d2">
@@ -67,12 +67,12 @@ export function Hero() {
             </div>
           </div>
 
-          {/* dropdown — recreation of the real menu-bar panel */}
+          {/* dropdown: recreation of the real menu-bar panel */}
           <div className="scene-dropdown glass-panel">
             <AppPanel />
           </div>
 
-          {/* floating Packages card — the new whole-machine inventory */}
+          {/* floating Packages card: the new whole-machine inventory */}
           <div className="scene-packages glass-panel">
             <div className="sp-head">
               <span className="sp-title">

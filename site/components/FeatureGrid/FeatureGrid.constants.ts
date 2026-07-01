@@ -8,7 +8,7 @@ export const GRID_CARDS: GridCard[] = [
   {
     icon: "i-broom",
     title: "Prune the pnpm store",
-    copy: "Reclaim the shared store's dead versions with one safe click — it never deletes the store itself.",
+    copy: "Reclaim the shared store's dead versions with one safe click. It never deletes the store itself.",
   },
   {
     icon: "i-layers",
@@ -23,7 +23,7 @@ export const GRID_CARDS: GridCard[] = [
   {
     icon: "i-calendar",
     title: "Scheduled scans",
-    copy: "Runs every 6 hours, daily, or weekly — entirely in the background.",
+    copy: "Runs every 6 hours, daily, or weekly, entirely in the background.",
   },
   {
     icon: "i-bell",
@@ -48,6 +48,6 @@ export const GRID_CARDS: GridCard[] = [
   {
     icon: "i-grid",
     title: "Framework detection",
-    copy: "React, Next, Vue, Svelte, Node, Expo — each project, correctly tagged.",
+    copy: "React, Next, Vue, Svelte, Node, Expo: each project, correctly tagged.",
   },
 ];

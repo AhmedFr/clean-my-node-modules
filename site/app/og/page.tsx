@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Icon } from "@/components/Icon";
 import { AppPanel } from "@/components/AppPanel";
 
-// Fixed 1200×630 social card. Not a marketing page — it exists to be captured
+// Fixed 1200×630 social card. Not a marketing page; it exists to be captured
 // into public/og.png (see scripts/make-og.mjs). Kept out of search indexes.
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -70,7 +70,7 @@ export default function OgCard() {
           }}
         >
           A macOS menu bar app for every node_modules folder, your pnpm store,
-          and every package you&apos;ve installed — sized, ranked, and safe to
+          and every package you&apos;ve installed: sized, ranked, and safe to
           reclaim.
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 32 }}>
