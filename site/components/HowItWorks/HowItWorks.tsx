@@ -36,8 +36,9 @@ export function HowItWorks() {
             <div className="num">03</div>
             <h4>Clean in a click</h4>
             <p>
-              When you cross the line, review the stale folders and send them to
-              the Trash. Your disk thanks you.
+              When you cross the line, review the stale folders — or prune the
+              pnpm store, or audit a heavy package — and reclaim the space. Your
+              disk thanks you.
             </p>
             <div className="cmd">
               <span className="pmt">↵</span> 2.71 GB moved to Trash

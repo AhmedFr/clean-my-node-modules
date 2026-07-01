@@ -11,13 +11,14 @@ export function Hero() {
           Open source · macOS menu bar app
         </div>
         <h1 className="lp-h1 reveal d1">
-          Get your disk back from <span className="accent">node_modules</span>.
+          Reclaim every byte your{" "}
+          <span className="accent word">dependencies</span> cost.
         </h1>
         <p className="lp-sub reveal d2">
-          Clean my node_modules lives in your menu bar, tracks every{" "}
-          <code>node_modules</code> folder on your Mac against the GB limit you
-          set, and reclaims the stale ones safely — straight to the Trash, never{" "}
-          <code>rm -rf</code>.
+          Clean my node_modules lives in your menu bar and tracks every{" "}
+          <code>node_modules</code> folder, your pnpm store, and every package
+          you&apos;ve installed on your Mac — see what they cost, then reclaim it
+          safely. To the Trash, never <code>rm -rf</code>.
         </p>
         <div className="lp-cta-row reveal d2">
           <a className="lp-btn lp-btn-primary lp-btn-lg" href={DOWNLOAD_URL}>
@@ -69,6 +70,68 @@ export function Hero() {
           {/* dropdown — recreation of the real menu-bar panel */}
           <div className="scene-dropdown glass-panel">
             <AppPanel />
+          </div>
+
+          {/* floating Packages card — the new whole-machine inventory */}
+          <div className="scene-packages glass-panel">
+            <div className="sp-head">
+              <span className="sp-title">
+                <Icon id="i-box" />
+                Packages
+              </span>
+              <span className="sp-count">6 in use</span>
+            </div>
+            <div className="ui-sep" />
+            <div className="ui-rows">
+              <div className="ui-row pkg">
+                <span className="pico">
+                  <Icon id="i-box" />
+                </span>
+                <div className="meta">
+                  <div className="nm">lodash</div>
+                  <div className="sub">12 projects · 2 versions</div>
+                </div>
+                <div className="pright">
+                  <span className="pill unify">unify</span>
+                  <span className="sz">
+                    18<span className="u">MB</span>
+                  </span>
+                </div>
+              </div>
+              <div className="ui-row pkg">
+                <span className="pico">
+                  <Icon id="i-box" />
+                </span>
+                <div className="meta">
+                  <div className="nm">next</div>
+                  <div className="sub">5 projects · v14.2.3</div>
+                </div>
+                <div className="pright">
+                  <span className="pill upd">↑ 15.0.1</span>
+                  <span className="sz">
+                    128<span className="u">MB</span>
+                  </span>
+                </div>
+              </div>
+              <div className="ui-row pkg">
+                <span className="pico sev">
+                  <Icon id="i-shield" />
+                </span>
+                <div className="meta">
+                  <div className="nm">minimatch</div>
+                  <div className="sub">3 projects · v3.0.4</div>
+                </div>
+                <div className="pright">
+                  <span className="pill sev">
+                    <Icon id="i-alert" />
+                    high
+                  </span>
+                  <span className="sz">
+                    512<span className="u">KB</span>
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* floating toast */}

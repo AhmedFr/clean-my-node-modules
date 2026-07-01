@@ -57,8 +57,8 @@ export default function OgCard() {
             letterSpacing: "-0.02em",
           }}
         >
-          Get your disk back from{" "}
-          <span style={{ color: "var(--accent)" }}>node_modules</span>.
+          Reclaim every byte your{" "}
+          <span style={{ color: "var(--accent)" }}>dependencies</span> cost.
         </h1>
         <p
           style={{
@@ -66,11 +66,12 @@ export default function OgCard() {
             color: "var(--ink-2)",
             marginTop: 22,
             lineHeight: 1.4,
-            maxWidth: 500,
+            maxWidth: 520,
           }}
         >
-          A macOS menu bar app that finds every node_modules folder on your Mac
-          and reclaims the stale ones — safely, to the Trash.
+          A macOS menu bar app for every node_modules folder, your pnpm store,
+          and every package you&apos;ve installed — sized, ranked, and safe to
+          reclaim.
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 32 }}>
           <span

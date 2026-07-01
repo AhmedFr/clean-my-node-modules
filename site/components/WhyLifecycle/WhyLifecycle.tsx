@@ -107,9 +107,16 @@ export function WhyLifecycle() {
             Clean my node_modules works <b>both ends</b>: it trashes the stale
             project <code>node_modules</code> you&apos;ll never{" "}
             <code>npm install</code> again — <b>and</b> safely prunes your pnpm
-            store of versions nothing links to anymore.
+            store of versions nothing links to anymore, one click in the{" "}
+            <b>Caches</b> tab (it never deletes the store itself).
           </p>
         </div>
+
+        <p className="lp-explain-note reveal">
+          It&apos;s also why sizes look small on pnpm — Clean my node_modules
+          counts the shared store <b>once</b> and shows you what&apos;s really
+          yours to free, not the same bytes linked into a dozen projects.
+        </p>
       </div>
     </section>
   );

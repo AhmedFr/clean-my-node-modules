@@ -6,6 +6,21 @@ export interface GridCard {
 
 export const GRID_CARDS: GridCard[] = [
   {
+    icon: "i-broom",
+    title: "Prune the pnpm store",
+    copy: "Reclaim the shared store's dead versions with one safe click — it never deletes the store itself.",
+  },
+  {
+    icon: "i-layers",
+    title: "Real vs linked sizing",
+    copy: "On pnpm, see the bytes you'd actually free apart from what's linked into the shared store.",
+  },
+  {
+    icon: "i-shield",
+    title: "Security advisories",
+    copy: "A severity pill on any package with a known vulnerability, from the npm advisory database.",
+  },
+  {
     icon: "i-calendar",
     title: "Scheduled scans",
     copy: "Runs every 6 hours, daily, or weekly — entirely in the background.",

@@ -12,9 +12,9 @@ import { Analytics } from "@vercel/analytics/next";
 const FAVICON =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23e23d3d'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.8' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M12 4.6 19 8.5v7L12 19.4 5 15.5v-7z'/%3E%3Cpath d='M5 8.5 12 12.4l7-3.9M12 12.4v7'/%3E%3C/g%3E%3C/svg%3E";
 
-const TITLE = "Clean my node_modules — reclaim your disk from node_modules";
+const TITLE = "Clean my node_modules — reclaim the disk your dependencies cost";
 const DESCRIPTION =
-  "An open-source macOS menu bar app that finds every node_modules folder on your Mac, tracks the total against a GB limit you set, and reclaims the stale ones safely — to the Trash, never rm -rf.";
+  "An open-source macOS menu bar app that shows and reclaims all the disk your JavaScript dependencies cost — every node_modules folder, your pnpm store, and every installed package. Safely, to the Trash, never rm -rf.";
 
 // Absolute base for OG/Twitter image URLs. Auto-resolves on Vercel; override
 // with NEXT_PUBLIC_SITE_URL once a custom domain is set.
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Clean my node_modules — a macOS menu bar app that reclaims disk space from node_modules",
+        alt: "Clean my node_modules — a macOS menu bar app that reclaims the disk your dependencies cost",
       },
     ],
   },
