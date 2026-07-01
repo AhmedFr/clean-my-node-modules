@@ -1,6 +1,6 @@
 {
   "name": "clean-my-node-modules",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "macOS menu bar app that finds stale node_modules folders and reclaims disk space",
   "private": true,
   "type": "module",
