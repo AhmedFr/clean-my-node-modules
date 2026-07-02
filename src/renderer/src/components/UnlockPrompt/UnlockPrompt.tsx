@@ -45,6 +45,7 @@ export function UnlockPrompt({ accent, bytes, activate, onClose }: UnlockPromptP
             }}
             placeholder="TIDY-…"
             spellCheck={false}
+            disabled={busy}
             style={{
               flex: 1,
               minWidth: 0,
@@ -58,12 +59,13 @@ export function UnlockPrompt({ accent, bytes, activate, onClose }: UnlockPromptP
             }}
           />
           {invalid && <span style={{ fontSize: 11.5, color: accent, whiteSpace: 'nowrap' }}>Invalid key</span>}
-          <button className="cc-btn ghost" onClick={() => setEntering(false)}>
+          <button className="cc-btn ghost" disabled={busy} onClick={() => setEntering(false)}>
             Back
           </button>
           <button
             className="cc-btn danger"
             style={{ background: accent, opacity: busy ? 0.6 : 1 }}
+            disabled={busy}
             onClick={() => void submit()}
           >
             Activate
