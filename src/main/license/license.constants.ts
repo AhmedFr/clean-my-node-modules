@@ -4,5 +4,5 @@
  * gitignored) — see scripts/license/make-keypair.mjs.
  */
 export const LICENSE_PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
-REPLACED-IN-TASK-2
+MCowBQYDK2VwAyEAqyi/+HYDzOjJFZoOafLl3/2liTdXWMDwgzlJdOIWEh4=
 -----END PUBLIC KEY-----`

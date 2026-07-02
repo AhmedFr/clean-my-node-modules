@@ -12,3 +12,4 @@ dist/
 .superpowers/
 
 Certificates.p12
+.license-signing.pem
