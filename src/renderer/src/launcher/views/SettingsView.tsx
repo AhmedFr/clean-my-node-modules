@@ -3,9 +3,12 @@ import { PnpmStoreSettings } from '@renderer/components/PnpmStoreSettings'
 import { Segmented } from '@renderer/components/Segmented'
 import { Toggle } from '@renderer/components/Toggle'
 import type { SetSetting } from '@renderer/hooks/useSettings'
+import { BUY_URL } from '@shared/license.constants'
+import type { ActivateResult, LicenseState } from '@shared/license.types'
 import type { PnpmStoreInfo } from '@shared/pnpm-store.types'
 import type { Settings } from '@shared/settings.types'
 import type { ReactNode } from 'react'
+import { useState } from 'react'
 
 interface SettingsRowProps {
   label: string
@@ -39,10 +42,66 @@ interface SettingsViewProps {
   accent: string
   store: PnpmStoreInfo | null
   onRefreshStore: () => void
+  license: LicenseState
+  activateLicense: (key: string) => Promise<ActivateResult>
+}
+
+function LicenseActivator({
+  accent,
+  activate,
+}: {
+  accent: string
+  activate: (key: string) => Promise<ActivateResult>
+}): ReactNode {
+  const [key, setKey] = useState('')
+  const [invalid, setInvalid] = useState(false)
+  const submit = async (): Promise<void> => {
+    if (!key.trim()) return
+    const result = await activate(key)
+    if (!result.ok) setInvalid(true)
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {invalid && <span style={{ fontSize: 11.5, color: accent }}>Invalid</span>}
+      <input
+        value={key}
+        onChange={(e) => {
+          setKey(e.target.value)
+          setInvalid(false)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') void submit()
+        }}
+        placeholder="TIDY-…"
+        spellCheck={false}
+        style={{
+          width: 170,
+          background: 'var(--surface-2)',
+          border: '1px solid var(--hairline)',
+          borderRadius: 7,
+          padding: '6px 9px',
+          fontSize: 12,
+          color: 'var(--text)',
+          outline: 'none',
+        }}
+      />
+      <button className="cc-btn ghost" onClick={() => void submit()}>
+        Activate
+      </button>
+    </div>
+  )
 }
 
 /** Full-window settings view. */
-export function SettingsView({ settings, setSetting, accent, store, onRefreshStore }: SettingsViewProps): ReactNode {
+export function SettingsView({
+  settings,
+  setSetting,
+  accent,
+  store,
+  onRefreshStore,
+  license,
+  activateLicense,
+}: SettingsViewProps): ReactNode {
   const gb = settings.thresholdGB
   return (
     <div style={{ padding: '12px 18px 22px' }}>
@@ -105,6 +164,30 @@ export function SettingsView({ settings, setSetting, accent, store, onRefreshSto
         </div>
       </div>
       <PnpmStoreSettings settings={settings} setSetting={setSetting} store={store} onRefresh={onRefreshStore} />
+      <div style={{ height: 1, background: 'var(--surface-1)' }} />
+      <SettingsRow
+        label="License"
+        hint={
+          license.pro
+            ? `Pro · ${license.email ?? 'licensed'} · cleanup unlocked`
+            : 'Free — scan & see everything; one-click cleanup needs a license'
+        }
+      >
+        {license.pro ? (
+          <span style={{ fontSize: 12.5, fontWeight: 650, color: '#34d399' }}>Pro ✓</span>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              className="cc-btn danger"
+              style={{ background: accent }}
+              onClick={() => void window.clean.openExternal(BUY_URL)}
+            >
+              Buy · €19
+            </button>
+            <LicenseActivator accent={accent} activate={activateLicense} />
+          </div>
+        )}
+      </SettingsRow>
       <div style={{ height: 1, background: 'var(--surface-1)' }} />
       <SettingsRow label="Uninstall" hint="Move Clean and its preferences to the Trash">
         <button

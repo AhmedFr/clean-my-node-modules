@@ -6,7 +6,9 @@ import { Row } from '@renderer/components/Row'
 import { Segmented } from '@renderer/components/Segmented'
 import { Spinner } from '@renderer/components/Spinner'
 import { UIIcon } from '@renderer/components/UIIcon'
+import { UnlockPrompt } from '@renderer/components/UnlockPrompt'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
+import { useLicense } from '@renderer/hooks/useLicense'
 import { usePackagesTab } from '@renderer/hooks/usePackagesTab'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
@@ -42,6 +44,7 @@ const LIST_PADDING = 6
 
 export function LauncherApp(): ReactNode {
   const [settings, setSetting, settingsLoaded] = useSettings()
+  const { license, activate: activateLicense } = useLicense()
   const projects = useProjects()
   const accent = settings.accent
   const threshold = settings.thresholdGB * GB
@@ -53,6 +56,7 @@ export function LauncherApp(): ReactNode {
   const [tab, setTab] = useState<LauncherTab>('projects')
   const [deleting, setDeleting] = useState<Set<string>>(() => new Set())
   const [confirm, setConfirm] = useState<Project | null>(null)
+  const [unlock, setUnlock] = useState<{ bytes?: number } | null>(null)
   const [reclaimed, setReclaimed] = useState(0)
   const { toast, flashToast } = useToast<LauncherToast>()
   const { store, loading: storeLoading, pruning, prune, refresh } = usePnpmStore()
@@ -172,6 +176,11 @@ export function LauncherApp(): ReactNode {
 
   const commitDelete = useCallback(
     (p: Project) => {
+      if (!license.pro) {
+        setConfirm(null)
+        setUnlock({ bytes: p.uniqueSize ?? p.size })
+        return
+      }
       setConfirm(null)
       setDeleting((s) => new Set(s).add(p.id))
       void window.clean.deleteNodeModules(p.id).then((freed) => {
@@ -188,12 +197,16 @@ export function LauncherApp(): ReactNode {
         })
       })
     },
-    [flashToast],
+    [flashToast, license.pro],
   )
 
   const rescan = useCallback(() => setView('scanning'), [])
 
   const handlePrune = useCallback(async () => {
+    if (!license.pro) {
+      setUnlock({})
+      return
+    }
     const res = await prune()
     if (res?.ok) {
       flashToast({
@@ -202,7 +215,7 @@ export function LauncherApp(): ReactNode {
         tone: 'good',
       })
     }
-  }, [prune, flashToast])
+  }, [prune, flashToast, license.pro])
 
   // keyboard
   useEffect(() => {
@@ -229,6 +242,10 @@ export function LauncherApp(): ReactNode {
         return
       }
       if (e.key === 'Escape') {
+        if (unlock) {
+          setUnlock(null)
+          return
+        }
         if (confirm) {
           setConfirm(null)
           return
@@ -310,6 +327,7 @@ export function LauncherApp(): ReactNode {
     view,
     tab,
     confirm,
+    unlock,
     query,
     commitDelete,
     doOpen,
@@ -447,6 +465,8 @@ export function LauncherApp(): ReactNode {
               accent={accent}
               store={store}
               onRefreshStore={() => void refresh()}
+              license={license}
+              activateLicense={activateLicense}
             />
           )}
           {view === 'list' && (
@@ -586,7 +606,18 @@ export function LauncherApp(): ReactNode {
 
           <div className="cc-divider" />
           {/* ---------- Footer ---------- */}
-          {confirm ? (
+          {unlock ? (
+            <div className="cc-footer" style={{ background: mixColor('rgba(255,99,99,0)', accent, 0.08), padding: 0 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <UnlockPrompt
+                  accent={accent}
+                  bytes={unlock.bytes}
+                  activate={activateLicense}
+                  onClose={() => setUnlock(null)}
+                />
+              </div>
+            </div>
+          ) : confirm ? (
             <div className="cc-footer" style={{ background: mixColor('rgba(255,99,99,0)', accent, 0.1) }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
                 <span style={{ color: accent, display: 'flex' }}>{UIIcon.trash({ size: 16 })}</span>
