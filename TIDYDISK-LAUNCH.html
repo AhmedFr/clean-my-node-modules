@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TidyDisk — The €1,000 Launch Plan</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23e23d3d'/%3E%3Cpath d='M16 6 L25 11 V21 L16 26 L7 21 V11 Z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<style>
+:root{
+  --bg:#0a0a0d; --bg-soft:#101015; --panel:#16161b; --panel-2:#1c1c22;
+  --ink:#f4f4f6; --ink-2:rgba(255,255,255,.70); --ink-3:rgba(255,255,255,.46); --ink-4:rgba(255,255,255,.30);
+  --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.14);
+  --accent:#ff6363; --accent-deep:#e23d3d; --green:#34d399; --green-deep:#12b981; --amber:#f5b14c; --blue:#6aa8ff;
+  --display:"Cabinet Grotesk","General Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --ui:"General Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+::selection{background:rgba(255,99,99,.3)}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.02em;line-height:1.1;margin:0}
+code,.mono{font-family:var(--mono)}
+code{font-size:.86em;color:var(--accent);background:rgba(255,99,99,.08);border:1px solid rgba(255,99,99,.18);border-radius:5px;padding:1px 6px}
+
+/* backdrop */
+.bg{position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(900px 560px at 82% -6%,#2c1d3a 0%,transparent 56%),
+    radial-gradient(760px 560px at 2% 10%,#2a1622 0%,transparent 52%),
+    radial-gradient(760px 620px at 62% 112%,#0f2b26 0%,transparent 55%),
+    var(--bg);}
+.bg::after{content:"";position:absolute;inset:0;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+.wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 26px}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 26px;
+  background:rgba(10,10,13,.72);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:-.01em}
+.logo{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;
+  background:linear-gradient(155deg,#ff8585,#d23a3a);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 10px rgba(226,61,61,.34)}
+.logo svg{width:19px;height:19px}
+.brand .tag{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ink-3);letter-spacing:0;padding-left:2px}
+.navlinks{display:flex;gap:22px;font-size:13.5px;color:var(--ink-2);font-weight:500}
+.navlinks a{transition:color .15s}.navlinks a:hover{color:var(--accent)}
+@media(max-width:820px){.navlinks{display:none}.brand .tag{display:none}}
+
+/* hero */
+.hero{padding:70px 0 34px;text-align:center}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.14em;border:1px solid var(--line-2);border-radius:100px;padding:6px 14px;margin-bottom:22px}
+.eyebrow b{color:var(--green)}
+.hero h1{font-size:clamp(38px,7vw,64px);font-weight:800}
+.hero h1 .g{background:linear-gradient(120deg,#ff8585,#ff6363 55%,#f5b14c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{max-width:640px;margin:20px auto 0;color:var(--ink-2);font-size:18px}
+.hero .rule{max-width:640px;margin:24px auto 0;padding:14px 18px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;background:var(--panel);text-align:left;font-size:15px;color:var(--ink-2)}
+.hero .rule b{color:var(--ink)}
+
+/* decision chips */
+.decisions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:26px}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:13px;background:var(--panel);border:1px solid var(--line-2);border-radius:100px;padding:7px 14px;color:var(--ink-2)}
+.chip b{color:var(--ink);font-weight:600}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+
+/* section scaffold */
+section{padding:44px 0;border-top:1px solid var(--line)}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.sec-h{font-size:clamp(26px,4vw,34px);font-weight:800;margin-bottom:8px}
+.sec-sub{color:var(--ink-2);max-width:680px;font-size:16.5px;margin-bottom:28px}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:760px){.g2,.g3{grid-template-columns:1fr}}
+
+/* funnel */
+.funnel{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:0}
+@media(max-width:760px){.funnel{grid-template-columns:1fr;gap:10px}.funnel .arrow{transform:rotate(90deg);padding:4px 0}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 18px;text-align:center}
+.stage.free{border-color:rgba(52,211,153,.3)}
+.stage.paid{border-color:rgba(255,99,99,.36);background:linear-gradient(180deg,rgba(255,99,99,.06),var(--panel))}
+.stage .lab{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.stage h4{font-family:var(--display);font-weight:700;font-size:19px;margin:8px 0 6px}
+.stage.free h4{color:var(--green)}.stage.paid h4{color:var(--accent)}
+.stage p{font-size:13.5px;color:var(--ink-2);margin:0}
+.arrow{display:grid;place-items:center;color:var(--ink-4);font-size:22px;padding:0 12px}
+
+/* calculator */
+.calc{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line-2);border-radius:18px;padding:26px 26px 30px;display:grid;grid-template-columns:1.1fr 1fr;gap:30px;align-items:center}
+@media(max-width:760px){.calc{grid-template-columns:1fr;gap:22px}}
+.calc .big{text-align:center}
+.calc .price-out{font-family:var(--display);font-weight:800;font-size:64px;line-height:1;color:var(--ink)}
+.calc .price-out span{font-size:26px;color:var(--ink-3);font-weight:600}
+.calc .sales-out{margin-top:14px;font-size:15px;color:var(--ink-2)}
+.calc .sales-out b{font-family:var(--mono);font-size:34px;color:var(--green);display:block;line-height:1.1;margin-top:2px}
+.calc label{font-size:12px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:14px}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:8px;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--amber));outline:none;margin:6px 0 18px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid var(--accent-deep);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--accent-deep);cursor:pointer}
+.ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--ink-4)}
+.calc .note{margin-top:16px;font-size:13px;color:var(--ink-3)}
+.calc .note b{color:var(--amber)}
+
+/* ladder */
+.ladder{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.ladder{grid-template-columns:1fr}}
+.rung{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.rung.now{border-color:var(--accent);box-shadow:0 0 0 1px rgba(255,99,99,.3),0 10px 30px rgba(226,61,61,.14)}
+.rung .flag{position:absolute;top:-11px;left:20px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:var(--accent-deep);color:#fff;padding:3px 9px;border-radius:100px}
+.rung .stage-name{font-family:var(--mono);font-size:12px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase}
+.rung .amt{font-family:var(--display);font-weight:800;font-size:38px;margin:6px 0 2px}
+.rung.now .amt{color:var(--accent)}
+.rung .sub{font-size:13px;color:var(--ink-2)}
+.rung .goal{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-3)}
+.rung .goal b{color:var(--green);font-family:var(--mono)}
+
+/* comp table */
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+td .muted{color:var(--ink-3)}
+tr.us td{background:rgba(255,99,99,.05)}
+tr.us td:first-child{color:var(--accent);font-weight:600}
+.pill{display:inline-block;font-size:11px;font-family:var(--mono);padding:2px 8px;border-radius:100px;border:1px solid var(--line-2)}
+.pill.free{color:var(--green);border-color:rgba(52,211,153,.3)}
+.pill.sub{color:var(--amber);border-color:rgba(245,177,76,.3)}
+.pill.life{color:var(--accent);border-color:rgba(255,99,99,.3)}
+
+/* offer list */
+.offer{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.offer li{display:flex;gap:13px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px}
+.offer .ic{flex:0 0 auto;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:14px;background:rgba(52,211,153,.12);color:var(--green);margin-top:1px}
+.offer li.hot .ic{background:rgba(255,99,99,.14);color:var(--accent)}
+.offer .t{font-weight:600;font-size:15px}
+.offer .d{font-size:13.5px;color:var(--ink-2);margin-top:2px}
+
+/* checklist */
+.phase{margin-bottom:14px}
+.phase-head{display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer;padding:15px 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;user-select:none}
+.phase-head:hover{border-color:var(--line-2)}
+.phase-head .l{display:flex;align-items:center;gap:12px}
+.phase-head .wk{font-family:var(--mono);font-size:11px;color:#fff;background:var(--accent-deep);border-radius:6px;padding:3px 8px;letter-spacing:.05em}
+.phase-head h4{font-size:16px;font-weight:700;font-family:var(--display)}
+.phase-head .prog{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.pbar{height:5px;border-radius:100px;background:var(--line);overflow:hidden;margin-top:2px;width:120px}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--green-deep),var(--green));width:0;transition:width .35s}
+.items{padding:6px 6px 6px;display:none}
+.phase.open .items{display:block}
+.phase.open .phase-head{border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom-color:transparent}
+.chk{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border-radius:10px;transition:background .12s}
+.chk:hover{background:var(--panel-2)}
+.chk input{appearance:none;-webkit-appearance:none;flex:0 0 auto;width:20px;height:20px;border:2px solid var(--line-2);border-radius:6px;margin-top:2px;cursor:pointer;position:relative;transition:.15s}
+.chk input:checked{background:var(--green-deep);border-color:var(--green-deep)}
+.chk input:checked::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700}
+.chk .body{cursor:pointer}
+.chk .ct{font-size:14.5px;font-weight:500}
+.chk input:checked ~ .body .ct{color:var(--ink-3);text-decoration:line-through}
+.chk .cd{font-size:13px;color:var(--ink-3);margin-top:1px}
+.reset{margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--ink-4);background:none;border:none;cursor:pointer;text-decoration:underline;padding:6px}
+.reset:hover{color:var(--accent)}
+
+/* copy snippet */
+.snippet{position:relative;background:#0d0d11;border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-family:var(--mono);font-size:13px;color:var(--ink-2);line-height:1.6;white-space:pre-wrap}
+.snippet .copy{position:absolute;top:10px;right:10px;font-family:var(--ui);font-size:11px;background:var(--panel-2);border:1px solid var(--line-2);color:var(--ink-2);border-radius:7px;padding:5px 10px;cursor:pointer;transition:.15s}
+.snippet .copy:hover{color:var(--ink);border-color:var(--accent)}
+.snippet .copy.done{color:var(--green);border-color:var(--green)}
+
+/* logo concept */
+.logolab{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center}
+@media(max-width:620px){.logolab{grid-template-columns:1fr;text-align:center;justify-items:center}}
+.logo-xl{width:96px;height:96px;border-radius:26px;display:grid;place-items:center;background:linear-gradient(155deg,#ff8585,#d23a3a);box-shadow:inset 0 2px 0 rgba(255,255,255,.28),0 12px 34px rgba(226,61,61,.36)}
+.logo-xl svg{width:58px;height:58px}
+
+/* misc */
+.lead{font-size:17px;color:var(--ink);border-left:3px solid var(--green);padding-left:16px;margin:0 0 8px}
+.small{font-size:13px;color:var(--ink-3)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+ul.tight{margin:8px 0 0;padding-left:18px;color:var(--ink-2);font-size:14.5px}
+ul.tight li{margin:5px 0}
+.foot{padding:40px 0 70px;text-align:center;color:var(--ink-4);font-size:13px;font-family:var(--mono)}
+.tag-accent{color:var(--accent)}
+.callout{background:linear-gradient(180deg,rgba(52,211,153,.07),var(--panel));border:1px solid rgba(52,211,153,.24);border-radius:14px;padding:18px 20px;font-size:15px}
+.callout b{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<nav class="nav">
+  <div class="brand">
+    <span class="logo"><svg viewBox="0 0 32 32"><path d="M16 5 L26 10.5 V21.5 L16 27 L6 21.5 V10.5 Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M6 10.5 L16 16 L26 10.5 M16 16 V27" stroke="#fff" stroke-width="1.4" opacity=".55" fill="none"/></svg></span>
+    <span>TidyDisk<span class="tag"> · launch plan</span></span>
+  </div>
+  <div class="navlinks">
+    <a href="#model">Model</a>
+    <a href="#name">Name</a>
+    <a href="#price">Price</a>
+    <a href="#offer">Offer</a>
+    <a href="#launch">Launch</a>
+    <a href="#do">Do now</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow">Goal <b>&nbsp;€1,000&nbsp;</b> · first paying customers</span>
+    <h1>Turn <span class="g">wasted disk</span><br/>into your first €1,000.</h1>
+    <p>The go-to-market plan for <b>TidyDisk</b> — the Mac app that shows developers how much disk their dev junk is really eating, and clears it in one click.</p>
+    <div class="rule">
+      <b>The hard truth, up front:</b> you don't have a pricing problem or a logo problem. At €19 you need <b>53 sales</b>; at €29 you need <b>35</b>. That's a <b>distribution</b> problem — "can 35 developers see this and say yes." Everything below is built to solve that one thing.
+    </div>
+    <div class="decisions">
+      <span class="chip"><span class="dot"></span><b>TidyDisk</b> · tidydisk.app</span>
+      <span class="chip"><span class="dot"></span>Free scan → <b>paid clean</b></span>
+      <span class="chip"><span class="dot"></span><b>€19</b> founding → €29 · lifetime</span>
+      <span class="chip"><span class="dot"></span>Ship in <b>2–4 weeks</b></span>
+    </div>
+  </header>
+
+  <!-- MODEL -->
+  <section id="model">
+    <div class="kicker">01 · The engine</div>
+    <h2 class="sec-h">Your marketing <em>is</em> the free scan</h2>
+    <p class="sec-sub">The scan produces a number. That number is a screenshot. That screenshot is what gets upvoted. Give away the thing that creates desire; charge for the thing that resolves it.</p>
+    <div class="funnel">
+      <div class="stage free">
+        <div class="lab">Free · the hook</div>
+        <h4>Scan</h4>
+        <p>Anyone installs it and sees the damage: <span class="mono">"247 GB in node_modules 💀"</span>. Screenshot-ready. Spreads on its own.</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="stage free">
+        <div class="lab">Free · the trust</div>
+        <h4>See</h4>
+        <p>Honest real-vs-linked sizing, safe-by-design, 100% local. They watch it work before paying a cent.</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="stage paid">
+        <div class="lab">€19 · the money</div>
+        <h4>Reclaim</h4>
+        <p>One-click cleanup — the moment they're hot. The paywall sits on the <b>Clean</b> action, not the door.</p>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:18px">
+      Why this beats a hard paywall: every free CLI competitor (npkill, GrandPerspective, DevCleaner) trained your buyer to expect free. A locked door burns your scarce distribution on rejection. <b>The free scan turns every user into a billboard</b> and monetizes the one moment convenience is worth paying for.
+    </div>
+  </section>
+
+  <!-- NAME + LOGO -->
+  <section id="name">
+    <div class="kicker">02 · Identity</div>
+    <h2 class="sec-h">TidyDisk</h2>
+    <p class="sec-sub">Broader than "node_modules," instantly legible, benefit-forward. Domain to lock: <code>tidydisk.app</code> (+ check trademark &amp; the npm name before you commit publicly).</p>
+    <div class="card logolab">
+      <div class="logo-xl">
+        <svg viewBox="0 0 64 64"><path d="M32 9 L52 20 V44 L32 55 L12 44 V20 Z" fill="none" stroke="#fff" stroke-width="3.2" stroke-linejoin="round"/><path d="M12 20 L32 31 L52 20 M32 31 V55" stroke="#fff" stroke-width="2.2" opacity=".55" fill="none"/><path d="M46 40 l7 -4 v8 l-7 4 z" fill="#fff" opacity=".9"/></svg>
+      </div>
+      <div>
+        <p class="lead">Reuse your existing brand asset — don't hire a designer for the first €1,000.</p>
+        <ul class="tight">
+          <li>Your tray icon is already a rasterized <b>cube glyph</b>. Evolve it: a cube <b>shedding a block</b> = reclaiming space.</li>
+          <li>The menu-bar constraint is a gift — it forces one clean, iconic mark that works as favicon, app icon, and tray at 16px.</li>
+          <li>Keep the red squircle for continuity; lean on <b style="color:var(--green)">green</b> for the "reclaimed" payoff moment.</li>
+        </ul>
+        <p class="small" style="margin-top:12px"><b>Subtitle / positioning line:</b> <em>“The dev disk space you forgot you were wasting.”</em></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICE -->
+  <section id="price">
+    <div class="kicker">03 · Pricing</div>
+    <h2 class="sec-h">Lifetime, one-time. No subscription.</h2>
+    <p class="sec-sub">Say it out loud on the page: <em>“We're not going to rent you back your own disk space.”</em> That single line is your wedge against CleanMyMac.</p>
+
+    <div class="calc">
+      <div>
+        <label for="pr">Drag to see the math · price</label>
+        <input id="pr" type="range" min="9" max="49" step="1" value="19" />
+        <div class="ticks"><span>€9</span><span>€19</span><span>€29</span><span>€39</span><span>€49</span></div>
+        <div class="note">Sweet spot for a cold, no-brand launch: <b>€19 founding → €29</b>. Low friction = more buyers = more reviews = compounding word of mouth — which is what you actually need at €0 brand.</div>
+      </div>
+      <div class="big">
+        <div class="price-out"><span>€</span><span id="prVal">19</span></div>
+        <div class="sales-out">sales to reach €1,000<b id="salesVal">53</b></div>
+      </div>
+    </div>
+
+    <div class="ladder" style="margin-top:22px">
+      <div class="rung now">
+        <span class="flag">Launch now</span>
+        <div class="stage-name">Founding</div>
+        <div class="amt">€19</div>
+        <div class="sub">First ~100 buyers or first 30 days. An impulse buy — no mental approval needed.</div>
+        <div class="goal">€1,000 = <b>53 sales</b></div>
+      </div>
+      <div class="rung">
+        <div class="stage-name">Standard</div>
+        <div class="amt">€29</div>
+        <div class="sub">The default price once the founding window closes. Real urgency, real reason-why.</div>
+        <div class="goal">€1,000 = <b>35 sales</b></div>
+      </div>
+      <div class="rung">
+        <div class="stage-name">Later · earned</div>
+        <div class="amt">€39</div>
+        <div class="sub">After you ship Docker / Xcode / build-folder cleanup. The roadmap justifies the raise; founders feel like geniuses.</div>
+        <div class="goal">€1,000 = <b>26 sales</b></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:22px">
+      <div class="kicker" style="color:var(--ink-3)">Where TidyDisk sits</div>
+      <table>
+        <thead><tr><th>Tool</th><th>Price</th><th>Model</th><th>For whom</th></tr></thead>
+        <tbody>
+          <tr><td>CleanMyMac X</td><td>~$35/yr or ~$90</td><td><span class="pill sub">subscription</span></td><td class="muted">broad consumer</td></tr>
+          <tr><td>DaisyDisk</td><td>$9.99</td><td><span class="pill life">one-time</span></td><td class="muted">visual, generic</td></tr>
+          <tr><td>npkill / GrandPerspective / DevCleaner</td><td>$0</td><td><span class="pill free">free</span></td><td class="muted">devs (CLI/utility)</td></tr>
+          <tr class="us"><td>TidyDisk</td><td>€19 → €29</td><td><span class="pill life">lifetime</span> + <span class="pill free">free scan</span></td><td>developers, dev-junk specific</td></tr>
+        </tbody>
+      </table>
+      <p class="small" style="margin-top:12px">The paid dev-cleaner lane is nearly empty — every dev-specific tool is free CLI. That's your opening: meet the free expectation on discovery, charge for the convenience.</p>
+    </div>
+  </section>
+
+  <!-- OFFER -->
+  <section id="offer">
+    <div class="kicker">04 · The offer</div>
+    <h2 class="sec-h">Make €19 feel stupid to refuse</h2>
+    <p class="sec-sub">Don't sell "an app." Sell the stack: dream outcome, made safe, made instant, risk reversed, with a real reason to buy today.</p>
+    <ul class="offer">
+      <li><span class="ic">✓</span><div><div class="t">One-click reclaim of all your dev junk</div><div class="d">node_modules, pnpm / npm / yarn / bun caches — the stuff you ship today.</div></div></li>
+      <li><span class="ic">✓</span><div><div class="t">Lifetime license — all future updates free</div><div class="d">“Your €19 buys the roadmap: Docker images, Xcode DerivedData, and build folders are coming next.”</div></div></li>
+      <li><span class="ic">✓</span><div><div class="t">Safe by design</div><div class="d">Everything goes to Trash, never <code>rm -rf</code>. Honest real-vs-linked sizing so the numbers never lie.</div></div></li>
+      <li><span class="ic">✓</span><div><div class="t">100% local — no account, no telemetry</div><div class="d">For developers, privacy <em>is</em> trust. Every measurement stays on their machine.</div></div></li>
+      <li><span class="ic">✓</span><div><div class="t">30-day money-back, no questions</div><div class="d">Risk reversal. Refunds trend to ~0 because they already watched the free scan work. Costs you nothing; kills purchase anxiety.</div></div></li>
+      <li class="hot"><span class="ic">★</span><div><div class="t">Founding price €19 — going to €29</div><div class="d">A real reason to buy now, not fake scarcity. Early buyers get grandfathered forever.</div></div></li>
+    </ul>
+  </section>
+
+  <!-- LAUNCH -->
+  <section id="launch">
+    <div class="kicker">05 · The launch · 2–4 weeks</div>
+    <h2 class="sec-h">Your distribution playbook</h2>
+    <p class="sec-sub">This is the part that actually makes the €1,000. Check items off as you go — your progress saves in this browser. Lead with the <b>value</b> (the shocking number), tool as the fix.</p>
+
+    <div id="checklist"></div>
+    <button class="reset" id="resetBtn">reset checklist</button>
+
+    <div style="margin-top:26px" class="two">
+      <div>
+        <div class="kicker" style="color:var(--ink-3)">Show HN — draft</div>
+        <div class="snippet"><button class="copy" data-copy="hn">copy</button><span id="hn">Show HN: TidyDisk – see how much disk your dev junk is really wasting
+
+I kept running out of space on a 512GB Mac and it was never my photos — it was gigabytes of node_modules, package-manager caches and old build folders I forgot existed. So I built a menu-bar app that scans for all of it and shows the real number, then clears it safely (to Trash, never rm -rf). The scan is free; one-click cleanup is a one-time unlock. 100% local, no account, no telemetry.
+
+I measured 40 of my own projects — happy to share what I found in the comments.</span></div>
+      </div>
+      <div>
+        <div class="kicker" style="color:var(--ink-3)">Reddit / social — draft</div>
+        <div class="snippet"><button class="copy" data-copy="rd">copy</button><span id="rd">I measured node_modules across 40 projects. The total made me a little sick.
+
+[screenshot of the number]
+
+Turns out "my Mac is full" almost never means photos for devs — it's dependency + cache + build cruft. I built a little Mac app (TidyDisk) that finds all of it and shows the honest freeable size. Scan's free if you want to check your own damage — link in comments. What's YOUR number?</span></div>
+      </div>
+    </div>
+    <p class="small" style="margin-top:14px">You already have a Remotion showcase-video pipeline in the repo — <b>render the 10s scan-and-reclaim clip as your launch asset</b> for PH / X / the landing hero. Free leverage.</p>
+  </section>
+
+  <!-- LOGISTICS -->
+  <section id="logistics">
+    <div class="kicker">06 · Plumbing</div>
+    <h2 class="sec-h">The one piece of real code work</h2>
+    <div class="two">
+      <div class="card">
+        <div class="t" style="font-weight:700;font-size:16px;margin-bottom:6px">Payments — use a Merchant of Record</div>
+        <p class="small">You're in the EU. Use <b style="color:var(--ink)">Lemon Squeezy</b> or <b style="color:var(--ink)">Paddle</b> — they act as merchant of record and handle EU VAT / VAT-MOSS <em>for you</em>, plus license-key issuance and checkout. Do not hand-roll VAT. This is the fastest legal path to charging money.</p>
+      </div>
+      <div class="card">
+        <div class="t" style="font-weight:700;font-size:16px;margin-bottom:6px">The license gate</div>
+        <p class="small">The only real dev task: a lightweight, offline-friendly license check that gates the <b style="color:var(--ink)">Clean</b> action. Free app scans &amp; shows everything; a valid key unlocks reclaim. That's it — that's the spec we're writing next.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DO NOW -->
+  <section id="do">
+    <div class="kicker">07 · This week</div>
+    <h2 class="sec-h">Do these, in order</h2>
+    <div class="grid g2">
+      <div class="card"><b class="tag-accent">1.</b> &nbsp;Grab <code>tidydisk.app</code> + check trademark &amp; npm name.</div>
+      <div class="card"><b class="tag-accent">2.</b> &nbsp;Open a Lemon Squeezy (or Paddle) account; create the €19 product + license keys.</div>
+      <div class="card"><b class="tag-accent">3.</b> &nbsp;Build the license gate on the Clean action (spec next).</div>
+      <div class="card"><b class="tag-accent">4.</b> &nbsp;Rename app + landing to TidyDisk; make the scan result screenshot-beautiful.</div>
+      <div class="card"><b class="tag-accent">5.</b> &nbsp;Render the Remotion clip; write the Show HN + Reddit posts.</div>
+      <div class="card"><b class="tag-accent">6.</b> &nbsp;Pick a Tue–Thu, launch Show HN + Reddit + Product Hunt on the same wave.</div>
+    </div>
+  </section>
+
+  <div class="foot">
+    TidyDisk · €1,000 launch plan · living doc — edit as reality changes.<br/>Companion spec: <span class="tag-accent">docs/superpowers/specs/2026-07-01-tidydisk-gtm-and-monetization-design.md</span>
+  </div>
+
+</div>
+
+<script>
+/* ---- price calculator ---- */
+const pr=document.getElementById('pr'),prVal=document.getElementById('prVal'),salesVal=document.getElementById('salesVal');
+function calc(){const p=+pr.value;prVal.textContent=p;salesVal.textContent=Math.ceil(1000/p);}
+pr.addEventListener('input',calc);calc();
+
+/* ---- copy buttons ---- */
+document.querySelectorAll('.copy').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const t=document.getElementById(b.dataset.copy).textContent;
+    navigator.clipboard.writeText(t).then(()=>{b.textContent='copied ✓';b.classList.add('done');setTimeout(()=>{b.textContent='copy';b.classList.remove('done')},1600);});
+  });
+});
+
+/* ---- launch checklist (persisted) ---- */
+const PHASES=[
+  {wk:'Week 1', title:'Package & gate', items:[
+    {id:'w1-rename', t:'Rename app + repo assets to TidyDisk', d:'App name, landing, icons, metadata.'},
+    {id:'w1-scan-share', t:'Make the free-scan result screenshot-worthy', d:'A clean "here\'s your number" screen + share/OG image — this is the viral artifact.'},
+    {id:'w1-gate', t:'Ship the free / paid split', d:'Paywall on the Clean action; free scan stays open.'},
+    {id:'w1-pay', t:'Wire up Lemon Squeezy or Paddle', d:'Checkout + license keys + EU VAT handled for you.'},
+  ]},
+  {wk:'Week 2–3', title:'The push — lead with value', items:[
+    {id:'w2-hn', t:'Show HN (Tue–Thu ~8am PT)', d:'Local-first + no-telemetry + disk-space is catnip for HN. Be in the comments.'},
+    {id:'w2-reddit', t:'Reddit: r/webdev, r/node, r/javascript, r/reactjs, r/macapps, r/SideProject', d:'Lead with the finding, not the sell. Answer everyone.'},
+    {id:'w2-ph', t:'Product Hunt launch', d:'Schedule it; PH-exclusive founding price; rally your comments.'},
+    {id:'w2-blog', t:'dev.to / Hashnode article', d:'"How much is your node_modules actually costing you" — SEO that compounds after the spike.'},
+    {id:'w2-x', t:'Build-in-public on X', d:'No audience needed — post your number, reply under "my mac is full" tweets. Screenshots travel.'},
+  ]},
+  {wk:'Week 4', title:'Convert & compound', items:[
+    {id:'w4-testi', t:'Ask every buyer for a testimonial + a tweet', d:'Social proof lowers friction for the next wave.'},
+    {id:'w4-iterate', t:'Note the top objection & fix the page', d:'Whatever people hesitate on in comments — answer it on the landing page.'},
+    {id:'w4-count', t:'Hit 35–53 sales → €1,000 🎉', d:'Then decide: raise to €29, or build the Docker/Xcode roadmap toward €39.'},
+  ]},
+];
+const KEY='tidydisk-launch-checklist-v1';
+let state=JSON.parse(localStorage.getItem(KEY)||'{}');
+const root=document.getElementById('checklist');
+function render(){
+  root.innerHTML='';
+  PHASES.forEach((ph,pi)=>{
+    const done=ph.items.filter(i=>state[i.id]).length,tot=ph.items.length,pct=Math.round(done/tot*100);
+    const open=(state['__open_'+pi]!==false);
+    const el=document.createElement('div');el.className='phase'+(open?' open':'');
+    el.innerHTML=`<div class="phase-head" data-ph="${pi}">
+        <div class="l"><span class="wk">${ph.wk}</span><h4>${ph.title}</h4></div>
+        <div><div class="prog">${done}/${tot}</div><div class="pbar"><i style="width:${pct}%"></i></div></div>
+      </div>
+      <div class="items">${ph.items.map(i=>`
+        <label class="chk"><input type="checkbox" data-id="${i.id}" ${state[i.id]?'checked':''}/>
+        <span class="body"><span class="ct">${i.t}</span><span class="cd">${i.d}</span></span></label>`).join('')}</div>`;
+    root.appendChild(el);
+  });
+  document.querySelectorAll('.phase-head').forEach(h=>h.addEventListener('click',e=>{
+    if(e.target.closest('input'))return;const pi=h.dataset.ph;state['__open_'+pi]=!(state['__open_'+pi]!==false);save();render();
+  }));
+  document.querySelectorAll('.chk input').forEach(c=>c.addEventListener('change',()=>{state[c.dataset.id]=c.checked;save();render();}));
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+document.getElementById('resetBtn').addEventListener('click',()=>{if(confirm('Clear all checklist progress?')){state={};save();render();}});
+render();
+</script>
+</body>
+</html>
