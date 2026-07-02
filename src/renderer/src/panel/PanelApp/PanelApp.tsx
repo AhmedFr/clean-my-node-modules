@@ -232,36 +232,36 @@ export function PanelApp(): ReactNode {
               ) : (
                 <div style={{ height: 8 }} />
               )}
-              {unlock && (
-                <>
-                  <Separator />
-                  <UnlockPrompt
-                    accent={accent}
-                    bytes={unlock.bytes}
-                    activate={activateLicense}
-                    onClose={() => setUnlock(null)}
-                  />
-                </>
-              )}
-              {!license.pro && !unlock && (
-                <button
-                  onClick={() => setUnlock({ bytes: freeable || undefined })}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '4px 15px 2px',
-                    fontSize: 10.5,
-                    color: 'var(--text-dim)',
-                    textAlign: 'left',
-                  }}
-                >
-                  Free version — scanning is free forever · unlock one-click cleanup
-                </button>
-              )}
             </>
+          )}
+          {unlock && (
+            <>
+              <Separator />
+              <UnlockPrompt
+                accent={accent}
+                bytes={unlock.bytes}
+                activate={activateLicense}
+                onClose={() => setUnlock(null)}
+              />
+            </>
+          )}
+          {!license.pro && !unlock && projects.length > 0 && (
+            <button
+              onClick={() => setUnlock({ bytes: freeable || undefined })}
+              style={{
+                display: 'block',
+                width: '100%',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px 15px 2px',
+                fontSize: 10.5,
+                color: 'var(--text-dim)',
+                textAlign: 'left',
+              }}
+            >
+              Free version — scanning is free forever · unlock one-click cleanup
+            </button>
           )}
           {store?.available && (
             <>
