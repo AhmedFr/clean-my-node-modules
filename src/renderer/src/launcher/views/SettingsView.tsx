@@ -55,9 +55,12 @@ function LicenseActivator({
 }): ReactNode {
   const [key, setKey] = useState('')
   const [invalid, setInvalid] = useState(false)
+  const [busy, setBusy] = useState(false)
   const submit = async (): Promise<void> => {
-    if (!key.trim()) return
+    if (!key.trim() || busy) return
+    setBusy(true)
     const result = await activate(key)
+    setBusy(false)
     if (!result.ok) setInvalid(true)
   }
   return (
@@ -74,6 +77,7 @@ function LicenseActivator({
         }}
         placeholder="TIDY-…"
         spellCheck={false}
+        disabled={busy}
         style={{
           width: 170,
           background: 'var(--surface-2)',
@@ -85,7 +89,12 @@ function LicenseActivator({
           outline: 'none',
         }}
       />
-      <button className="cc-btn ghost" onClick={() => void submit()}>
+      <button
+        className="cc-btn ghost"
+        disabled={busy}
+        style={{ opacity: busy ? 0.6 : 1 }}
+        onClick={() => void submit()}
+      >
         Activate
       </button>
     </div>

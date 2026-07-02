@@ -225,6 +225,7 @@ export function LauncherApp(): ReactNode {
         e.preventDefault()
         setView((v) => (v === 'settings' ? 'list' : 'settings'))
         setConfirm(null)
+        setUnlock(null)
         return
       }
       if (meta && (e.key === 'r' || e.key === 'R')) {
@@ -238,6 +239,7 @@ export function LauncherApp(): ReactNode {
         setTab(e.key === '1' ? 'projects' : e.key === '2' ? 'caches' : 'packages')
         setSel(0)
         setConfirm(null)
+        setUnlock(null)
         collapsePkg()
         return
       }
@@ -350,6 +352,7 @@ export function LauncherApp(): ReactNode {
       setView('list')
       setTab('projects')
       setConfirm(null)
+      setUnlock(null)
       setQuery('')
       setSel(0)
       collapsePkg()
@@ -480,6 +483,7 @@ export function LauncherApp(): ReactNode {
                     setTab(t)
                     setSel(0)
                     setConfirm(null)
+                    setUnlock(null)
                     collapsePkg()
                   }}
                   options={[
