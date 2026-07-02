@@ -20,8 +20,11 @@ export const IPC = {
   computePackages: 'packages:compute',
   openExternal: 'shell:open-external',
   pickPath: 'dialog:pick-path',
+  getLicense: 'license:get',
+  activateLicense: 'license:activate',
   // events (main -> renderer)
   onScanProgress: 'scan:progress',
   onProjectsChanged: 'projects:changed',
   onSettingsChanged: 'settings:changed',
+  onLicenseChanged: 'license:changed',
 } as const

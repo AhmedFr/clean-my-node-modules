@@ -19,6 +19,13 @@ export function registerIpc(ctx: AppContext): void {
     return ctx.settings.set(ok.key, ok.value as never)
   })
 
+  ipcMain.handle(IPC.getLicense, () => ctx.license.get())
+  ipcMain.handle(IPC.activateLicense, (_e, key: unknown) => {
+    const result = ctx.license.activate(key)
+    if (result.ok) broadcast(IPC.onLicenseChanged, result.state)
+    return result
+  })
+
   ipcMain.handle(IPC.scan, () => ctx.runScan())
 
   ipcMain.handle(IPC.getPnpmStore, (_e, force?: boolean) => {
@@ -26,6 +33,8 @@ export function registerIpc(ctx: AppContext): void {
     return getPnpmStoreInfo(force, { storePath: s.pnpmStorePath, binaryPath: s.pnpmBinaryPath })
   })
   ipcMain.handle(IPC.prunePnpmStore, () => {
+    // Free tier sees everything but mutates nothing — cleanup is the paid unlock.
+    if (!ctx.license.get().pro) return { ok: false, freedBytes: 0 }
     const s = ctx.settings.get()
     return prunePnpmStore({ storePath: s.pnpmStorePath, binaryPath: s.pnpmBinaryPath })
   })
@@ -36,6 +45,7 @@ export function registerIpc(ctx: AppContext): void {
   )
 
   ipcMain.handle(IPC.deleteNodeModules, async (_e, id: string) => {
+    if (!ctx.license.get().pro) return 0
     const project = ctx.projects.all.find((p) => p.id === id)
     if (!project) return 0
     const freed = await deleteNodeModules(project)

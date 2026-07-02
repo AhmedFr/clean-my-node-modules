@@ -2,6 +2,7 @@ import { IPC } from '@shared/ipc.constants'
 import { GB } from '@shared/units.constants'
 import { app } from 'electron'
 import { broadcast, registerIpc } from './ipc/register-ipc'
+import { LicenseStore } from './license'
 import { ThresholdNotifier } from './notifications/threshold-notifier'
 import { PackageStore } from './packages/package-store'
 import { ProjectStore } from './projects/project-store'
@@ -19,6 +20,7 @@ app.whenReady().then(() => {
   const settings = new SettingsStore()
   const projects = new ProjectStore()
   const packages = new PackageStore()
+  const license = new LicenseStore()
   const scanner = new Scanner()
   const panel = new PanelWindow()
   const launcher = new LauncherWindow()
@@ -65,7 +67,7 @@ app.whenReady().then(() => {
 
   tray.create((trayInstance) => panel.toggle(trayInstance))
   panel.create()
-  registerIpc({ projects, packages, settings, panel, launcher, runScan })
+  registerIpc({ projects, packages, settings, license, panel, launcher, runScan })
   syncDerivedState()
 
   // First launch: show onboarding front-and-center; it triggers the first scan.
