@@ -128,7 +128,7 @@ export function broadcast(channel: string, payload: unknown): void {
   }
 }
 
-/** Flat primitives only — the renderer cannot smuggle objects or paths-by-accident. */
+/** Flat primitives only: the renderer cannot smuggle objects or paths by accident. */
 function sanitizeProps(props: unknown): AnalyticsProps | undefined {
   if (typeof props !== 'object' || props === null) return undefined
   const out: AnalyticsProps = {}
