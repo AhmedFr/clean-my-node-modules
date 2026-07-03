@@ -269,7 +269,7 @@ export function PanelApp(): ReactNode {
                 textAlign: 'left',
               }}
             >
-              Free version — scanning is free forever · unlock one-click cleanup
+              Free version · scanning is free forever · unlock one-click cleanup
             </button>
           )}
           {store?.available && (

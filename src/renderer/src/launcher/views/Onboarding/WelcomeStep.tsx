@@ -78,10 +78,10 @@ export function WelcomeStep({ accent, onNext, onSkip }: WelcomeStepProps): React
           width: '100%',
         }}
       >
-        <Reassure>Scans your home folder — skips system &amp; hidden files</Reassure>
+        <Reassure>Scans your home folder, skips system &amp; hidden files</Reassure>
         <Reassure>
-          Deletes to Trash, never <code style={{ fontFamily: 'var(--mono-font)', color: 'var(--text-3)' }}>rm -rf</code>{' '}
-          — fully reversible
+          Deletes to Trash, never <code style={{ fontFamily: 'var(--mono-font)', color: 'var(--text-3)' }}>rm -rf</code>
+          , fully reversible
         </Reassure>
       </div>
       <button
@@ -115,7 +115,7 @@ export function WelcomeStep({ accent, onNext, onSkip }: WelcomeStepProps): React
           cursor: 'pointer',
         }}
       >
-        Skip — use defaults
+        Skip and use defaults
       </button>
     </div>
   )

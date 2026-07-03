@@ -82,7 +82,7 @@ export function UnlockPrompt({ accent, bytes, activate, onClose, needsReverify }
               {needsReverify
                 ? 'Reconnect to re-verify your license'
                 : bytes
-                  ? `Reclaim ${formatSizeStr(bytes)} — unlock one-click cleanup`
+                  ? `Reclaim ${formatSizeStr(bytes)} with one-click cleanup`
                   : 'Unlock one-click cleanup'}
             </div>
             <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 1 }}>

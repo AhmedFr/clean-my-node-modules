@@ -671,8 +671,8 @@ export function LauncherApp(): ReactNode {
                     <span
                       title={
                         scanning
-                          ? 'Scanning your disk — the total is still updating.'
-                          : 'Sizing the pnpm store — the total is still updating.'
+                          ? 'Scanning your disk, the total is still updating.'
+                          : 'Sizing the pnpm store, the total is still updating.'
                       }
                       style={{
                         display: 'inline-flex',
