@@ -10,7 +10,7 @@ export function Gauge({ used, threshold, accent, linkedBytes = 0, calculating = 
   const usedGB = used / GB
   const thresholdGB = threshold / GB
   const usedTip = calculating
-    ? 'Still calculating — a background scan / pnpm store sizing is in progress, so this total will grow.'
+    ? 'Still calculating: a background scan / pnpm store sizing is in progress, so this total will grow.'
     : linkedBytes > 0
       ? `Real disk used (packages counted once). A further ${formatSizeStr(linkedBytes)} is linked to the pnpm store and shared across projects.`
       : undefined

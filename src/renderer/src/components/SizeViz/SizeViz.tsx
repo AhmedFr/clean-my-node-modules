@@ -9,7 +9,7 @@ export function SizeViz({ style, bytes, apparentBytes, maxBytes, stale, accent, 
   const col = mixColor('#8a8f98', accent, stale)
   const linked = apparentBytes && apparentBytes > bytes ? apparentBytes - bytes : 0
   const tip = linked
-    ? `${formatSizeStr(bytes)} freeable now · ${formatSizeStr(linked)} linked to the pnpm store (shared across projects — reclaim it with pnpm store prune)`
+    ? `${formatSizeStr(bytes)} freeable now · ${formatSizeStr(linked)} linked to the pnpm store (shared across projects; reclaim it with pnpm store prune)`
     : undefined
 
   const num = (

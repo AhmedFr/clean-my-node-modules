@@ -84,13 +84,13 @@ export function PnpmStoreSettings({ settings, setSetting, store, onRefresh }: Pn
       <div style={{ fontSize: 12, color: 'var(--text-dim)', padding: '2px 4px 8px' }}>{statusLine(store)}</div>
       {store?.available && !store.canPrune && (
         <div style={{ fontSize: 11.5, color: 'var(--text-dim)', padding: '0 4px 8px' }}>
-          Pruning needs a runnable pnpm binary — set one below to enable it.
+          Pruning needs a runnable pnpm binary. Set one below to enable it.
         </div>
       )}
       <PathRow
         label="pnpm store folder"
         value={settings.pnpmStorePath ?? ''}
-        placeholder="Auto-detected — choose to override"
+        placeholder="Auto-detected. Choose to override"
         mode="folder"
         onPick={(p) => apply('pnpmStorePath', p)}
         onClear={() => apply('pnpmStorePath', '')}
@@ -99,7 +99,7 @@ export function PnpmStoreSettings({ settings, setSetting, store, onRefresh }: Pn
       <PathRow
         label="pnpm binary"
         value={settings.pnpmBinaryPath ?? ''}
-        placeholder="Auto-detected — choose to override"
+        placeholder="Auto-detected. Choose to override"
         mode="file"
         onPick={(p) => apply('pnpmBinaryPath', p)}
         onClear={() => apply('pnpmBinaryPath', '')}
