@@ -15,7 +15,7 @@ export function FinalCta() {
           </h2>
           <p>
             Reclaim the gigabytes node_modules has been hoarding. Download it
-            free — or build it yourself, it&apos;s all on GitHub.
+            free, or build it yourself. It&apos;s all on GitHub.
           </p>
           <div className="lp-cta-row">
             <a className="lp-btn lp-btn-primary lp-btn-lg" href={DOWNLOAD_URL}>

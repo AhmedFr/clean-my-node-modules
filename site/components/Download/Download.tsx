@@ -19,7 +19,7 @@ export function Download() {
             Free &amp; <span className="accent">open source.</span>
           </h2>
           <p className="lp-lead">
-            The whole app is open source under MIT — every feature, no gates.
+            The whole app is open source under MIT. Every feature, no gates.
             Grab the signed &amp; notarized build, or build it yourself from
             source. No accounts, no subscription.
           </p>
@@ -35,7 +35,7 @@ export function Download() {
             <ul>
               <li>
                 <Check />
-                Every feature — nothing held back
+                Every feature, nothing held back
               </li>
               <li>
                 <Check />
@@ -60,7 +60,7 @@ export function Download() {
             <span className="pbadge">Recommended</span>
             <div className="pname">Download</div>
             <div className="pdesc">
-              The signed &amp; notarized .app — ready to run.
+              The signed &amp; notarized .app, ready to run.
             </div>
             <div className="pcost">
               <span className="amt">$0</span>
@@ -69,7 +69,7 @@ export function Download() {
             <ul>
               <li>
                 <Check />
-                Signed &amp; notarized .app — no Gatekeeper hoops
+                Signed &amp; notarized .app, no Gatekeeper hoops
               </li>
               <li>
                 <Check />

@@ -22,7 +22,7 @@ export function Features() {
             <h3>It watches your disk so you don&apos;t have to.</h3>
             <p>
               Clean my node_modules lives in your menu bar and rescans on your
-              schedule — every 6 hours, daily, or weekly. A native notification
+              schedule: every 6 hours, daily, or weekly. A native notification
               slides in the moment your node_modules cross the limit you set.
             </p>
             <ul className="lp-feat-list">
@@ -52,7 +52,7 @@ export function Features() {
                     <span className="t">now</span>
                   </div>
                   <div className="ntext">
-                    You&apos;ve crossed your limit —{" "}
+                    You&apos;ve crossed your limit:{" "}
                     <b style={{ color: "#fff" }}>5.42 GB</b> of stale
                     dependencies are taking up space.
                   </div>
@@ -77,7 +77,7 @@ export function Features() {
               Open the full launcher for a deep clean. Spotlight-style search
               across project names and paths, with every node_modules folder
               showing its real size and how long it&apos;s been since you touched
-              it — the biggest, stalest offenders rise to the top.
+              it. The biggest, stalest offenders rise to the top.
             </p>
             <ul className="lp-feat-list">
               <li>
@@ -86,7 +86,12 @@ export function Features() {
               </li>
               <li>
                 <Check />
-                Full keyboard navigation — ↑↓ to move, ↵ to open, ⌘⌫ to delete
+                Full keyboard navigation: ↑↓ to move, ↵ to open, ⌘⌫ to delete
+              </li>
+              <li>
+                <Check />
+                On pnpm, the real bytes you&apos;d free, apart from what&apos;s
+                linked into the shared store
               </li>
               <li>
                 <Check />
@@ -236,7 +241,7 @@ export function Features() {
             </span>
             <h3>One click. Gigabytes back. Nothing lost.</h3>
             <p>
-              Pick what you don&apos;t need and it goes to the Trash — no
+              Pick what you don&apos;t need and it goes to the Trash. No
               terminal, no <code>rm -rf</code> roulette, recoverable until you
               empty it. Watch the meter drop and your free space climb. Need a
               project again? A single <code>npm install</code> brings it right
@@ -245,7 +250,7 @@ export function Features() {
             <ul className="lp-feat-list">
               <li>
                 <Check />
-                Deletes to the Trash — recoverable, never <code>rm -rf</code>
+                Deletes to the Trash: recoverable, never <code>rm -rf</code>
               </li>
               <li>
                 <Check />
@@ -253,7 +258,7 @@ export function Features() {
               </li>
               <li>
                 <Check />
-                Only ever touches node_modules — never your source
+                Only ever touches node_modules, never your source
               </li>
             </ul>
           </div>
@@ -293,6 +298,129 @@ export function Features() {
                   />
                 </div>
                 <div className="saved">+ 2.71 GB reclaimed in one sweep</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* feature 4: the Packages tab */}
+        <div className="lp-feature flip" id="packages">
+          <div className="lp-feat-text reveal">
+            <span className="tag">
+              <span className="n">04</span>Whole-machine view
+            </span>
+            <h3>Every package you&apos;ve installed, in one list.</h3>
+            <p>
+              Open the Packages tab for a computer-wide inventory of every
+              dependency your projects pull in: how many use it, its size, the
+              versions you&apos;re on, the latest on npm, and any security
+              advisories. Spot the heavy and unused, unify versions that have
+              drifted apart, and see what&apos;s flagged, all from projects
+              you&apos;ve already scanned.
+            </p>
+            <ul className="lp-feat-list">
+              <li>
+                <Check />
+                How many projects use each package, and its real size
+              </li>
+              <li>
+                <Check />A <b>unify</b> badge when one package is installed at
+                several versions
+              </li>
+              <li>
+                <Check />
+                Latest-on-npm and security-advisory pills. Expand a row for
+                per-version severity
+              </li>
+            </ul>
+          </div>
+          <div className="lp-feat-visual reveal d1">
+            <div className="lp-vis-glow" />
+            <div className="lp-vis-card">
+              <div className="packages glass-panel">
+                <div className="lh">
+                  <span className="ico">
+                    <Icon id="logo-module" />
+                  </span>
+                  <div className="tabs">
+                    <span>Projects</span>
+                    <span>Caches</span>
+                    <span className="on">Packages</span>
+                  </div>
+                </div>
+                <div className="ui-sep" />
+                <div className="listhead">
+                  <span className="l">142 packages · whole machine</span>
+                  <div className="sortbtns">
+                    <span className="on">Used</span>
+                    <span>Size</span>
+                    <span>Updates</span>
+                  </div>
+                </div>
+                <div className="ui-rows">
+                  <div className="ui-row pkg hl">
+                    <span className="pico">
+                      <Icon id="i-box" />
+                    </span>
+                    <div className="meta">
+                      <div className="nm">lodash</div>
+                      <div className="sub">14 projects · 3 versions</div>
+                    </div>
+                    <div className="pright">
+                      <span className="pill unify">unify</span>
+                      <span className="sz">
+                        22<span className="u">MB</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ui-row pkg">
+                    <span className="pico">
+                      <Icon id="i-box" />
+                    </span>
+                    <div className="meta">
+                      <div className="nm">typescript</div>
+                      <div className="sub">9 projects · v5.4.2</div>
+                    </div>
+                    <div className="pright">
+                      <span className="pill upd">↑ 5.7.2</span>
+                      <span className="sz">
+                        61<span className="u">MB</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ui-row pkg">
+                    <span className="pico sev">
+                      <Icon id="i-shield" />
+                    </span>
+                    <div className="meta">
+                      <div className="nm">minimatch</div>
+                      <div className="sub">6 projects · v3.0.4</div>
+                    </div>
+                    <div className="pright">
+                      <span className="pill sev">
+                        <Icon id="i-alert" />
+                        high
+                      </span>
+                      <span className="sz">
+                        480<span className="u">KB</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ui-row pkg">
+                    <span className="pico">
+                      <Icon id="i-box" />
+                    </span>
+                    <div className="meta">
+                      <div className="nm">react</div>
+                      <div className="sub">11 projects · v18.3.1</div>
+                    </div>
+                    <div className="pright">
+                      <span className="sz">
+                        3.4<span className="u">MB</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

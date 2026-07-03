@@ -12,6 +12,7 @@ export function Navbar() {
       </a>
       <nav className="lp-navlinks">
         <a href="#features">Features</a>
+        <a href="#packages">Packages</a>
         <a href="#why">Why</a>
         <a href="#how">How it works</a>
         <a href="#download">Download</a>

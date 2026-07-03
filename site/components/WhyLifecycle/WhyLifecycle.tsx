@@ -21,7 +21,7 @@ export function WhyLifecycle() {
           </h2>
           <p className="lp-lead">
             Every install writes your dependencies to disk. How much they pile
-            up — and how much you can win back — comes down to your package
+            up, and how much you can win back, comes down to your package
             manager.
           </p>
         </div>
@@ -53,7 +53,7 @@ export function WhyLifecycle() {
               Each project gets its <b>own full copy</b> of every dependency.
               Install <code>lodash</code> in ten projects and it&apos;s written
               to disk <b>ten times</b>. Multiply that across hundreds of
-              transitive packages and the old projects you forgot about — and
+              transitive packages and the old projects you forgot about, and
               you&apos;re tens of gigabytes deep.
             </p>
           </div>
@@ -85,14 +85,14 @@ export function WhyLifecycle() {
                 <span />
               </div>
               <div className="ex-store">
-                <span className="ex-sl">~/.pnpm-store — stored once</span>
+                <span className="ex-sl">~/.pnpm-store · stored once</span>
                 <Stack n={5} className="store" />
               </div>
             </div>
             <p className="ex-note">
               pnpm keeps <b>one global store</b> and hard-links each project into
               it. A given version of a package lives on disk <b>once</b>, no
-              matter how many projects use it — a huge saving.{" "}
+              matter how many projects use it, a huge saving.{" "}
               <b>But the store still grows</b> as new versions land and old ones
               linger.
             </p>
@@ -106,10 +106,17 @@ export function WhyLifecycle() {
           <p>
             Clean my node_modules works <b>both ends</b>: it trashes the stale
             project <code>node_modules</code> you&apos;ll never{" "}
-            <code>npm install</code> again — <b>and</b> safely prunes your pnpm
-            store of versions nothing links to anymore.
+            <code>npm install</code> again, <b>and</b> safely prunes your pnpm
+            store of versions nothing links to anymore, one click in the{" "}
+            <b>Caches</b> tab (it never deletes the store itself).
           </p>
         </div>
+
+        <p className="lp-explain-note reveal">
+          It&apos;s also why sizes look small on pnpm: Clean my node_modules
+          counts the shared store <b>once</b> and shows you what&apos;s really
+          yours to free, not the same bytes linked into a dozen projects.
+        </p>
       </div>
     </section>
   );
