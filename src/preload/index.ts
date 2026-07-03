@@ -24,15 +24,19 @@ const api: CleanApi = {
   openProject: (id) => ipcRenderer.invoke(IPC.openProject, id),
   getSettings: () => ipcRenderer.invoke(IPC.getSettings),
   setSetting: (key, value) => ipcRenderer.invoke(IPC.setSetting, key, value),
+  getLicense: () => ipcRenderer.invoke(IPC.getLicense),
+  activateLicense: (key) => ipcRenderer.invoke(IPC.activateLicense, key),
   openLauncher: () => ipcRenderer.invoke(IPC.openLauncher),
   closeWindow: () => ipcRenderer.invoke(IPC.closeWindow),
   setWindowHeight: (height) => ipcRenderer.send(IPC.setWindowHeight, height),
   quitApp: () => ipcRenderer.send(IPC.quitApp),
   uninstall: () => ipcRenderer.invoke(IPC.uninstall),
   pickPath: (mode) => ipcRenderer.invoke(IPC.pickPath, mode),
+  trackEvent: (event, props) => ipcRenderer.send(IPC.trackEvent, event, props),
   onScanProgress: subscribe(IPC.onScanProgress),
   onProjectsChanged: subscribe(IPC.onProjectsChanged),
   onSettingsChanged: subscribe(IPC.onSettingsChanged),
+  onLicenseChanged: subscribe(IPC.onLicenseChanged),
 }
 
 contextBridge.exposeInMainWorld('clean', api)

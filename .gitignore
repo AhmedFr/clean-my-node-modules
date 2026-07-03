@@ -10,5 +10,5 @@ dist/
 
 # Visual brainstorming companion
 .superpowers/
-
 Certificates.p12
+.license-signing.pem

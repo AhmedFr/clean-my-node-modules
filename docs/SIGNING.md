@@ -56,7 +56,7 @@ source .env.signing && pnpm release
 First notarization takes a few minutes (Apple's queue). Verify the result:
 
 ```sh
-spctl -a -vv "dist/mac/Clean my node_modules.app"   # → "accepted, source=Notarized Developer ID"
+spctl -a -vv "dist/mac/TidyDisk.app"   # → "accepted, source=Notarized Developer ID"
 ```
 
 ## CI releases (GitHub Actions)

@@ -1,3 +1,4 @@
+import type { ActivateResult, LicenseState } from '@shared/license.types'
 import type { PackageInventory } from '@shared/package.types'
 import type { PnpmPruneResult, PnpmStoreInfo } from '@shared/pnpm-store.types'
 import type { Project, ScanProgress } from '@shared/project.types'
@@ -20,15 +21,21 @@ export interface CleanApi {
   openProject(id: string): Promise<void>
   getSettings(): Promise<Settings>
   setSetting<K extends keyof Settings>(key: K, value: Settings[K]): Promise<Settings>
+  getLicense(): Promise<LicenseState>
+  /** Verifies + persists a license key; broadcasts license:changed on success. */
+  activateLicense(key: string): Promise<ActivateResult>
   openLauncher(): Promise<void>
   closeWindow(): Promise<void>
   setWindowHeight(height: number): void
   quitApp(): void
   uninstall(): Promise<void>
   pickPath(mode: 'file' | 'folder'): Promise<string | null>
+  /** Fire-and-forget funnel event; main enforces the event whitelist. */
+  trackEvent(event: 'paywall_shown' | 'buy_clicked', props?: Record<string, string | number | boolean>): void
   onScanProgress(fn: (p: ScanProgress) => void): () => void
   onProjectsChanged(fn: (projects: Project[]) => void): () => void
   onSettingsChanged(fn: (settings: Settings) => void): () => void
+  onLicenseChanged(fn: (s: LicenseState) => void): () => void
 }
 
 declare global {

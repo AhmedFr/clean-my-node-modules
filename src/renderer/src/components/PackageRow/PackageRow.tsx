@@ -103,7 +103,7 @@ export function PackageRow({
           </Pill>
         )}
         {multipleVersions && (
-          <Pill color="#fbbf24" title={`In use: ${versions.join(', ')} — unify to reduce duplication`}>
+          <Pill color="#fbbf24" title={`In use: ${versions.join(', ')}. Unify to reduce duplication`}>
             unify
           </Pill>
         )}

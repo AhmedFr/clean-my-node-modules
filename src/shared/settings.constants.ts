@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS: Settings = {
   notify: true,
   onboarded: false,
   checkUpdates: true,
+  analytics: true,
 }
 
 export const SCAN_INTERVAL_MS: Record<Exclude<Settings['scanInterval'], 'manual'>, number> = {

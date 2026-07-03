@@ -13,8 +13,9 @@ export function FeatureGrid() {
             Small app. <span className="accent">Big relief.</span>
           </h2>
           <p className="lp-lead">
-            No accounts, no cloud, nothing leaves your Mac. Just a quiet utility
-            that keeps your disk honest.
+            Your scans stay on your Mac. Anonymous usage analytics only, with
+            a one-click opt-out in Settings. A quiet utility that keeps your
+            disk honest.
           </p>
         </div>
         <div className="lp-grid">
@@ -30,7 +31,10 @@ export function FeatureGrid() {
         </div>
         <div className="lp-coming reveal">
           <span className="pill">Coming soon</span>
-          <p>pnpm store cleanup — and other package-manager caches.</p>
+          <p>
+            npm, yarn &amp; bun caches, plus per-project build outputs like{" "}
+            <code>.next</code> and <code>dist</code>.
+          </p>
         </div>
       </div>
     </section>

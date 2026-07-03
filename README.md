@@ -1,18 +1,25 @@
-# Clean my node_modules
+# TidyDisk
 
-A macOS menu bar app that finds every `node_modules` folder on your disk, shows how much
-space they take against a configurable limit, and lets you reclaim the stale ones, plus a
-computer-wide view of the packages and caches those dependencies leave behind. Implemented
-from the Claude Design handoff in `clean-my-node-modules/`.
+A macOS menu bar app that shows what your dev projects really cost in disk space and
+reclaims it in one click: every `node_modules` folder, your package manager caches, and
+every installed package across your machine. Safely, to the Trash, never `rm -rf`.
 
-Free and open source. No account, no telemetry: every measurement stays on your machine.
+Free to scan: install it and see everything at no cost. One-click cleanup is a one-time
+**19 euro lifetime license** (founding price, 29 euros after launch, 30-day money-back),
+with the key delivered instantly via [Polar](https://buy.polar.sh/polar_cl_znfuYWAHA5D9fRlZZ7FYmumBJGGmmSMpSIXdB1JE4y1).
+The source is MIT on GitHub.
+
+TidyDisk collects anonymous usage analytics (never file paths, project names, or package
+names; opt out any time in Settings) and re-checks your license key online about once a
+week, with a 30-day offline grace window.
 
 ## Install
 
-Download the latest signed & notarized build from the
+Download the latest signed and notarized build from the
 [**Releases**](https://github.com/AhmedFr/clean-my-node-modules/releases/latest) page
-(`clean-my-node-modules-arm64.dmg`, Apple Silicon), open the DMG, and drag the app to
-`/Applications`. It lives in the menu bar; there is no dock icon.
+(Apple Silicon), open the DMG, and drag the app to `/Applications`. It lives in the menu
+bar; there is no dock icon. From the next tagged release the DMG is named
+`tidydisk-arm64.dmg`.
 
 Prefer to build it yourself? See [Development](#development).
 

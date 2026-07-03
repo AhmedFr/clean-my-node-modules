@@ -2,7 +2,9 @@ import { MItem } from '@renderer/components/MItem'
 import { MiniRow } from '@renderer/components/MiniRow'
 import { RescanHint } from '@renderer/components/RescanHint'
 import { UIIcon } from '@renderer/components/UIIcon'
+import { UnlockPrompt } from '@renderer/components/UnlockPrompt'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
+import { useLicense } from '@renderer/hooks/useLicense'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
 import { useSettings } from '@renderer/hooks/useSettings'
@@ -31,6 +33,8 @@ export function PanelApp(): ReactNode {
   const [lastScan, setLastScan] = useState(0)
   const { toast, flashToast } = useToast<PanelToast>()
   const { store, pruning, prune } = usePnpmStore()
+  const { license, activate: activateLicense } = useLicense()
+  const [unlock, setUnlock] = useState<{ bytes?: number } | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   useAutoHeight(rootRef)
 
@@ -64,6 +68,15 @@ export function PanelApp(): ReactNode {
 
   const removeMany = useCallback(
     async (ids: string[], label?: string) => {
+      if (!license.pro) {
+        const bytes = projects.filter((p) => ids.includes(p.id)).reduce((a, p) => a + (p.uniqueSize ?? p.size), 0)
+        setUnlock({ bytes })
+        window.clean.trackEvent('paywall_shown', {
+          trigger: ids.length > 1 ? 'clean_stale' : 'delete',
+          teased_gb: Math.round((bytes / GB) * 10) / 10,
+        })
+        return
+      }
       setDeleting((s) => new Set([...s, ...ids]))
       let freed = 0
       for (const id of ids) freed += await window.clean.deleteNodeModules(id)
@@ -75,10 +88,15 @@ export function PanelApp(): ReactNode {
       setReclaimed((r) => r + freed)
       flashToast({ text: `Reclaimed ${formatSizeStr(freed)}${label ? ` · ${label}` : ''}`, good: true })
     },
-    [flashToast],
+    [flashToast, license.pro, projects],
   )
 
   const pruneStore = useCallback(async () => {
+    if (!license.pro) {
+      setUnlock({})
+      window.clean.trackEvent('paywall_shown', { trigger: 'prune' })
+      return
+    }
     const result = await prune()
     if (result?.ok) {
       setReclaimed((r) => r + result.freedBytes)
@@ -86,7 +104,7 @@ export function PanelApp(): ReactNode {
     } else if (result) {
       flashToast({ text: 'pnpm store prune failed' })
     }
-  }, [prune, flashToast])
+  }, [prune, flashToast, license.pro])
 
   const cleanStale = useCallback(() => {
     if (staleSet.length) {
@@ -114,13 +132,14 @@ export function PanelApp(): ReactNode {
         e.preventDefault()
         setView((v) => (v === 'settings' ? 'main' : 'settings'))
       } else if (e.key === 'Escape') {
-        if (view !== 'main') setView('main')
+        if (unlock) setUnlock(null)
+        else if (view !== 'main') setView('main')
         else void window.clean.closeWindow()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [view])
+  }, [view, unlock])
 
   const nextScanLabel =
     settings.scanInterval === '6h'
@@ -219,6 +238,39 @@ export function PanelApp(): ReactNode {
                 <div style={{ height: 8 }} />
               )}
             </>
+          )}
+          {unlock && (
+            <>
+              <Separator />
+              <UnlockPrompt
+                accent={accent}
+                bytes={unlock.bytes}
+                activate={activateLicense}
+                onClose={() => setUnlock(null)}
+                needsReverify={license.needsReverify}
+              />
+            </>
+          )}
+          {!license.pro && !unlock && projects.length > 0 && (
+            <button
+              onClick={() => {
+                setUnlock({ bytes: freeable || undefined })
+                window.clean.trackEvent('paywall_shown', { trigger: 'affordance' })
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px 15px 2px',
+                fontSize: 10.5,
+                color: 'var(--text-dim)',
+                textAlign: 'left',
+              }}
+            >
+              Free version · scanning is free forever · unlock one-click cleanup
+            </button>
           )}
           {store?.available && (
             <>

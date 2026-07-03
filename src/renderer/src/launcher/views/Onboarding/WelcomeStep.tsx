@@ -60,9 +60,7 @@ export function WelcomeStep({ accent, onNext, onSkip }: WelcomeStepProps): React
     >
       <Dots active={0} />
       <AppIcon accent={accent} size={40} />
-      <div style={{ fontSize: 19, fontWeight: 700, marginTop: 14, color: 'var(--text-strong)' }}>
-        Clean my <span style={{ fontFamily: 'var(--mono-font)', color: 'var(--good)' }}>node_modules</span>
-      </div>
+      <div style={{ fontSize: 19, fontWeight: 700, marginTop: 14, color: 'var(--text-strong)' }}>TidyDisk</div>
       <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 6, maxWidth: 380 }}>
         Find and reclaim disk from heavy, stale dependency folders.
       </div>
@@ -78,10 +76,10 @@ export function WelcomeStep({ accent, onNext, onSkip }: WelcomeStepProps): React
           width: '100%',
         }}
       >
-        <Reassure>Scans your home folder — skips system &amp; hidden files</Reassure>
+        <Reassure>Scans your home folder, skips system &amp; hidden files</Reassure>
         <Reassure>
-          Deletes to Trash, never <code style={{ fontFamily: 'var(--mono-font)', color: 'var(--text-3)' }}>rm -rf</code>{' '}
-          — fully reversible
+          Deletes to Trash, never <code style={{ fontFamily: 'var(--mono-font)', color: 'var(--text-3)' }}>rm -rf</code>
+          , fully reversible
         </Reassure>
       </div>
       <button
@@ -115,7 +113,7 @@ export function WelcomeStep({ accent, onNext, onSkip }: WelcomeStepProps): React
           cursor: 'pointer',
         }}
       >
-        Skip — use defaults
+        Skip and use defaults
       </button>
     </div>
   )

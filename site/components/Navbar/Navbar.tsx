@@ -8,10 +8,11 @@ export function Navbar() {
         <span className="logo">
           <Icon id="logo-module" />
         </span>
-        Clean my node_modules
+        TidyDisk
       </a>
       <nav className="lp-navlinks">
         <a href="#features">Features</a>
+        <a href="#packages">Packages</a>
         <a href="#why">Why</a>
         <a href="#how">How it works</a>
         <a href="#download">Download</a>
@@ -26,7 +27,7 @@ export function Navbar() {
           <Icon id="i-github" />
           GitHub
         </a>
-        <a className="lp-btn lp-btn-primary lp-btn-sm" href={DOWNLOAD_URL}>
+        <a className="lp-btn lp-btn-primary lp-btn-sm" href={DOWNLOAD_URL} target="_blank" rel="noopener">
           <Icon id="i-download" />
           Get the app
         </a>

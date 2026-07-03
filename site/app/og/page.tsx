@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Icon } from "@/components/Icon";
 import { AppPanel } from "@/components/AppPanel";
 
-// Fixed 1200×630 social card. Not a marketing page — it exists to be captured
+// Fixed 1200×630 social card. Not a marketing page; it exists to be captured
 // into public/og.png (see scripts/make-og.mjs). Kept out of search indexes.
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -44,7 +44,7 @@ export default function OgCard() {
             <Icon id="logo-module" style={{ width: 27, height: 27, color: "#fff" }} />
           </span>
           <span style={{ fontSize: 23, fontWeight: 700, fontFamily: "var(--display)" }}>
-            Clean my node_modules
+            TidyDisk
           </span>
         </div>
         <h1
@@ -57,8 +57,8 @@ export default function OgCard() {
             letterSpacing: "-0.02em",
           }}
         >
-          Get your disk back from{" "}
-          <span style={{ color: "var(--accent)" }}>node_modules</span>.
+          Reclaim every byte your{" "}
+          <span style={{ color: "var(--accent)" }}>dependencies</span> cost.
         </h1>
         <p
           style={{
@@ -66,11 +66,12 @@ export default function OgCard() {
             color: "var(--ink-2)",
             marginTop: 22,
             lineHeight: 1.4,
-            maxWidth: 500,
+            maxWidth: 520,
           }}
         >
-          A macOS menu bar app that finds every node_modules folder on your Mac
-          and reclaims the stale ones — safely, to the Trash.
+          A macOS menu bar app for every node_modules folder, your pnpm store,
+          and every package you&apos;ve installed: sized, ranked, and safe to
+          reclaim.
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 32 }}>
           <span
@@ -89,7 +90,9 @@ export default function OgCard() {
             <Icon id="i-download" style={{ width: 18, height: 18 }} />
             Download for macOS
           </span>
-          <span style={{ fontSize: 16, color: "var(--ink-3)" }}>Free &amp; open source</span>
+          <span style={{ fontSize: 16, color: "var(--ink-3)" }}>
+            Free scan · 19 euro lifetime cleanup
+          </span>
         </div>
       </div>
 

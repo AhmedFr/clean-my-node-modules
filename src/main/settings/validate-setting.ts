@@ -32,6 +32,8 @@ export function coerceSetting(
       return oneOf(SCAN_INTERVALS, value) ? { key, value } : null
     case 'notify':
       return typeof value === 'boolean' ? { key, value } : null
+    case 'analytics':
+      return typeof value === 'boolean' ? { key, value } : null
     case 'onboarded':
       return typeof value === 'boolean' ? { key, value } : null
     case 'checkUpdates':

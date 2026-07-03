@@ -11,11 +11,10 @@ export function Footer() {
               <span className="logo">
                 <Icon id="logo-module" />
               </span>
-              Clean my node_modules
+              TidyDisk
             </a>
             <p>
-              The open-source menu bar app that keeps node_modules from eating
-              your Mac alive.
+              The menu bar app that keeps dev junk from eating your Mac alive.
             </p>
           </div>
           <div className="fcol">
@@ -39,9 +38,7 @@ export function Footer() {
           </div>
         </div>
         <div className="bottom">
-          <span className="mono">
-            © 2026 Clean my node_modules · MIT license
-          </span>
+          <span className="mono">© 2026 TidyDisk · MIT license</span>
           <span className="mono">macOS 13+ · Apple Silicon &amp; Intel</span>
         </div>
       </div>

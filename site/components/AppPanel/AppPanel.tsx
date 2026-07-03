@@ -252,7 +252,7 @@ export function AppPanel() {
 
       <Separator />
 
-      {/* Caches — pnpm store */}
+      {/* Caches: pnpm store */}
       <div style={{ ...SECTION_LABEL, padding: "8px 15px 4px" }}>Caches</div>
       <div
         style={{

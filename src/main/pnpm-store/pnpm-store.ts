@@ -143,8 +143,8 @@ async function readStoreInfo(overrides: StoreOverrides): Promise<PnpmStoreInfo> 
     source: 'none',
     canPrune,
     reason: binary
-      ? 'pnpm is installed but its store could not be located — set the store folder in Settings'
-      : 'pnpm not found — choose its binary or the store folder in Settings',
+      ? 'pnpm is installed but its store could not be located. Set the store folder in Settings'
+      : 'pnpm not found. Choose its binary or the store folder in Settings',
   }
 }
 

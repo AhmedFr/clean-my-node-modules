@@ -1,7 +1,10 @@
 import { IPC } from '@shared/ipc.constants'
 import { GB } from '@shared/units.constants'
 import { app } from 'electron'
+import { Analytics } from './analytics/analytics'
+import { getInstallId } from './analytics/install-id'
 import { broadcast, registerIpc } from './ipc/register-ipc'
+import { LicenseStore } from './license'
 import { ThresholdNotifier } from './notifications/threshold-notifier'
 import { PackageStore } from './packages/package-store'
 import { ProjectStore } from './projects/project-store'
@@ -19,17 +22,36 @@ app.whenReady().then(() => {
   const settings = new SettingsStore()
   const projects = new ProjectStore()
   const packages = new PackageStore()
+  const license = new LicenseStore()
+  const analytics = new Analytics(() => settings.get().analytics, getInstallId(), is.dev ? null : undefined)
+  analytics.capture('app_launched', { version: app.getVersion() })
   const scanner = new Scanner()
   const panel = new PanelWindow()
   const launcher = new LauncherWindow()
   const tray = new TrayManager()
   const notifier = new ThresholdNotifier(() => launcher.open())
 
+  const revalidateLicense = (): void => {
+    void license.revalidateIfStale().then((result) => {
+      if (!result) return
+      analytics.capture('license_revalidated', { status: result.outcome })
+      if (result.changed) broadcast(IPC.onLicenseChanged, license.get())
+    })
+  }
+  revalidateLicense()
+  const licenseTimer = setInterval(revalidateLicense, 24 * 60 * 60 * 1000)
+
   const runScan = async (): Promise<void> => {
     if (scanner.isScanning) return
+    const startedAt = Date.now()
     try {
       const result = await scanner.scan((progress) => broadcast(IPC.onScanProgress, progress))
       projects.replaceAll(result)
+      analytics.capture('scan_completed', {
+        total_gb: Math.round((result.reduce((a, p) => a + (p.uniqueSize ?? p.size), 0) / GB) * 10) / 10,
+        projects_count: result.length,
+        duration_s: Math.round((Date.now() - startedAt) / 1000),
+      })
     } catch (err) {
       console.error('Scan failed', err)
     }
@@ -45,12 +67,17 @@ app.whenReady().then(() => {
     notifier.check(total, s.thresholdGB, s.notify)
   }
 
+  let prevSettings = settings.get()
+
   const unsubscribe = [
     projects.onChange((all) => {
       broadcast(IPC.onProjectsChanged, all)
       syncDerivedState()
     }),
     settings.onChange((s) => {
+      if (!prevSettings.onboarded && s.onboarded) analytics.capture('onboarding_completed')
+      if (prevSettings.analytics && !s.analytics) analytics.noteOptOut()
+      prevSettings = s
       broadcast(IPC.onSettingsChanged, s)
       scheduler.apply(s.scanInterval)
       syncDerivedState()
@@ -60,12 +87,14 @@ app.whenReady().then(() => {
   // Tear down timers + store listeners on quit so nothing outlives the app.
   app.on('before-quit', () => {
     scheduler.stop()
+    clearInterval(licenseTimer)
     for (const off of unsubscribe) off()
+    void analytics.shutdown()
   })
 
   tray.create((trayInstance) => panel.toggle(trayInstance))
   panel.create()
-  registerIpc({ projects, packages, settings, panel, launcher, runScan })
+  registerIpc({ projects, packages, settings, license, analytics, panel, launcher, runScan })
   syncDerivedState()
 
   // First launch: show onboarding front-and-center; it triggers the first scan.
