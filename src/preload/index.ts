@@ -32,6 +32,7 @@ const api: CleanApi = {
   quitApp: () => ipcRenderer.send(IPC.quitApp),
   uninstall: () => ipcRenderer.invoke(IPC.uninstall),
   pickPath: (mode) => ipcRenderer.invoke(IPC.pickPath, mode),
+  trackEvent: (event, props) => ipcRenderer.send(IPC.trackEvent, event, props),
   onScanProgress: subscribe(IPC.onScanProgress),
   onProjectsChanged: subscribe(IPC.onProjectsChanged),
   onSettingsChanged: subscribe(IPC.onSettingsChanged),

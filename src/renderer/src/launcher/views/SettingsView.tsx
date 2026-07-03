@@ -168,6 +168,13 @@ export function SettingsView({
         />
       </SettingsRow>
       <div style={{ height: 1, background: 'var(--surface-1)' }} />
+      <SettingsRow
+        label="Usage analytics"
+        hint="Anonymous usage events help improve the app. No file paths or project names, ever"
+      >
+        <Toggle on={settings.analytics} accent={accent} onToggle={() => setSetting('analytics', !settings.analytics)} />
+      </SettingsRow>
+      <div style={{ height: 1, background: 'var(--surface-1)' }} />
       <div style={{ padding: '13px 4px 4px' }}>
         <div style={{ fontSize: 13.5, fontWeight: 550, color: 'var(--text)' }}>pnpm store</div>
         <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 2 }}>

@@ -30,6 +30,8 @@ export interface CleanApi {
   quitApp(): void
   uninstall(): Promise<void>
   pickPath(mode: 'file' | 'folder'): Promise<string | null>
+  /** Fire-and-forget funnel event; main enforces the event whitelist. */
+  trackEvent(event: 'paywall_shown' | 'buy_clicked', props?: Record<string, string | number | boolean>): void
   onScanProgress(fn: (p: ScanProgress) => void): () => void
   onProjectsChanged(fn: (projects: Project[]) => void): () => void
   onSettingsChanged(fn: (settings: Settings) => void): () => void
