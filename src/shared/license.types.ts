@@ -7,4 +7,4 @@ export interface LicenseState {
   activatedAt?: number
 }
 
-export type ActivateResult = { ok: true; state: LicenseState } | { ok: false; reason: 'invalid' }
+export type ActivateResult = { ok: true; state: LicenseState } | { ok: false; reason: 'invalid' | 'network' }
