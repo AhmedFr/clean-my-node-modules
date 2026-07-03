@@ -382,7 +382,7 @@ Turns out "my Mac is full" almost never means photos for devs — it's dependenc
     <div class="two">
       <div class="card">
         <div class="t" style="font-weight:700;font-size:16px;margin-bottom:6px">Payments — use a Merchant of Record</div>
-        <p class="small">You're in the EU. Use <b style="color:var(--ink)">Lemon Squeezy</b> or <b style="color:var(--ink)">Paddle</b> — they act as merchant of record and handle EU VAT / VAT-MOSS <em>for you</em>, plus license-key issuance and checkout. Do not hand-roll VAT. This is the fastest legal path to charging money.</p>
+        <p class="small">You're in the EU. Use <b style="color:var(--ink)">Polar</b> (polar.sh) — a developer-first merchant of record that handles EU VAT / VAT-MOSS <em>for you</em>, plus checkout and fulfilment. (Lemon Squeezy rejected the account; Polar is the replacement — same MoR guarantees.) Do not hand-roll VAT. Keep OUR offline license keys; fulfil manually per order at launch volume.</p>
       </div>
       <div class="card">
         <div class="t" style="font-weight:700;font-size:16px;margin-bottom:6px">The license gate</div>
@@ -397,7 +397,7 @@ Turns out "my Mac is full" almost never means photos for devs — it's dependenc
     <h2 class="sec-h">Do these, in order</h2>
     <div class="grid g2">
       <div class="card"><b class="tag-accent">1.</b> &nbsp;Grab <code>tidydisk.app</code> + check trademark &amp; npm name.</div>
-      <div class="card"><b class="tag-accent">2.</b> &nbsp;Open a Lemon Squeezy (or Paddle) account; create the €19 product + license keys.</div>
+      <div class="card"><b class="tag-accent">2.</b> &nbsp;Open a Polar (polar.sh) account; create the €19 one-time product.</div>
       <div class="card"><b class="tag-accent">3.</b> &nbsp;Build the license gate on the Clean action (spec next).</div>
       <div class="card"><b class="tag-accent">4.</b> &nbsp;Rename app + landing to TidyDisk; make the scan result screenshot-beautiful.</div>
       <div class="card"><b class="tag-accent">5.</b> &nbsp;Render the Remotion clip; write the Show HN + Reddit posts.</div>
@@ -431,7 +431,7 @@ const PHASES=[
     {id:'w1-rename', t:'Rename app + repo assets to TidyDisk', d:'App name, landing, icons, metadata.'},
     {id:'w1-scan-share', t:'Make the free-scan result screenshot-worthy', d:'A clean "here\'s your number" screen + share/OG image — this is the viral artifact.'},
     {id:'w1-gate', t:'Ship the free / paid split', d:'Paywall on the Clean action; free scan stays open.'},
-    {id:'w1-pay', t:'Wire up Lemon Squeezy or Paddle', d:'Checkout + license keys + EU VAT handled for you.'},
+    {id:'w1-pay', t:'Wire up Polar (polar.sh)', d:'MoR checkout + EU VAT handled for you; issue our own keys per order.'},
   ]},
   {wk:'Week 2–3', title:'The push — lead with value', items:[
     {id:'w2-hn', t:'Show HN (Tue–Thu ~8am PT)', d:'Local-first + no-telemetry + disk-space is catnip for HN. Be in the comments.'},
