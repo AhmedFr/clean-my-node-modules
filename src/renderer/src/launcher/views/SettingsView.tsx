@@ -116,7 +116,7 @@ export function SettingsView({
   const gb = settings.thresholdGB
   return (
     <div style={{ padding: '12px 18px 22px' }}>
-      <SettingsRow label="Scan frequency" hint="How often Clean scans your disk in the background">
+      <SettingsRow label="Scan frequency" hint="How often TidyDisk scans your disk in the background">
         <Segmented
           accent={accent}
           value={settings.scanInterval}
@@ -212,7 +212,7 @@ export function SettingsView({
         )}
       </SettingsRow>
       <div style={{ height: 1, background: 'var(--surface-1)' }} />
-      <SettingsRow label="Uninstall" hint="Move Clean and its preferences to the Trash">
+      <SettingsRow label="Uninstall" hint="Move TidyDisk and its preferences to the Trash">
         <button
           className="cc-btn danger"
           style={{ background: '#d4483f' }}

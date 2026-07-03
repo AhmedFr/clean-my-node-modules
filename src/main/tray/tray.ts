@@ -37,7 +37,7 @@ export class TrayManager {
 
   create(onClick: (tray: Tray) => void): Tray {
     this.tray = new Tray(buildIcon(false, '#ff6363'))
-    this.tray.setToolTip('Clean my node_modules')
+    this.tray.setToolTip('TidyDisk')
     this.tray.on('click', () => onClick(this.tray!))
     return this.tray
   }

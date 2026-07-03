@@ -12,7 +12,7 @@ export class ThresholdNotifier {
     if (over && !this.wasOver && enabled && Notification.isSupported()) {
       const usedGB = (totalBytes / GB).toFixed(2)
       const notification = new Notification({
-        title: 'Clean my node_modules',
+        title: 'TidyDisk',
         body: `You've crossed your limit — ${usedGB} GB of stale dependencies are taking up space.`,
       })
       notification.on('click', () => this.onOpen())
