@@ -1,6 +1,6 @@
 {
   "name": "tidydisk",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "TidyDisk: macOS menu bar app that shows what your dev projects cost in disk space and reclaims it in one click",
   "private": true,
   "type": "module",
