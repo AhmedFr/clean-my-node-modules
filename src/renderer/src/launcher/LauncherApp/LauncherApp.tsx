@@ -623,6 +623,7 @@ export function LauncherApp(): ReactNode {
                   bytes={unlock.bytes}
                   activate={activateLicense}
                   onClose={() => setUnlock(null)}
+                  needsReverify={license.needsReverify}
                 />
               </div>
             </div>

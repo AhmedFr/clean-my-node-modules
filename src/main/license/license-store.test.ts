@@ -69,7 +69,7 @@ describe('LicenseStore', () => {
     now = T0 + 29 * DAY
     expect(s.get().pro).toBe(true)
     now = T0 + 31 * DAY
-    expect(s.get().pro).toBe(false)
+    expect(s.get()).toEqual({ pro: false, needsReverify: true, email: 'buyer@example.com' })
   })
 
   it('revalidateIfStale: fresh state is a no-op that never calls the network', async () => {

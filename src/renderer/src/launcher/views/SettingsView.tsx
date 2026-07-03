@@ -188,7 +188,9 @@ export function SettingsView({
         hint={
           license.pro
             ? `Pro · ${license.email ?? 'licensed'} · cleanup unlocked`
-            : 'Free — scan & see everything; one-click cleanup needs a license'
+            : license.needsReverify
+              ? 'Pro license found. Connect to the internet to re-verify'
+              : 'Free — scan & see everything; one-click cleanup needs a license'
         }
       >
         {license.pro ? (

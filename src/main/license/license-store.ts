@@ -35,7 +35,7 @@ export class LicenseStore {
   get(): LicenseState {
     if (!this.persisted) return { pro: false }
     const withinGrace = this.now() - this.persisted.lastValidatedAt <= GRACE_DAYS * DAY_MS
-    if (!withinGrace) return { pro: false }
+    if (!withinGrace) return { pro: false, needsReverify: true, email: this.persisted.email }
     return { pro: true, email: this.persisted.email, activatedAt: this.persisted.lastValidatedAt }
   }
 

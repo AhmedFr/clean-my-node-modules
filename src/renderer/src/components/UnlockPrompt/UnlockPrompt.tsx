@@ -5,7 +5,7 @@ import { useState } from 'react'
 import type { UnlockPromptProps } from './UnlockPrompt.types'
 
 /** Inline paywall shown when a free-tier user triggers a Clean action. */
-export function UnlockPrompt({ accent, bytes, activate, onClose }: UnlockPromptProps): ReactNode {
+export function UnlockPrompt({ accent, bytes, activate, onClose, needsReverify }: UnlockPromptProps): ReactNode {
   const [entering, setEntering] = useState(false)
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
@@ -79,10 +79,16 @@ export function UnlockPrompt({ accent, bytes, activate, onClose }: UnlockPromptP
         <>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 650, color: 'var(--text)' }}>
-              {bytes ? `Reclaim ${formatSizeStr(bytes)} — unlock one-click cleanup` : 'Unlock one-click cleanup'}
+              {needsReverify
+                ? 'Reconnect to re-verify your license'
+                : bytes
+                  ? `Reclaim ${formatSizeStr(bytes)} — unlock one-click cleanup`
+                  : 'Unlock one-click cleanup'}
             </div>
             <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 1 }}>
-              €19 · lifetime license · scanning stays free forever
+              {needsReverify
+                ? 'Pro re-checks automatically when you are back online. You can also paste your key again.'
+                : '€19 · lifetime license · scanning stays free forever'}
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '0 0 auto' }}>
@@ -92,16 +98,18 @@ export function UnlockPrompt({ accent, bytes, activate, onClose }: UnlockPromptP
             <button className="cc-btn ghost" onClick={() => setEntering(true)}>
               I have a key
             </button>
-            <button
-              className="cc-btn danger"
-              style={{ background: accent }}
-              onClick={() => {
-                window.clean.trackEvent('buy_clicked', { source: 'unlock_prompt' })
-                void window.clean.openExternal(BUY_URL)
-              }}
-            >
-              Buy · €19
-            </button>
+            {!needsReverify && (
+              <button
+                className="cc-btn danger"
+                style={{ background: accent }}
+                onClick={() => {
+                  window.clean.trackEvent('buy_clicked', { source: 'unlock_prompt' })
+                  void window.clean.openExternal(BUY_URL)
+                }}
+              >
+                Buy · €19
+              </button>
+            )}
           </div>
         </>
       )}

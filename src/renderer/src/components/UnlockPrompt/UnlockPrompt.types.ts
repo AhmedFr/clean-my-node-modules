@@ -6,4 +6,6 @@ export interface UnlockPromptProps {
   bytes?: number
   activate: (key: string) => Promise<ActivateResult>
   onClose: () => void
+  /** a stored license exists but the offline grace window lapsed; reconnecting re-verifies automatically */
+  needsReverify?: boolean
 }
