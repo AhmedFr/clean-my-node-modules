@@ -18,7 +18,7 @@ export function FinalCta() {
             free, unlock cleanup for 19 euros.
           </p>
           <div className="lp-cta-row">
-            <a className="lp-btn lp-btn-primary lp-btn-lg" href={DOWNLOAD_URL}>
+            <a className="lp-btn lp-btn-primary lp-btn-lg" href={DOWNLOAD_URL} target="_blank" rel="noopener">
               <Icon id="i-download" />
               Download free scan
             </a>

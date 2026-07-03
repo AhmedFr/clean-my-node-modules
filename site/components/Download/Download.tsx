@@ -45,7 +45,7 @@ export function Download() {
                 No account, ever
               </li>
             </ul>
-            <a className="lp-btn lp-btn-ghost" href={DOWNLOAD_URL}>
+            <a className="lp-btn lp-btn-ghost" href={DOWNLOAD_URL} target="_blank" rel="noopener">
               <Icon id="i-download" />
               Download for macOS
             </a>

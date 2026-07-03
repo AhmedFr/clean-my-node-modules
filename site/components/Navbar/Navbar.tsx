@@ -27,7 +27,7 @@ export function Navbar() {
           <Icon id="i-github" />
           GitHub
         </a>
-        <a className="lp-btn lp-btn-primary lp-btn-sm" href={DOWNLOAD_URL}>
+        <a className="lp-btn lp-btn-primary lp-btn-sm" href={DOWNLOAD_URL} target="_blank" rel="noopener">
           <Icon id="i-download" />
           Get the app
         </a>

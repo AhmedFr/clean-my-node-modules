@@ -322,9 +322,6 @@ section { position: relative; }
 .lp-price .pbadge { position: absolute; top: 18px; right: 18px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); padding: 4px 10px; border-radius: 100px; background: rgba(255,99,99,0.14); border: 1px solid rgba(255,99,99,0.3); }
 .lp-price .pname { font-family: var(--display); font-weight: 700; font-size: 22px; }
 .lp-price .pdesc { font-size: 14.5px; color: var(--ink-3); margin-top: 5px; }
-.lp-price .pcost { display: flex; align-items: baseline; gap: 7px; margin: 22px 0 4px; }
-.lp-price .pcost .amt { font-family: var(--display); font-weight: 800; font-size: 46px; letter-spacing: -0.02em; }
-.lp-price .pcost .per { font-size: 14px; color: var(--ink-3); }
 .lp-price ul { list-style: none; padding: 0; margin: 20px 0 26px; display: flex; flex-direction: column; gap: 11px; flex: 1; }
 .lp-price ul li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--ink-2); }
 .lp-price ul .ck { width: 19px; height: 19px; border-radius: 5px; flex: 0 0 auto; display: grid; place-items: center; background: rgba(255,99,99,0.16); color: var(--accent); margin-top: 1px; }

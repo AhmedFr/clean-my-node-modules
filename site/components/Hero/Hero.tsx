@@ -21,7 +21,7 @@ export function Hero() {
           safely. To the Trash, never <code>rm -rf</code>.
         </p>
         <div className="lp-cta-row reveal d2">
-          <a className="lp-btn lp-btn-primary lp-btn-lg" href={DOWNLOAD_URL}>
+          <a className="lp-btn lp-btn-primary lp-btn-lg" href={DOWNLOAD_URL} target="_blank" rel="noopener">
             <Icon id="i-download" />
             Download for macOS
           </a>
