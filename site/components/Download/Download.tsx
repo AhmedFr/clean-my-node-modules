@@ -1,5 +1,5 @@
 import { Icon } from "@/components/Icon";
-import { REPO_URL, DOWNLOAD_URL } from "@/lib/links";
+import { DOWNLOAD_URL, BUY_URL } from "@/lib/links";
 
 function Check() {
   return (
@@ -16,73 +16,75 @@ export function Download() {
         <div className="lp-section-head reveal">
           <div className="lp-kicker">Download</div>
           <h2 className="lp-h2">
-            Free &amp; <span className="accent">open source.</span>
+            Free to scan. <span className="accent">19 euros to clean.</span>
           </h2>
           <p className="lp-lead">
-            The whole app is open source under MIT. Every feature, no gates.
-            Grab the signed &amp; notarized build, or build it yourself from
-            source. No accounts, no subscription.
+            The scan is free forever and the source is MIT on GitHub.
+            One-click cleanup is a one-time lifetime license: founding price
+            19 euros, then 29 after launch. 30-day money-back, no questions.
           </p>
         </div>
         <div className="lp-prices">
           <div className="lp-price reveal">
-            <div className="pname">Build from source</div>
-            <div className="pdesc">The entire app, MIT-licensed on GitHub.</div>
-            <div className="pcost">
-              <span className="amt">$0</span>
-              <span className="per">build it yourself</span>
+            <div className="pname">
+              <span className="accent">$0</span> · Scan everything
             </div>
+            <div className="pdesc">The scan, free forever.</div>
             <ul>
               <li>
                 <Check />
-                Every feature, nothing held back
+                Download and run, no setup required
               </li>
               <li>
                 <Check />
-                Clone, <code>pnpm install</code>, <code>pnpm package</code>
+                See every node_modules folder, cache, and package on your
+                machine
               </li>
               <li>
                 <Check />
-                Read it, fork it, send a PR
+                No account, ever
               </li>
             </ul>
-            <a
-              className="lp-btn lp-btn-ghost"
-              href={REPO_URL}
-              target="_blank"
-              rel="noopener"
-            >
-              <Icon id="i-github" />
-              View on GitHub
+            <a className="lp-btn lp-btn-ghost" href={DOWNLOAD_URL}>
+              <Icon id="i-download" />
+              Download for macOS
             </a>
           </div>
           <div className="lp-price feat reveal d1">
-            <span className="pbadge">Recommended</span>
-            <div className="pname">Download</div>
-            <div className="pdesc">
-              The signed &amp; notarized .app, ready to run.
+            <span className="pbadge">Founding price</span>
+            <div className="pname">
+              <span className="accent">€19</span> · Lifetime cleanup
             </div>
-            <div className="pcost">
-              <span className="amt">$0</span>
-              <span className="per">free download</span>
-            </div>
+            <div className="pdesc">One-time license, unlocks cleanup for life.</div>
             <ul>
               <li>
                 <Check />
-                Signed &amp; notarized .app, no Gatekeeper hoops
+                One-click delete, straight to the Trash
               </li>
               <li>
                 <Check />
-                Download and run in seconds, no toolchain
+                Clean stale: sweep every stale node_modules at once
               </li>
               <li>
                 <Check />
-                macOS 13+ · Apple Silicon &amp; Intel
+                Prune your pnpm store, one click
+              </li>
+              <li>
+                <Check />
+                All future updates included
+              </li>
+              <li>
+                <Check />
+                Instant license key, delivered via Polar
+              </li>
+              <li>
+                <Check />
+                Founding price: 19 euros now, 29 euros after launch
               </li>
             </ul>
-            <a className="lp-btn lp-btn-primary" href={DOWNLOAD_URL}>
-              <Icon id="i-download" />
-              Download for macOS
+            <a className="lp-btn lp-btn-primary" href={BUY_URL}>
+              <Icon id="i-broom" />
+              Buy TidyDisk · €19
             </a>
           </div>
         </div>

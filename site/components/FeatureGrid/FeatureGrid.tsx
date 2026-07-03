@@ -13,8 +13,9 @@ export function FeatureGrid() {
             Small app. <span className="accent">Big relief.</span>
           </h2>
           <p className="lp-lead">
-            No accounts, no cloud, nothing leaves your Mac. Just a quiet utility
-            that keeps your disk honest.
+            Your scans stay on your Mac. Anonymous usage analytics only, with
+            a one-click opt-out in Settings. A quiet utility that keeps your
+            disk honest.
           </p>
         </div>
         <div className="lp-grid">

@@ -44,7 +44,7 @@ export default function OgCard() {
             <Icon id="logo-module" style={{ width: 27, height: 27, color: "#fff" }} />
           </span>
           <span style={{ fontSize: 23, fontWeight: 700, fontFamily: "var(--display)" }}>
-            Clean my node_modules
+            TidyDisk
           </span>
         </div>
         <h1
@@ -90,7 +90,9 @@ export default function OgCard() {
             <Icon id="i-download" style={{ width: 18, height: 18 }} />
             Download for macOS
           </span>
-          <span style={{ fontSize: 16, color: "var(--ink-3)" }}>Free &amp; open source</span>
+          <span style={{ fontSize: 16, color: "var(--ink-3)" }}>
+            Free scan · 19 euro lifetime cleanup
+          </span>
         </div>
       </div>
 

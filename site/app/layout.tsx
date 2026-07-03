@@ -12,9 +12,10 @@ import { Analytics } from "@vercel/analytics/next";
 const FAVICON =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23e23d3d'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.8' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M12 4.6 19 8.5v7L12 19.4 5 15.5v-7z'/%3E%3Cpath d='M5 8.5 12 12.4l7-3.9M12 12.4v7'/%3E%3C/g%3E%3C/svg%3E";
 
-const TITLE = "Clean my node_modules: reclaim the disk your dependencies cost";
+const TITLE =
+  "TidyDisk: see what is eating your dev disk, reclaim it in one click";
 const DESCRIPTION =
-  "An open-source macOS menu bar app that shows and reclaims all the disk your JavaScript dependencies cost: every node_modules folder, your pnpm store, and every installed package. Safely, to the Trash, never rm -rf.";
+  "TidyDisk lives in your macOS menu bar and shows what your dev projects really cost: every node_modules folder, your pnpm store, and every installed package. Free to scan. One-click cleanup with a 19 euro lifetime license. Safely, to the Trash, never rm -rf.";
 
 // Absolute base for OG/Twitter image URLs. Auto-resolves on Vercel; override
 // with NEXT_PUBLIC_SITE_URL once a custom domain is set.
@@ -22,7 +23,7 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000");
+    : "https://tidydisk.app");
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "/",
-    siteName: "Clean my node_modules",
+    siteName: "TidyDisk",
     title: TITLE,
     description: DESCRIPTION,
     images: [
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Clean my node_modules: a macOS menu bar app that reclaims the disk your dependencies cost",
+        alt: "TidyDisk: the macOS menu bar app that reclaims the disk your dev projects cost",
       },
     ],
   },

@@ -1,4 +1,4 @@
-/* landing.css — Clean my node_modules marketing page.
+/* landing.css — TidyDisk marketing page.
    Grounded in the product's own design system: red #ff6363 accent,
    Module logo, pixel-cell meter motif, JetBrains Mono, dark glass UI. */
 
@@ -330,6 +330,7 @@ section { position: relative; }
 .lp-price ul .ck { width: 19px; height: 19px; border-radius: 5px; flex: 0 0 auto; display: grid; place-items: center; background: rgba(255,99,99,0.16); color: var(--accent); margin-top: 1px; }
 .lp-price ul .ck svg { width: 12px; height: 12px; }
 .lp-price .lp-btn { justify-content: center; }
+.lp-price .pname .accent { color: var(--accent); }
 
 /* ============ final cta ============ */
 .lp-final { padding: 130px 0 120px; text-align: center; }

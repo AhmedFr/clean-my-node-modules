@@ -8,7 +8,7 @@ export function Navbar() {
         <span className="logo">
           <Icon id="logo-module" />
         </span>
-        Clean my node_modules
+        TidyDisk
       </a>
       <nav className="lp-navlinks">
         <a href="#features">Features</a>

@@ -8,14 +8,14 @@ export function Hero() {
       <div className="wrap">
         <div className="lp-eyebrow reveal">
           <span className="dot" />
-          Open source · macOS menu bar app
+          macOS menu bar app · free scan
         </div>
         <h1 className="lp-h1 reveal d1">
           Reclaim every byte your{" "}
           <span className="accent word">dependencies</span> cost.
         </h1>
         <p className="lp-sub reveal d2">
-          Clean my node_modules lives in your menu bar and tracks every{" "}
+          TidyDisk lives in your menu bar and tracks every{" "}
           <code>node_modules</code> folder, your pnpm store, and every package
           you&apos;ve installed on your Mac. See what they cost, then reclaim it
           safely. To the Trash, never <code>rm -rf</code>.

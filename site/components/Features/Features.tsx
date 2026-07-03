@@ -21,9 +21,9 @@ export function Features() {
             </span>
             <h3>It watches your disk so you don&apos;t have to.</h3>
             <p>
-              Clean my node_modules lives in your menu bar and rescans on your
-              schedule: every 6 hours, daily, or weekly. A native notification
-              slides in the moment your node_modules cross the limit you set.
+              TidyDisk lives in your menu bar and rescans on your schedule:
+              every 6 hours, daily, or weekly. A native notification slides in
+              the moment your node_modules cross the limit you set.
             </p>
             <ul className="lp-feat-list">
               <li>
@@ -48,7 +48,7 @@ export function Features() {
                 </span>
                 <div className="nbody">
                   <div className="nhead">
-                    <span className="app">Clean my node_modules</span>
+                    <span className="app">TidyDisk</span>
                     <span className="t">now</span>
                   </div>
                   <div className="ntext">
