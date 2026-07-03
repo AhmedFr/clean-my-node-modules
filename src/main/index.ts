@@ -27,6 +27,14 @@ app.whenReady().then(() => {
   const tray = new TrayManager()
   const notifier = new ThresholdNotifier(() => launcher.open())
 
+  const revalidateLicense = (): void => {
+    void license.revalidateIfStale().then((result) => {
+      if (result?.changed) broadcast(IPC.onLicenseChanged, license.get())
+    })
+  }
+  revalidateLicense()
+  const licenseTimer = setInterval(revalidateLicense, 24 * 60 * 60 * 1000)
+
   const runScan = async (): Promise<void> => {
     if (scanner.isScanning) return
     try {
@@ -62,6 +70,7 @@ app.whenReady().then(() => {
   // Tear down timers + store listeners on quit so nothing outlives the app.
   app.on('before-quit', () => {
     scheduler.stop()
+    clearInterval(licenseTimer)
     for (const off of unsubscribe) off()
   })
 

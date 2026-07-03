@@ -9,7 +9,7 @@ export function UnlockPrompt({ accent, bytes, activate, onClose }: UnlockPromptP
   const [entering, setEntering] = useState(false)
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
-  const [invalid, setInvalid] = useState(false)
+  const [error, setError] = useState<null | 'invalid' | 'network'>(null)
 
   const submit = async (): Promise<void> => {
     if (!key.trim() || busy) return
@@ -17,7 +17,7 @@ export function UnlockPrompt({ accent, bytes, activate, onClose }: UnlockPromptP
     const result = await activate(key)
     setBusy(false)
     if (result.ok) onClose()
-    else setInvalid(true)
+    else setError(result.reason)
   }
 
   return (
@@ -38,19 +38,19 @@ export function UnlockPrompt({ accent, bytes, activate, onClose }: UnlockPromptP
             value={key}
             onChange={(e) => {
               setKey(e.target.value)
-              setInvalid(false)
+              setError(null)
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') void submit()
             }}
-            placeholder="TIDY-…"
+            placeholder="Paste your license key"
             spellCheck={false}
             disabled={busy}
             style={{
               flex: 1,
               minWidth: 0,
               background: 'var(--surface-2)',
-              border: invalid ? `1px solid ${accent}` : '1px solid var(--hairline)',
+              border: error !== null ? `1px solid ${accent}` : '1px solid var(--hairline)',
               borderRadius: 7,
               padding: '6px 9px',
               fontSize: 12.5,
@@ -58,7 +58,11 @@ export function UnlockPrompt({ accent, bytes, activate, onClose }: UnlockPromptP
               outline: 'none',
             }}
           />
-          {invalid && <span style={{ fontSize: 11.5, color: accent, whiteSpace: 'nowrap' }}>Invalid key</span>}
+          {error && (
+            <span style={{ fontSize: 11.5, color: accent, whiteSpace: 'nowrap' }}>
+              {error === 'network' ? 'No connection. Retry?' : 'Invalid key'}
+            </span>
+          )}
           <button className="cc-btn ghost" disabled={busy} onClick={() => setEntering(false)}>
             Back
           </button>

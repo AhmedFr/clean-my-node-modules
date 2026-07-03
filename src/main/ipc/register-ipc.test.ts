@@ -1,3 +1,4 @@
+import type { ActivateResult } from '@shared/license.types'
 import type { Project } from '@shared/project.types'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -42,12 +43,12 @@ const project = { id: 'p1', size: 1024 } as Project
 
 function makeCtx(pro: boolean) {
   const remove = vi.fn()
-  const activate = vi.fn(() => ({ ok: true as const, state: { pro: true } }))
+  const activate = vi.fn(async (): Promise<ActivateResult> => ({ ok: true as const, state: { pro: true } }))
   const ctx = {
     projects: { all: [project], remove, lastScanTime: 0 },
     packages: { get: vi.fn(), compute: vi.fn() },
     settings: { get: () => ({ pnpmStorePath: undefined, pnpmBinaryPath: undefined }) },
-    license: { get: () => ({ pro }), activate },
+    license: { get: () => ({ pro }), activate, revalidateIfStale: vi.fn() },
     panel: { hide: vi.fn(), browserWindow: null },
     launcher: { open: vi.fn(), hide: vi.fn(), browserWindow: null },
     runScan: vi.fn(),
@@ -92,9 +93,17 @@ describe('license enforcement in IPC handlers', () => {
   it('license:get returns the store state; activate broadcasts on success', async () => {
     const { activate } = makeCtx(false)
     expect(await invoke(IPC.getLicense)).toEqual({ pro: false })
-    const res = await invoke(IPC.activateLicense, 'TIDY-x.y')
-    expect(activate).toHaveBeenCalledWith('TIDY-x.y')
+    const res = await invoke(IPC.activateLicense, 'POLAR-x-y')
+    expect(activate).toHaveBeenCalledWith('POLAR-x-y')
     expect(res).toEqual({ ok: true, state: { pro: true } })
     expect(sent).toContainEqual([IPC.onLicenseChanged, { pro: true }])
+  })
+
+  it('failed activation does not broadcast license:changed', async () => {
+    const { activate } = makeCtx(false)
+    activate.mockImplementation(async () => ({ ok: false as const, reason: 'invalid' as const }))
+    const res = await invoke(IPC.activateLicense, 'BAD')
+    expect(res).toEqual({ ok: false, reason: 'invalid' })
+    expect(sent).toEqual([])
   })
 })

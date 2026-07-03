@@ -20,8 +20,8 @@ export function registerIpc(ctx: AppContext): void {
   })
 
   ipcMain.handle(IPC.getLicense, () => ctx.license.get())
-  ipcMain.handle(IPC.activateLicense, (_e, key: unknown) => {
-    const result = ctx.license.activate(key)
+  ipcMain.handle(IPC.activateLicense, async (_e, key: unknown) => {
+    const result = await ctx.license.activate(key)
     if (result.ok) broadcast(IPC.onLicenseChanged, result.state)
     return result
   })

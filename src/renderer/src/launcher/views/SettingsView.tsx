@@ -54,28 +54,30 @@ function LicenseActivator({
   activate: (key: string) => Promise<ActivateResult>
 }): ReactNode {
   const [key, setKey] = useState('')
-  const [invalid, setInvalid] = useState(false)
+  const [error, setError] = useState<null | 'invalid' | 'network'>(null)
   const [busy, setBusy] = useState(false)
   const submit = async (): Promise<void> => {
     if (!key.trim() || busy) return
     setBusy(true)
     const result = await activate(key)
     setBusy(false)
-    if (!result.ok) setInvalid(true)
+    if (!result.ok) setError(result.reason)
   }
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      {invalid && <span style={{ fontSize: 11.5, color: accent }}>Invalid</span>}
+      {error && (
+        <span style={{ fontSize: 11.5, color: accent }}>{error === 'network' ? 'No connection' : 'Invalid'}</span>
+      )}
       <input
         value={key}
         onChange={(e) => {
           setKey(e.target.value)
-          setInvalid(false)
+          setError(null)
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') void submit()
         }}
-        placeholder="TIDY-…"
+        placeholder="Paste your license key"
         spellCheck={false}
         disabled={busy}
         style={{

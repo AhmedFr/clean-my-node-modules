@@ -1,2 +1,3 @@
+export type { RevalidationOutcome } from './license-store'
 export { LicenseStore } from './license-store'
-export { parseLicenseKey } from './license-verify'
+export { validateLicenseKey } from './polar-client'

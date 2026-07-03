@@ -1,16 +1,3 @@
-/**
- * Ed25519 public key that license signatures are verified against.
- * The matching private key lives OUTSIDE the repo (.license-signing.pem,
- * gitignored) — see scripts/license/make-keypair.mjs.
- *
- * NOTE: kept alongside the Polar constants below because `license-verify.ts`
- * still imports it (offline Ed25519 path is being retired in a later task,
- * not this one).
- */
-export const LICENSE_PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAqyi/+HYDzOjJFZoOafLl3/2liTdXWMDwgzlJdOIWEh4=
------END PUBLIC KEY-----`
-
 /** Polar organization the app validates license keys against (public by design). */
 export const POLAR_ORGANIZATION_ID = '01bea117-0916-42e2-ab77-beaaa1b1d845'
 

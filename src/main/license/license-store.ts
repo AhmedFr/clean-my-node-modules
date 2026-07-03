@@ -1,56 +1,104 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { ActivateResult, LicenseState } from '@shared/license.types'
 import { app } from 'electron'
-import { parseLicenseKey } from './license-verify'
+import { GRACE_DAYS, REVALIDATE_AFTER_DAYS } from './license.constants'
+import { validateLicenseKey } from './polar-client'
+
+interface PersistedLicense {
+  key: string
+  lastValidatedAt: number
+  email?: string
+}
+
+export type RevalidationOutcome = { changed: boolean; outcome: 'refreshed' | 'revoked' | 'offline' }
+
+const DAY_MS = 24 * 60 * 60 * 1000
 
 /**
- * JSON-file-backed license store in the app's userData directory.
- * Only the signed key is trusted: state is re-derived by verifying the
- * signature on every load, so editing license.json can't unlock the app.
+ * JSON-file-backed license state in the app's userData directory.
+ * `pro` is derived from the last successful Polar validation plus a grace
+ * window, so the app keeps working offline for GRACE_DAYS and refunds
+ * (revocations) are picked up by the periodic background revalidation.
  */
 export class LicenseStore {
-  private state: LicenseState
+  private persisted: PersistedLicense | null
 
   constructor(
     private filePath = join(app.getPath('userData'), 'license.json'),
-    private publicKeyPem?: string,
+    private validate: typeof validateLicenseKey = validateLicenseKey,
+    private now: () => number = Date.now,
   ) {
-    this.state = this.load()
+    this.persisted = this.load()
   }
 
   get(): LicenseState {
-    return { ...this.state }
+    if (!this.persisted) return { pro: false }
+    const withinGrace = this.now() - this.persisted.lastValidatedAt <= GRACE_DAYS * DAY_MS
+    if (!withinGrace) return { pro: false }
+    return { pro: true, email: this.persisted.email, activatedAt: this.persisted.lastValidatedAt }
   }
 
-  activate(key: unknown): ActivateResult {
-    const payload = parseLicenseKey(key, this.publicKeyPem)
-    if (!payload) return { ok: false, reason: 'invalid' }
-    const activatedAt = Date.now()
-    this.state = { pro: true, email: payload.email, activatedAt }
-    this.persist((key as string).trim(), activatedAt)
+  async activate(key: unknown): Promise<ActivateResult> {
+    if (typeof key !== 'string' || !key.trim()) return { ok: false, reason: 'invalid' }
+    const result = await this.validate(key.trim())
+    if (!result.ok) return { ok: false, reason: result.reason }
+    this.persisted = { key: key.trim(), lastValidatedAt: this.now(), email: result.email }
+    this.persist()
     return { ok: true, state: this.get() }
   }
 
-  private load(): LicenseState {
+  /**
+   * Background refresh once the last check is REVALIDATE_AFTER_DAYS old.
+   * Returns null when nothing was due; otherwise reports whether the public
+   * state flipped and how the check ended. Network trouble keeps the cached
+   * state so an offline user is never punished inside the grace window.
+   */
+  async revalidateIfStale(): Promise<RevalidationOutcome | null> {
+    if (!this.persisted) return null
+    if (this.now() - this.persisted.lastValidatedAt < REVALIDATE_AFTER_DAYS * DAY_MS) return null
+    const wasPro = this.get().pro
+    const result = await this.validate(this.persisted.key)
+    if (result.ok) {
+      this.persisted = {
+        ...this.persisted,
+        lastValidatedAt: this.now(),
+        email: result.email ?? this.persisted.email,
+      }
+      this.persist()
+      return { changed: this.get().pro !== wasPro, outcome: 'refreshed' }
+    }
+    if (result.reason === 'invalid') {
+      this.persisted = null
+      try {
+        rmSync(this.filePath, { force: true })
+      } catch (err) {
+        console.error('Failed to clear license file', err)
+      }
+      return { changed: wasPro, outcome: 'revoked' }
+    }
+    return { changed: false, outcome: 'offline' }
+  }
+
+  private load(): PersistedLicense | null {
     try {
-      const raw = JSON.parse(readFileSync(this.filePath, 'utf8')) as { key?: unknown; activatedAt?: unknown }
-      const payload = parseLicenseKey(raw.key, this.publicKeyPem)
-      if (!payload) return { pro: false }
+      const raw = JSON.parse(readFileSync(this.filePath, 'utf8')) as PersistedLicense
+      if (typeof raw?.key !== 'string' || typeof raw?.lastValidatedAt !== 'number') return null
       return {
-        pro: true,
-        email: payload.email,
-        activatedAt: typeof raw.activatedAt === 'number' ? raw.activatedAt : undefined,
+        key: raw.key,
+        lastValidatedAt: raw.lastValidatedAt,
+        email: typeof raw.email === 'string' ? raw.email : undefined,
       }
     } catch {
-      return { pro: false }
+      return null
     }
   }
 
-  private persist(key: string, activatedAt: number): void {
+  private persist(): void {
+    if (!this.persisted) return
     try {
       mkdirSync(dirname(this.filePath), { recursive: true })
-      writeFileSync(this.filePath, JSON.stringify({ key, activatedAt }, null, 2))
+      writeFileSync(this.filePath, JSON.stringify(this.persisted, null, 2))
     } catch (err) {
       console.error('Failed to persist license', err)
     }
