@@ -44,11 +44,13 @@ const project = { id: 'p1', size: 1024 } as Project
 function makeCtx(pro: boolean) {
   const remove = vi.fn()
   const activate = vi.fn(async (): Promise<ActivateResult> => ({ ok: true as const, state: { pro: true } }))
+  const analytics = { capture: vi.fn(), identify: vi.fn() }
   const ctx = {
     projects: { all: [project], remove, lastScanTime: 0 },
     packages: { get: vi.fn(), compute: vi.fn() },
     settings: { get: () => ({ pnpmStorePath: undefined, pnpmBinaryPath: undefined }) },
     license: { get: () => ({ pro }), activate, revalidateIfStale: vi.fn() },
+    analytics,
     panel: { hide: vi.fn(), browserWindow: null },
     launcher: { open: vi.fn(), hide: vi.fn(), browserWindow: null },
     runScan: vi.fn(),
@@ -59,7 +61,7 @@ function makeCtx(pro: boolean) {
   prunePnpmStore.mockClear()
   // biome-ignore lint/suspicious/noExplicitAny: deliberately partial test double
   registerIpc(ctx as any)
-  return { ctx, remove, activate }
+  return { ctx, remove, activate, analytics }
 }
 
 const invoke = (ch: string, ...args: unknown[]) => handlers.get(ch)?.({}, ...args)
@@ -105,5 +107,32 @@ describe('license enforcement in IPC handlers', () => {
     const res = await invoke(IPC.activateLicense, 'BAD')
     expect(res).toEqual({ ok: false, reason: 'invalid' })
     expect(sent).toEqual([])
+  })
+
+  it('trackEvent forwards whitelisted renderer events with sanitized props', () => {
+    const { analytics } = makeCtx(false)
+    invoke(IPC.trackEvent, 'paywall_shown', { trigger: 'delete', teased_gb: 1.2, nested: { no: true } })
+    expect(analytics.capture).toHaveBeenCalledWith('paywall_shown', { trigger: 'delete', teased_gb: 1.2 })
+  })
+
+  it('trackEvent drops non-whitelisted events entirely', () => {
+    const { analytics } = makeCtx(false)
+    invoke(IPC.trackEvent, 'license_activated', {})
+    invoke(IPC.trackEvent, 42, {})
+    expect(analytics.capture).not.toHaveBeenCalled()
+  })
+
+  it('successful activation captures license_activated and identifies the buyer', async () => {
+    const { activate, analytics } = makeCtx(false)
+    activate.mockImplementation(async () => ({ ok: true as const, state: { pro: true, email: 'b@x.y' } }))
+    await invoke(IPC.activateLicense, 'KEY')
+    expect(analytics.capture).toHaveBeenCalledWith('license_activated')
+    expect(analytics.identify).toHaveBeenCalledWith('b@x.y')
+  })
+
+  it('licensed delete captures clean_performed with freed_gb', async () => {
+    const { analytics } = makeCtx(true)
+    await invoke(IPC.deleteNodeModules, 'p1')
+    expect(analytics.capture).toHaveBeenCalledWith('clean_performed', { kind: 'delete', freed_gb: 0 })
   })
 })

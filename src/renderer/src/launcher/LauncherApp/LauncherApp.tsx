@@ -179,6 +179,10 @@ export function LauncherApp(): ReactNode {
       if (!license.pro) {
         setConfirm(null)
         setUnlock({ bytes: p.uniqueSize ?? p.size })
+        window.clean.trackEvent('paywall_shown', {
+          trigger: 'delete',
+          teased_gb: Math.round(((p.uniqueSize ?? p.size) / GB) * 10) / 10,
+        })
         return
       }
       setConfirm(null)
@@ -205,6 +209,7 @@ export function LauncherApp(): ReactNode {
   const handlePrune = useCallback(async () => {
     if (!license.pro) {
       setUnlock({})
+      window.clean.trackEvent('paywall_shown', { trigger: 'prune' })
       return
     }
     const res = await prune()

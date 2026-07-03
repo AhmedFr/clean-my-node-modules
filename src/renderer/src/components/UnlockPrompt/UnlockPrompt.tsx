@@ -95,7 +95,10 @@ export function UnlockPrompt({ accent, bytes, activate, onClose }: UnlockPromptP
             <button
               className="cc-btn danger"
               style={{ background: accent }}
-              onClick={() => void window.clean.openExternal(BUY_URL)}
+              onClick={() => {
+                window.clean.trackEvent('buy_clicked', { source: 'unlock_prompt' })
+                void window.clean.openExternal(BUY_URL)
+              }}
             >
               Buy · €19
             </button>

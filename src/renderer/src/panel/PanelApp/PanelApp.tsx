@@ -71,6 +71,10 @@ export function PanelApp(): ReactNode {
       if (!license.pro) {
         const bytes = projects.filter((p) => ids.includes(p.id)).reduce((a, p) => a + (p.uniqueSize ?? p.size), 0)
         setUnlock({ bytes })
+        window.clean.trackEvent('paywall_shown', {
+          trigger: ids.length > 1 ? 'clean_stale' : 'delete',
+          teased_gb: Math.round((bytes / GB) * 10) / 10,
+        })
         return
       }
       setDeleting((s) => new Set([...s, ...ids]))
@@ -90,6 +94,7 @@ export function PanelApp(): ReactNode {
   const pruneStore = useCallback(async () => {
     if (!license.pro) {
       setUnlock({})
+      window.clean.trackEvent('paywall_shown', { trigger: 'prune' })
       return
     }
     const result = await prune()
@@ -247,7 +252,10 @@ export function PanelApp(): ReactNode {
           )}
           {!license.pro && !unlock && projects.length > 0 && (
             <button
-              onClick={() => setUnlock({ bytes: freeable || undefined })}
+              onClick={() => {
+                setUnlock({ bytes: freeable || undefined })
+                window.clean.trackEvent('paywall_shown', { trigger: 'affordance' })
+              }}
               style={{
                 display: 'block',
                 width: '100%',

@@ -1,8 +1,11 @@
 import { IPC } from '@shared/ipc.constants'
+import { GB } from '@shared/units.constants'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import { uninstallApp } from '../actions/app-actions'
 import { pickPath } from '../actions/pick-path'
 import { deleteNodeModules, openProject, revealInFinder } from '../actions/project-actions'
+import type { AnalyticsEvent, AnalyticsProps } from '../analytics'
+import { RENDERER_EVENTS } from '../analytics'
 import type { AppContext } from '../app-context.types'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
 import { coerceSetting } from '../settings/validate-setting'
@@ -22,7 +25,11 @@ export function registerIpc(ctx: AppContext): void {
   ipcMain.handle(IPC.getLicense, () => ctx.license.get())
   ipcMain.handle(IPC.activateLicense, async (_e, key: unknown) => {
     const result = await ctx.license.activate(key)
-    if (result.ok) broadcast(IPC.onLicenseChanged, result.state)
+    if (result.ok) {
+      broadcast(IPC.onLicenseChanged, result.state)
+      ctx.analytics.capture('license_activated')
+      if (result.state.email) ctx.analytics.identify(result.state.email)
+    }
     return result
   })
 
@@ -32,11 +39,18 @@ export function registerIpc(ctx: AppContext): void {
     const s = ctx.settings.get()
     return getPnpmStoreInfo(force, { storePath: s.pnpmStorePath, binaryPath: s.pnpmBinaryPath })
   })
-  ipcMain.handle(IPC.prunePnpmStore, () => {
+  ipcMain.handle(IPC.prunePnpmStore, async () => {
     // Free tier sees everything but mutates nothing — cleanup is the paid unlock.
     if (!ctx.license.get().pro) return { ok: false, freedBytes: 0 }
     const s = ctx.settings.get()
-    return prunePnpmStore({ storePath: s.pnpmStorePath, binaryPath: s.pnpmBinaryPath })
+    const result = await prunePnpmStore({ storePath: s.pnpmStorePath, binaryPath: s.pnpmBinaryPath })
+    if (result.ok) {
+      ctx.analytics.capture('clean_performed', {
+        kind: 'prune',
+        freed_gb: Math.round((result.freedBytes / GB) * 10) / 10,
+      })
+    }
+    return result
   })
 
   ipcMain.handle(IPC.getPackages, () => ctx.packages.get())
@@ -50,6 +64,7 @@ export function registerIpc(ctx: AppContext): void {
     if (!project) return 0
     const freed = await deleteNodeModules(project)
     ctx.projects.remove(id)
+    ctx.analytics.capture('clean_performed', { kind: 'delete', freed_gb: Math.round((freed / GB) * 10) / 10 })
     return freed
   })
 
@@ -76,6 +91,12 @@ export function registerIpc(ctx: AppContext): void {
   })
 
   ipcMain.on(IPC.quitApp, () => app.quit())
+
+  ipcMain.on(IPC.trackEvent, (_e, event: unknown, props: unknown) => {
+    // The renderer only ever originates these two; everything else is dropped.
+    if (typeof event !== 'string' || !(RENDERER_EVENTS as readonly string[]).includes(event)) return
+    ctx.analytics.capture(event as AnalyticsEvent, sanitizeProps(props))
+  })
 
   ipcMain.handle(IPC.openExternal, (_e, url: unknown) => {
     // Only ever hand https URLs to the OS — never arbitrary schemes from the renderer.
@@ -105,4 +126,14 @@ export function broadcast(channel: string, payload: unknown): void {
   for (const win of BrowserWindow.getAllWindows()) {
     if (!win.isDestroyed()) win.webContents.send(channel, payload)
   }
+}
+
+/** Flat primitives only — the renderer cannot smuggle objects or paths-by-accident. */
+function sanitizeProps(props: unknown): AnalyticsProps | undefined {
+  if (typeof props !== 'object' || props === null) return undefined
+  const out: AnalyticsProps = {}
+  for (const [k, v] of Object.entries(props).slice(0, 10)) {
+    if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') out[k] = v
+  }
+  return Object.keys(out).length ? out : undefined
 }

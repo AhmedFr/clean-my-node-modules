@@ -24,6 +24,7 @@ app.whenReady().then(() => {
   const packages = new PackageStore()
   const license = new LicenseStore()
   const analytics = new Analytics(() => settings.get().analytics, getInstallId(), is.dev ? null : undefined)
+  analytics.capture('app_launched', { version: app.getVersion() })
   const scanner = new Scanner()
   const panel = new PanelWindow()
   const launcher = new LauncherWindow()
@@ -32,7 +33,9 @@ app.whenReady().then(() => {
 
   const revalidateLicense = (): void => {
     void license.revalidateIfStale().then((result) => {
-      if (result?.changed) broadcast(IPC.onLicenseChanged, license.get())
+      if (!result) return
+      analytics.capture('license_revalidated', { status: result.outcome })
+      if (result.changed) broadcast(IPC.onLicenseChanged, license.get())
     })
   }
   revalidateLicense()
@@ -40,9 +43,15 @@ app.whenReady().then(() => {
 
   const runScan = async (): Promise<void> => {
     if (scanner.isScanning) return
+    const startedAt = Date.now()
     try {
       const result = await scanner.scan((progress) => broadcast(IPC.onScanProgress, progress))
       projects.replaceAll(result)
+      analytics.capture('scan_completed', {
+        total_gb: Math.round((result.reduce((a, p) => a + (p.uniqueSize ?? p.size), 0) / GB) * 10) / 10,
+        projects_count: result.length,
+        duration_s: Math.round((Date.now() - startedAt) / 1000),
+      })
     } catch (err) {
       console.error('Scan failed', err)
     }
@@ -58,12 +67,17 @@ app.whenReady().then(() => {
     notifier.check(total, s.thresholdGB, s.notify)
   }
 
+  let prevSettings = settings.get()
+
   const unsubscribe = [
     projects.onChange((all) => {
       broadcast(IPC.onProjectsChanged, all)
       syncDerivedState()
     }),
     settings.onChange((s) => {
+      if (!prevSettings.onboarded && s.onboarded) analytics.capture('onboarding_completed')
+      if (prevSettings.analytics && !s.analytics) analytics.noteOptOut()
+      prevSettings = s
       broadcast(IPC.onSettingsChanged, s)
       scheduler.apply(s.scanInterval)
       syncDerivedState()
@@ -75,6 +89,7 @@ app.whenReady().then(() => {
     scheduler.stop()
     clearInterval(licenseTimer)
     for (const off of unsubscribe) off()
+    void analytics.shutdown()
   })
 
   tray.create((trayInstance) => panel.toggle(trayInstance))

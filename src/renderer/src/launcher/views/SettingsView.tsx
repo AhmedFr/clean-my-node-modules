@@ -198,7 +198,10 @@ export function SettingsView({
             <button
               className="cc-btn danger"
               style={{ background: accent }}
-              onClick={() => void window.clean.openExternal(BUY_URL)}
+              onClick={() => {
+                window.clean.trackEvent('buy_clicked', { source: 'settings' })
+                void window.clean.openExternal(BUY_URL)
+              }}
             >
               Buy · €19
             </button>
