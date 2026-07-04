@@ -17,6 +17,7 @@
     "format": "biome format --write .",
     "test": "vitest run",
     "icon": "node scripts/make-icon.mjs",
+    "demo": "node scripts/demo-data.mjs",
     "package": "electron-vite build && electron-builder --mac --dir",
     "release": "electron-vite build && bash scripts/release-mac.sh",
     "video:studio": "remotion studio video/index.ts",
