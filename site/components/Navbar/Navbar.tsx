@@ -4,18 +4,19 @@ import { REPO_URL, DOWNLOAD_URL } from "@/lib/links";
 export function Navbar() {
   return (
     <header className="lp-nav">
-      <a className="lp-brand" href="#top">
+      <a className="lp-brand" href="/#top">
         <span className="logo">
           <Icon id="logo-module" />
         </span>
         TidyDisk
       </a>
       <nav className="lp-navlinks">
-        <a href="#features">Features</a>
-        <a href="#packages">Packages</a>
-        <a href="#why">Why</a>
-        <a href="#how">How it works</a>
-        <a href="#download">Download</a>
+        <a href="/#features">Features</a>
+        <a href="/#packages">Packages</a>
+        <a href="/#why">Why</a>
+        <a href="/#how">How it works</a>
+        <a href="/#download">Download</a>
+        <a href="/blog">Blog</a>
       </nav>
       <div className="lp-nav-right">
         <a
