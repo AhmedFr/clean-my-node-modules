@@ -81,7 +81,7 @@ export function Showcase(): React.ReactNode {
             <Caption text="Your disk is full of node_modules" len={CAP1[1]} accentWord="node_modules" />
           </Sequence>
           <Sequence from={CAP2[0]} durationInFrames={CAP2[1]}>
-            <Caption text="One click — straight to Trash" len={CAP2[1]} accentWord="Trash" />
+            <Caption text="One click, straight to Trash" len={CAP2[1]} accentWord="Trash" />
           </Sequence>
           <Sequence from={CAP3[0]} durationInFrames={CAP3[1]}>
             <Caption text="Reclaim gigabytes in seconds" len={CAP3[1]} accentWord="seconds" />

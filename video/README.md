@@ -1,7 +1,7 @@
 # Showcase video (Remotion)
 
-A 10-second, square (1080×1080), loopable promo for **Clean my node_modules**,
-built entirely in code with [Remotion](https://remotion.dev) — no screen
+A 10-second, square (1080×1080), loopable promo for **TidyDisk**,
+built entirely in code with [Remotion](https://remotion.dev), no screen
 recording, so every frame is crisp and the UI matches the real app
 (same palette, cube glyph, and pixel gauge).
 
