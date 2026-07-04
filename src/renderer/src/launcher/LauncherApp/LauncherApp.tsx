@@ -2,6 +2,7 @@ import { AppIcon } from '@renderer/components/AppIcon'
 import { Gauge } from '@renderer/components/Gauge'
 import { Kbd } from '@renderer/components/Kbd'
 import { RescanHint } from '@renderer/components/RescanHint'
+import { ResultView } from '@renderer/components/ResultView'
 import { Row } from '@renderer/components/Row'
 import { Segmented } from '@renderer/components/Segmented'
 import { Spinner } from '@renderer/components/Spinner'
@@ -58,6 +59,7 @@ export function LauncherApp(): ReactNode {
   const [confirm, setConfirm] = useState<Project | null>(null)
   const [unlock, setUnlock] = useState<{ bytes?: number } | null>(null)
   const [reclaimed, setReclaimed] = useState(0)
+  const [cardCopied, setCardCopied] = useState(false)
   const { toast, flashToast } = useToast<LauncherToast>()
   const { store, loading: storeLoading, pruning, prune, refresh } = usePnpmStore()
   const pkgActive = view === 'list' && tab === 'packages'
@@ -206,6 +208,28 @@ export function LauncherApp(): ReactNode {
 
   const rescan = useCallback(() => setView('scanning'), [])
 
+  const copyCard = useCallback(
+    (source: 'reveal' | 'header') => {
+      void window.clean
+        .copyShareCard({
+          totalBytes: totalUsed,
+          nodeModulesBytes: Math.max(0, totalUsed - storeBytes),
+          storeBytes,
+          projectsCount: projects.length,
+          source,
+        })
+        .then(({ ok }) => {
+          if (!ok) return
+          setCardCopied(true)
+          setTimeout(() => setCardCopied(false), 2200)
+          if (source === 'header') {
+            flashToast({ icon: UIIcon.checkCircle, text: 'Image copied. Paste it anywhere.', tone: 'good' })
+          }
+        })
+    },
+    [totalUsed, storeBytes, projects.length, flashToast],
+  )
+
   const handlePrune = useCallback(async () => {
     if (!license.pro) {
       setUnlock({})
@@ -251,6 +275,10 @@ export function LauncherApp(): ReactNode {
       if (e.key === 'Escape') {
         if (unlock) {
           setUnlock(null)
+          return
+        }
+        if (view === 'result') {
+          setView('list')
           return
         }
         if (confirm) {
@@ -434,6 +462,11 @@ export function LauncherApp(): ReactNode {
                 linkedBytes={linkedTotal}
                 calculating={calculating}
               />
+              {totalUsed > 0 && (
+                <button className="cc-iconbtn" title="Copy your scan as an image" onClick={() => copyCard('header')}>
+                  {UIIcon.share({ size: 15 })}
+                </button>
+              )}
               <button
                 className="cc-close"
                 onClick={() => void window.clean.closeWindow()}
@@ -449,7 +482,7 @@ export function LauncherApp(): ReactNode {
                 {UIIcon.chevronLeft({ size: 18 })}
               </button>
               <div style={{ fontSize: 14.5, fontWeight: 650, color: 'var(--text)' }}>
-                {view === 'settings' ? 'Settings' : 'Scanning'}
+                {view === 'settings' ? 'Settings' : view === 'result' ? 'Results' : 'Scanning'}
               </div>
               <div style={{ flex: 1 }} />
               <button
@@ -465,7 +498,21 @@ export function LauncherApp(): ReactNode {
           <div className="cc-divider" />
 
           {/* ---------- Body ---------- */}
-          {view === 'scanning' && <ScanningView accent={accent} onDone={() => setView('list')} />}
+          {view === 'scanning' && (
+            <ScanningView accent={accent} onDone={() => setView(totalUsed > 0 ? 'result' : 'list')} />
+          )}
+          {view === 'result' && (
+            <ResultView
+              accent={accent}
+              totalBytes={totalUsed}
+              nodeModulesBytes={Math.max(0, totalUsed - storeBytes)}
+              storeBytes={storeBytes}
+              projectsCount={projects.length}
+              copied={cardCopied}
+              onCopy={() => copyCard('reveal')}
+              onContinue={() => setView('list')}
+            />
+          )}
           {view === 'settings' && (
             <SettingsView
               settings={settings}

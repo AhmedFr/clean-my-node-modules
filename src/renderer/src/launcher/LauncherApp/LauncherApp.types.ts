@@ -1,6 +1,6 @@
 import type { IconRenderer } from '@renderer/components/UIIcon'
 
-export type LauncherView = 'list' | 'scanning' | 'settings'
+export type LauncherView = 'list' | 'scanning' | 'result' | 'settings'
 export type LauncherTab = 'projects' | 'caches' | 'packages'
 export type SortKey = 'used' | 'size' | 'name'
 export type PackageSortKey = 'used' | 'size' | 'name' | 'updates'

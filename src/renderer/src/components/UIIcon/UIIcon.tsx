@@ -174,4 +174,16 @@ export const UIIcon: Record<UIIconName, IconRenderer> = {
       }
     />
   ),
+  share: (p) => (
+    <Icon
+      {...p}
+      path={
+        <>
+          <path d="M12 2v13" />
+          <path d="m16 6-4-4-4 4" />
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        </>
+      }
+    />
+  ),
 }
