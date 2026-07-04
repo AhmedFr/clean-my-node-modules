@@ -17,9 +17,9 @@ export function ScreenBeauty(): React.ReactNode {
   return (
     <ScreenFrame
       eyebrow="macOS menu-bar app"
-      headline="Clean my node_modules"
-      accentWord="node_modules"
-      sub="Find every stale node_modules folder and reclaim the disk — without leaving your menu bar."
+      headline="TidyDisk"
+      accentWord="TidyDisk"
+      sub="See what is eating your dev disk. Reclaim it in one click."
       glow={ACCENT}
       scale={1.18}
     >
@@ -119,7 +119,7 @@ function SafeChip(): React.ReactNode {
         <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
       </svg>
-      Moved to the Trash — never{' '}
+      Moved to the Trash, never{' '}
       <span style={{ fontFamily: 'ui-monospace, Menlo, monospace', color: '#fff' }}>rm&nbsp;-rf</span>, always
       recoverable
     </div>
