@@ -35,6 +35,11 @@ vi.mock('../pnpm-store/pnpm-store', () => ({
 }))
 vi.mock('../actions/app-actions', () => ({ uninstallApp: vi.fn() }))
 vi.mock('../actions/pick-path', () => ({ pickPath: vi.fn() }))
+const copyCardToClipboard = vi.fn(async (_p: unknown) => true)
+vi.mock('../share', async () => ({
+  copyCardToClipboard: (p: unknown) => copyCardToClipboard(p),
+  coerceCardPayload: (await import('../share/render-card')).coerceCardPayload,
+}))
 
 const { IPC } = await import('@shared/ipc.constants')
 const { registerIpc } = await import('./register-ipc')
@@ -59,6 +64,7 @@ function makeCtx(pro: boolean) {
   sent.length = 0
   deleteNodeModules.mockClear()
   prunePnpmStore.mockClear()
+  copyCardToClipboard.mockClear()
   // biome-ignore lint/suspicious/noExplicitAny: deliberately partial test double
   registerIpc(ctx as any)
   return { ctx, remove, activate, analytics }
@@ -134,5 +140,26 @@ describe('license enforcement in IPC handlers', () => {
     const { analytics } = makeCtx(true)
     await invoke(IPC.deleteNodeModules, 'p1')
     expect(analytics.capture).toHaveBeenCalledWith('clean_performed', { kind: 'delete', freed_gb: 0 })
+  })
+
+  it('share:copy-card rejects garbage without opening a window or capturing', async () => {
+    const { analytics } = makeCtx(false)
+    expect(await invoke(IPC.copyShareCard, { totalBytes: -5 })).toEqual({ ok: false })
+    expect(copyCardToClipboard).not.toHaveBeenCalled()
+    expect(analytics.capture).not.toHaveBeenCalled()
+  })
+
+  it('share:copy-card copies and captures share_card_copied with source', async () => {
+    const { analytics } = makeCtx(false)
+    const GBv = 1024 ** 3
+    const res = await invoke(IPC.copyShareCard, {
+      totalBytes: 247.3 * GBv,
+      nodeModulesBytes: 214 * GBv,
+      storeBytes: 33.3 * GBv,
+      projectsCount: 14,
+      source: 'header',
+    })
+    expect(res).toEqual({ ok: true })
+    expect(analytics.capture).toHaveBeenCalledWith('share_card_copied', { total_gb: 247.3, source: 'header' })
   })
 })

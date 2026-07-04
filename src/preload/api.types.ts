@@ -3,6 +3,7 @@ import type { PackageInventory } from '@shared/package.types'
 import type { PnpmPruneResult, PnpmStoreInfo } from '@shared/pnpm-store.types'
 import type { Project, ScanProgress } from '@shared/project.types'
 import type { Settings } from '@shared/settings.types'
+import type { ShareCardPayload } from '@shared/share.types'
 
 export interface CleanApi {
   getProjects(): Promise<Project[]>
@@ -24,6 +25,8 @@ export interface CleanApi {
   getLicense(): Promise<LicenseState>
   /** Verifies + persists a license key; broadcasts license:changed on success. */
   activateLicense(key: string): Promise<ActivateResult>
+  /** Renders the share card offscreen and copies the PNG to the clipboard. */
+  copyShareCard(payload: ShareCardPayload): Promise<{ ok: boolean }>
   openLauncher(): Promise<void>
   closeWindow(): Promise<void>
   setWindowHeight(height: number): void

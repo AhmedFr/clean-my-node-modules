@@ -9,6 +9,7 @@ import { RENDERER_EVENTS } from '../analytics'
 import type { AppContext } from '../app-context.types'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
 import { coerceSetting } from '../settings/validate-setting'
+import { coerceCardPayload, copyCardToClipboard } from '../share'
 
 export function registerIpc(ctx: AppContext): void {
   ipcMain.handle(IPC.getProjects, () => ctx.projects.all)
@@ -51,6 +52,19 @@ export function registerIpc(ctx: AppContext): void {
       })
     }
     return result
+  })
+
+  ipcMain.handle(IPC.copyShareCard, async (_e, raw: unknown) => {
+    const payload = coerceCardPayload(raw)
+    if (!payload) return { ok: false }
+    const ok = await copyCardToClipboard(payload)
+    if (ok) {
+      ctx.analytics.capture('share_card_copied', {
+        total_gb: Math.round((payload.totalBytes / GB) * 10) / 10,
+        source: payload.source ?? 'reveal',
+      })
+    }
+    return { ok }
   })
 
   ipcMain.handle(IPC.getPackages, () => ctx.packages.get())

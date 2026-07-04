@@ -26,6 +26,7 @@ const api: CleanApi = {
   setSetting: (key, value) => ipcRenderer.invoke(IPC.setSetting, key, value),
   getLicense: () => ipcRenderer.invoke(IPC.getLicense),
   activateLicense: (key) => ipcRenderer.invoke(IPC.activateLicense, key),
+  copyShareCard: (payload) => ipcRenderer.invoke(IPC.copyShareCard, payload),
   openLauncher: () => ipcRenderer.invoke(IPC.openLauncher),
   closeWindow: () => ipcRenderer.invoke(IPC.closeWindow),
   setWindowHeight: (height) => ipcRenderer.send(IPC.setWindowHeight, height),
