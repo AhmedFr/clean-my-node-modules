@@ -13,6 +13,7 @@ export const ANALYTICS_EVENTS = [
   'license_revalidated',
   'clean_performed',
   'analytics_disabled',
+  'share_card_copied',
 ] as const
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number]
 

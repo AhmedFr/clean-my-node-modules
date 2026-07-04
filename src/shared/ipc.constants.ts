@@ -23,6 +23,7 @@ export const IPC = {
   pickPath: 'dialog:pick-path',
   getLicense: 'license:get',
   activateLicense: 'license:activate',
+  copyShareCard: 'share:copy-card',
   // events (main -> renderer)
   onScanProgress: 'scan:progress',
   onProjectsChanged: 'projects:changed',
