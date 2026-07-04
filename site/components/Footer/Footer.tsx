@@ -7,7 +7,7 @@ export function Footer() {
       <div className="wrap">
         <div className="top">
           <div className="brandcol">
-            <a className="lp-brand" href="#top">
+            <a className="lp-brand" href="/#top">
               <span className="logo">
                 <Icon id="logo-module" />
               </span>
@@ -19,10 +19,10 @@ export function Footer() {
           </div>
           <div className="fcol">
             <h5>Product</h5>
-            <a href="#features">Features</a>
-            <a href="#how">How it works</a>
-            <a href="#download">Download</a>
-            <a href="#download">Get the app</a>
+            <a href="/#features">Features</a>
+            <a href="/#how">How it works</a>
+            <a href="/#download">Download</a>
+            <a href="/blog">Blog</a>
           </div>
           <div className="fcol">
             <h5>Open source</h5>
