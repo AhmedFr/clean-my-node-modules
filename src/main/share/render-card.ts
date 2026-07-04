@@ -18,6 +18,7 @@ export function coerceCardPayload(raw: unknown): ShareCardPayload | null {
     out[k] = Math.min(v, MAX_BYTES)
   }
   if ((out.totalBytes ?? 0) <= 0) return null
+  out.projectsCount = Math.round(out.projectsCount ?? 0)
   if (p.source !== undefined && p.source !== 'reveal' && p.source !== 'header') return null
   out.source = (p.source as 'reveal' | 'header' | undefined) ?? 'reveal'
   return out as ShareCardPayload
@@ -70,7 +71,7 @@ export function renderCardHtml(p: ShareCardPayload): string {
   <div class="meter">${cells}</div>
   <div class="total">${fmtGB(p.totalBytes)}<span>GB</span></div>
   <div class="sub">of dev junk found on this Mac</div>
-  <div class="split">${p.projectsCount} projects · ${fmtGB(p.nodeModulesBytes)} GB in node_modules · ${fmtGB(p.storeBytes)} GB in the pnpm store</div>
+  <div class="split">${p.projectsCount} project${p.projectsCount === 1 ? '' : 's'} · ${fmtGB(p.nodeModulesBytes)} GB in node_modules · ${fmtGB(p.storeBytes)} GB in the pnpm store</div>
   <div class="foot"><span class="logo"><svg width="18" height="18" viewBox="0 0 32 32"><path d="M16 5 L26 10.5 V21.5 L16 27 L6 21.5 V10.5 Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg></span><b>TidyDisk</b><span>·</span><span>free scan</span><span>·</span><span>tidydisk.app</span></div>
   </body></html>`
 }

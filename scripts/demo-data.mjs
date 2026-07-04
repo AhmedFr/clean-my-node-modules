@@ -132,7 +132,8 @@ function doSeed(targetDir, userData, files) {
     console.log(`No existing file to back up for: ${noExistingFile.join(', ')} (none was present, nothing lost)`)
   }
   console.log('')
-  console.log('Restart tidydisk, or hit Rescan, to see the demo data.')
+  console.log('Restart tidydisk to see the demo data. Do NOT hit Rescan: a real scan overwrites the seed.')
+  console.log('Note: the seeded pnpm store size only shows with default store settings (no manual overrides).')
   console.log('When you are done, restore your real data with:')
   console.log(`  ${restoreCommand(targetDir, userData)}`)
 }
