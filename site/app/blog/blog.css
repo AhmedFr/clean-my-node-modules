@@ -51,6 +51,9 @@
 .blog-prose a:hover { text-decoration-color: var(--accent); }
 .blog-prose strong { color: var(--ink); }
 .blog-prose ul, .blog-prose ol { margin: 0 0 18px; padding-left: 26px; }
+.blog-prose ul { list-style: disc; }
+.blog-prose ol { list-style: decimal; }
+.blog-prose li::marker { color: var(--ink-3); }
 .blog-prose li { margin-bottom: 8px; }
 .blog-prose code { white-space: pre-wrap; }
 .blog-prose pre {
