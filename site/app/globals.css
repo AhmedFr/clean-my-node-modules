@@ -106,6 +106,41 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* glass chrome shared by the mock panels AND the /og capture page (which
+   renders with inline styles, so this must stay a plain class) */
+.glass-panel {
+  background: rgba(28, 28, 32, 0.74);
+  backdrop-filter: blur(34px) saturate(185%);
+  -webkit-backdrop-filter: blur(34px) saturate(185%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+/* AppPanel is a deliberate inline-style port of the real Electron renderer
+   (src/renderer PanelApp); these are the renderer's design tokens, scoped. */
+.app-panel {
+  --accent: #ff6363;
+  --good: #34d399;
+  --text: rgba(255, 255, 255, 0.9);
+  --text-2: rgba(255, 255, 255, 0.8);
+  --text-3: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --text-dim: rgba(255, 255, 255, 0.4);
+  --hairline: rgba(255, 255, 255, 0.07);
+  --surface-1: rgba(255, 255, 255, 0.06);
+  --surface-2: rgba(255, 255, 255, 0.08);
+  --surface-3: rgba(255, 255, 255, 0.12);
+  --surface-4: rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
+    system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
 /* nav scrolled state (class toggled by RevealClient) */
 .lp-nav.scrolled {
   background: rgba(10, 10, 13, 0.72);
