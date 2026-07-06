@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { statusColor } from "@/lib/meter";
 import type { PixrowProps } from "./Pixrow.types";
 
@@ -10,11 +11,20 @@ export function pixrowColors(cells: number, mirror: boolean): string[] {
   });
 }
 
-export function Pixrow({ cells = 7, mirror = false }: PixrowProps) {
+export function Pixrow({
+  cells = 7,
+  mirror = false,
+  className,
+  cellClassName = "h-[26px] w-[13px] rounded-[3px]",
+}: PixrowProps) {
   return (
-    <div className="pixrow" aria-hidden>
+    <div className={cn("flex gap-1", className)} aria-hidden>
       {pixrowColors(cells, mirror).map((background, i) => (
-        <i key={i} style={{ background }} />
+        <i
+          key={i}
+          className={cn("block", cellClassName)}
+          style={{ background }}
+        />
       ))}
     </div>
   );

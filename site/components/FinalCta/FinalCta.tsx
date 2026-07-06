@@ -27,7 +27,10 @@ export function FinalCta() {
               Buy · €19
             </a>
           </div>
-          <Pixrow />
+          <Pixrow
+            className="mt-9 justify-center"
+            cellClassName="h-[28px] w-[14px] rounded-[3px]"
+          />
         </div>
       </div>
     </section>
