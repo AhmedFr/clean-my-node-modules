@@ -1,4 +1,3 @@
-import "./blog.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -8,7 +7,7 @@ export default function BlogLayout({
   return (
     <>
       <Navbar />
-      <main className="blog-main">{children}</main>
+      <main className="pb-[110px] pt-[72px]">{children}</main>
       <Footer />
     </>
   );

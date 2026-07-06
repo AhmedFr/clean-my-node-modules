@@ -1,5 +1,6 @@
 import { Icon } from "@/components/Icon";
 import { Btn } from "@/components/Btn";
+import { Eyebrow } from "@/components/Eyebrow";
 import { Wrap } from "@/components/Wrap";
 import { HeroScene } from "./HeroScene";
 import { REPO_URL, DOWNLOAD_URL } from "@/lib/links";
@@ -8,10 +9,7 @@ export function Hero() {
   return (
     <section className="relative pt-[78px] text-center">
       <Wrap>
-        <div className="reveal inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-[rgba(255,99,99,0.28)] bg-[rgba(255,99,99,0.07)] py-[6px] pl-[10px] pr-[13px] font-mono text-[12.5px] font-medium uppercase tracking-[0.04em] text-accent">
-          <span className="h-[6px] w-[6px] rounded-full bg-accent shadow-[0_0_0_3px_rgba(255,99,99,0.25)]" />
-          macOS menu bar app · free scan
-        </div>
+        <Eyebrow className="reveal">macOS menu bar app · free scan</Eyebrow>
         <h1 className="reveal d1 mx-auto mt-[22px] max-w-[16ch] font-display text-[clamp(40px,6.4vw,78px)] font-extrabold leading-[0.98] tracking-[-0.03em]">
           A <span className="text-accent">tidy disk</span>, without thinking
           about it.

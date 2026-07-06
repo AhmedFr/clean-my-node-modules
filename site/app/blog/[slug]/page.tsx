@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/site-url";
 import { DOWNLOAD_URL } from "@/lib/links";
 import { Icon } from "@/components/Icon";
+import { Btn } from "@/components/Btn";
 import { formatPostDate } from "../format-date";
 
 export const revalidate = 3600;
@@ -48,7 +49,7 @@ export default async function BlogPost({ params }: Props) {
   if (!post) notFound();
 
   return (
-    <article className="blog-article">
+    <article className="mx-auto max-w-[720px] px-7">
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -61,14 +62,19 @@ export default async function BlogPost({ params }: Props) {
           mainEntityOfPage: `${SITE_URL}/blog/${post.meta.slug}`,
         }}
       />
-      <header className="blog-article-head">
-        <Link className="blog-back" href="/blog">
+      <header className="mb-10">
+        <Link
+          className="font-mono text-[13px] text-ink-3 transition-colors duration-150 hover:text-accent"
+          href="/blog"
+        >
           ← All articles
         </Link>
-        <h1>{post.meta.title}</h1>
-        <div className="blog-byline">
+        <h1 className="mt-[18px] font-display text-[clamp(30px,4.6vw,44px)] font-extrabold leading-[1.06] tracking-[-0.02em]">
+          {post.meta.title}
+        </h1>
+        <div className="mt-[18px] flex items-center gap-[10px] font-mono text-[13px] text-ink-3">
           <span>TidyDisk team</span>
-          <span className="dot" />
+          <span className="h-1 w-1 rounded-full bg-ink-4" />
           <time dateTime={post.meta.date}>{formatPostDate(post.meta.date)}</time>
         </div>
       </header>
@@ -76,16 +82,18 @@ export default async function BlogPost({ params }: Props) {
         className="blog-prose"
         dangerouslySetInnerHTML={{ __html: post.html }}
       />
-      <aside className="blog-cta">
-        <h2>See what your projects really cost</h2>
-        <p>
+      <aside className="mt-14 rounded-[20px] border border-[rgba(255,99,99,0.22)] bg-[linear-gradient(180deg,rgba(255,99,99,0.09),rgba(255,99,99,0.03))] p-8 text-center">
+        <h2 className="font-display text-[24px] font-extrabold tracking-[-0.015em]">
+          See what your projects really cost
+        </h2>
+        <p className="mx-auto mb-5 mt-[10px] max-w-[46ch] text-[15.5px] text-ink-2">
           TidyDisk scans your Mac for free and shows every node_modules folder,
           sized and ranked. Cleanup is one click, always to the Trash.
         </p>
-        <a className="lp-btn lp-btn-primary" href={DOWNLOAD_URL} target="_blank" rel="noopener">
+        <Btn variant="primary" href={DOWNLOAD_URL} target="_blank" rel="noopener">
           <Icon id="i-download" />
           Download for macOS
-        </a>
+        </Btn>
       </aside>
     </article>
   );
