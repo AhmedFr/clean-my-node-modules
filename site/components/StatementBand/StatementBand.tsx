@@ -9,7 +9,7 @@ export function StatementBand() {
           <code>node_modules</code> is the heaviest object in the known universe.{" "}
           <em>We help you delete it.</em>
         </div>
-        <Pixrow />
+        <Pixrow mirror />
       </div>
     </section>
   );
