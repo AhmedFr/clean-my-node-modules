@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 import { Wrap } from "@/components/Wrap";
 import { SectionHead } from "@/components/SectionHead";
+import type { Dictionary } from "@/lib/i18n";
+
+const DELAY = ["", " d1", " d2"];
 
 function Step({
   delay,
@@ -31,52 +34,27 @@ function Step({
   );
 }
 
-export function HowItWorks() {
+export interface HowItWorksProps {
+  dict: Dictionary;
+}
+
+export function HowItWorks({ dict }: HowItWorksProps) {
+  const how = dict.how;
   return (
     <section className="relative pt-[120px]" id="how">
       <Wrap>
-        <SectionHead
-          kicker="How it works"
-          heading={
-            // prettier-ignore
-            <>Three steps to a <span className="text-accent">lighter Mac.</span></>
-          }
-        />
+        <SectionHead kicker={how.kicker} heading={how.heading} />
         <div className="mt-[54px] grid grid-cols-3 gap-[22px] max900:grid-cols-1">
-          <Step
-            num="01"
-            title={<>Get it &amp; it scans</>}
-            body="Download the signed .app, or clone the repo and build your own. The first scan maps every node_modules folder on your disk."
-            cmd={
-              <>
-                <span className="pmt">$</span>pnpm install &amp;&amp; pnpm
-                package
-              </>
-            }
-          />
-          <Step
-            delay=" d1"
-            num="02"
-            title="Set your limit"
-            body="Pick a threshold in gigabytes and how often to rescan: every 6 hours, daily, or weekly. That's the entire setup."
-            cmd={
-              <>
-                <span className="pmt">limit</span> 5 GB ·{" "}
-                <span className="pmt">scan</span> daily
-              </>
-            }
-          />
-          <Step
-            delay=" d2"
-            num="03"
-            title="Clean in a click"
-            body="When you cross the line, review the stale folders (or prune the pnpm store, or audit a heavy package) and reclaim the space. Your disk thanks you."
-            cmd={
-              <>
-                <span className="pmt">↵</span> 2.71 GB moved to Trash
-              </>
-            }
-          />
+          {how.steps.map((step, i) => (
+            <Step
+              key={step.num}
+              delay={DELAY[i]}
+              num={step.num}
+              title={step.title}
+              body={step.body}
+              cmd={step.cmd}
+            />
+          ))}
         </div>
       </Wrap>
     </section>
