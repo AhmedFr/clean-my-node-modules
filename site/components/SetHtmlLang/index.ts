@@ -1,0 +1,1 @@
+export { SetHtmlLang } from "./SetHtmlLang";
