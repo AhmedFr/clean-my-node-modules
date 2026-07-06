@@ -11,14 +11,14 @@ export function Hero() {
           macOS menu bar app · free scan
         </div>
         <h1 className="lp-h1 reveal d1">
-          Reclaim every byte your{" "}
-          <span className="accent word">dependencies</span> cost.
+          A <span className="accent word">tidy disk</span>, without thinking
+          about it.
         </h1>
         <p className="lp-sub reveal d2">
-          TidyDisk lives in your menu bar and tracks every{" "}
-          <code>node_modules</code> folder, your pnpm store, and every package
-          you&apos;ve installed on your Mac. See what they cost, then reclaim it
-          safely. To the Trash, never <code>rm -rf</code>.
+          Dev work quietly eats your Mac: old projects, heavy dependencies,
+          forgotten experiments. TidyDisk watches from the menu bar and gives
+          the space back in one click. Safely, to the Trash, never{" "}
+          <code>rm -rf</code>.
         </p>
         <div className="lp-cta-row reveal d2">
           <a className="lp-btn lp-btn-primary lp-btn-lg" href={DOWNLOAD_URL} target="_blank" rel="noopener">
