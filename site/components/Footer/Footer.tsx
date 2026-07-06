@@ -1,14 +1,25 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { Wrap } from "@/components/Wrap";
+import { LangSwitcher } from "@/components/LangSwitcher";
 import { REPO_URL } from "@/lib/links";
+import { localePath, type Dictionary, type Locale } from "@/lib/i18n";
 
 const FOOT_LINK =
   "mb-[11px] block text-[15px] text-ink-2 transition-colors duration-150 hover:text-ink";
 const COL_HEAD =
   "mb-4 mt-1 text-[13px] font-semibold uppercase tracking-[0.05em] text-ink-3";
 
-export function Footer() {
+export interface FooterProps {
+  dict: Dictionary;
+  locale: Locale;
+  /** Current logical path (no locale prefix) for the language switcher links. */
+  path: string;
+}
+
+export function Footer({ dict, locale, path }: FooterProps) {
+  const footer = dict.footer;
+  const links = footer.links;
   return (
     <footer className="border-t border-line pb-10 pt-14">
       <Wrap>
@@ -16,7 +27,7 @@ export function Footer() {
           <div>
             <Link
               className="mb-[14px] flex items-center gap-[10px] font-display text-[18px] font-extrabold tracking-[-0.01em]"
-              href="/#top"
+              href={localePath(locale, "/#top")}
             >
               <span className="grid h-[30px] w-[30px] place-items-center rounded-[9px] bg-[linear-gradient(155deg,#ff8585,#d23a3a)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_3px_10px_rgba(226,61,61,0.34)] [&_svg]:h-[18px] [&_svg]:w-[18px]">
                 <Icon id="logo-module" />
@@ -24,40 +35,41 @@ export function Footer() {
               TidyDisk
             </Link>
             <p className="max-w-[30ch] text-[14.5px] text-ink-3">
-              The menu bar app that keeps dev junk from eating your Mac alive.
+              {footer.tagline}
             </p>
           </div>
           <div>
-            <h5 className={COL_HEAD}>Product</h5>
-            <Link className={FOOT_LINK} href="/#features">
-              Features
+            <h5 className={COL_HEAD}>{footer.productHead}</h5>
+            <Link className={FOOT_LINK} href={localePath(locale, "/#features")}>
+              {links.feature}
             </Link>
-            <Link className={FOOT_LINK} href="/#how">
-              How it works
+            <Link className={FOOT_LINK} href={localePath(locale, "/#how")}>
+              {links.how}
             </Link>
-            <Link className={FOOT_LINK} href="/#download">
-              Download
+            <Link className={FOOT_LINK} href={localePath(locale, "/#download")}>
+              {links.download}
             </Link>
-            <Link className={FOOT_LINK} href="/blog">
-              Blog
+            <Link className={FOOT_LINK} href={localePath(locale, "/blog")}>
+              {links.blog}
             </Link>
           </div>
           <div>
-            <h5 className={COL_HEAD}>Open source</h5>
+            <h5 className={COL_HEAD}>{footer.openSourceHead}</h5>
             <a className={FOOT_LINK} href={REPO_URL} target="_blank" rel="noopener">
-              GitHub repository
+              {links.repo}
             </a>
             <a className={FOOT_LINK} href={`${REPO_URL}/issues`} target="_blank" rel="noopener">
-              Issues
+              {links.issues}
             </a>
             <a className={FOOT_LINK} href={`${REPO_URL}/releases`} target="_blank" rel="noopener">
-              Releases
+              {links.releases}
             </a>
           </div>
         </div>
         <div className="mt-[46px] flex flex-wrap items-center justify-between gap-3 border-t border-line pt-[26px] text-[13.5px] text-ink-4">
-          <span className="font-mono">© 2026 TidyDisk · MIT license</span>
-          <span className="font-mono">macOS 13+ · Apple Silicon &amp; Intel</span>
+          <span className="font-mono">{footer.copyright}</span>
+          <LangSwitcher locale={locale} path={path} />
+          <span className="font-mono">{footer.platform}</span>
         </div>
       </Wrap>
     </footer>
