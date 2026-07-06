@@ -23,7 +23,7 @@ export function FinalCta() {
               Download free scan
             </a>
             <a className="lp-btn lp-btn-ghost lp-btn-lg" href={BUY_URL}>
-              <Icon id="i-broom" />
+              <Icon id="i-sparkles" />
               Buy · €19
             </a>
           </div>

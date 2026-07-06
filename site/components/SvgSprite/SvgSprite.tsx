@@ -33,6 +33,7 @@ const SYMBOLS = `
   <symbol id="i-box" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8l-9-5-9 5v8l9 5z" /><path d="m3.3 7.6 8.7 5 8.7-5M12 12.6V21.5" /></g></symbol>
   <symbol id="i-shield" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 4.5 5.4v5.8c0 4.6 3.2 7.6 7.5 8.8 4.3-1.2 7.5-4.2 7.5-8.8V5.4z" /><path d="M12 8.2v4M12 15.6v.4" /></g></symbol>
   <symbol id="i-broom" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 4.5 12 12" /><path d="M15 8 6.2 16.8a2.5 2.5 0 0 0 0 3.5l.5.5a2.5 2.5 0 0 0 3.5 0L19 12" /><path d="M6.5 15.5 11 20" /></g></symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4.5 11.6 8.9 16 10.5l-4.4 1.6L10 16.5 8.4 12.1 4 10.5l4.4-1.6z" /><path d="M18 13.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z" /><path d="M17.5 3.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z" /></g></symbol>
   <symbol id="i-layers" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5z" /><path d="m3 12.5 9 5 9-5" /><path d="m3 16.5 9 5 9-5" /></g></symbol>
 `;
 
