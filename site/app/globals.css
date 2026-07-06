@@ -3,13 +3,7 @@
    red #ff6363 accent, Module logo, pixel-cell meter motif, JetBrains Mono,
    dark glass UI. */
 
-/* Layer order pins the not-yet-converted landing.css BELOW utilities (so
-   converted components' utilities win) but ABOVE base (so its rules keep
-   styling unconverted components). landing.css and this layer die at the
-   end of the migration. */
-@layer theme, base, legacy, components, utilities;
 @import "tailwindcss";
-@import "./landing.css" layer(legacy);
 
 /* The original breakpoints are inclusive (max-width: Npx); Tailwind's
    max-[Npx] compiles to width < N, which differs exactly at N. */
