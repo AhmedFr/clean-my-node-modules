@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { REPO_URL } from "@/lib/links";
 
@@ -7,22 +8,22 @@ export function Footer() {
       <div className="wrap">
         <div className="top">
           <div className="brandcol">
-            <a className="lp-brand" href="/#top">
+            <Link className="lp-brand" href="/#top">
               <span className="logo">
                 <Icon id="logo-module" />
               </span>
               TidyDisk
-            </a>
+            </Link>
             <p>
               The menu bar app that keeps dev junk from eating your Mac alive.
             </p>
           </div>
           <div className="fcol">
             <h5>Product</h5>
-            <a href="/#features">Features</a>
-            <a href="/#how">How it works</a>
-            <a href="/#download">Download</a>
-            <a href="/blog">Blog</a>
+            <Link href="/#features">Features</Link>
+            <Link href="/#how">How it works</Link>
+            <Link href="/#download">Download</Link>
+            <Link href="/blog">Blog</Link>
           </div>
           <div className="fcol">
             <h5>Open source</h5>

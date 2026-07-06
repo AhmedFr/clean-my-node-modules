@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getPublishedPosts } from "@/lib/blog";
 import { formatPostDate } from "./format-date";
 
@@ -35,12 +36,12 @@ export default function BlogIndex() {
       </div>
       <div className="blog-list">
         {posts.map((post) => (
-          <a className="blog-card" href={`/blog/${post.slug}`} key={post.slug}>
+          <Link className="blog-card" href={`/blog/${post.slug}`} key={post.slug}>
             <time dateTime={post.date}>{formatPostDate(post.date)}</time>
             <h2>{post.title}</h2>
             <p>{post.description}</p>
             <span className="more">Read article</span>
-          </a>
+          </Link>
         ))}
       </div>
     </>

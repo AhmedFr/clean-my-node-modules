@@ -1,22 +1,23 @@
+import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { REPO_URL, DOWNLOAD_URL } from "@/lib/links";
 
 export function Navbar() {
   return (
     <header className="lp-nav">
-      <a className="lp-brand" href="/#top">
+      <Link className="lp-brand" href="/#top">
         <span className="logo">
           <Icon id="logo-module" />
         </span>
         TidyDisk
-      </a>
+      </Link>
       <nav className="lp-navlinks">
-        <a href="/#features">Features</a>
-        <a href="/#packages">Packages</a>
-        <a href="/#why">Why</a>
-        <a href="/#how">How it works</a>
-        <a href="/#download">Download</a>
-        <a href="/blog">Blog</a>
+        <Link href="/#features">Features</Link>
+        <Link href="/#packages">Packages</Link>
+        <Link href="/#why">Why</Link>
+        <Link href="/#how">How it works</Link>
+        <Link href="/#download">Download</Link>
+        <Link href="/blog">Blog</Link>
       </nav>
       <div className="lp-nav-right">
         <a
