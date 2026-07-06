@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { BlogArticle } from "@/components/pages/BlogArticle";
 import { getPostHtml, getPublishedPosts } from "@/lib/blog";
 import {
@@ -6,7 +7,7 @@ import {
   isLocale,
   languageAlternates,
   localePath,
-  type Locale,
+  OG_LOCALES,
 } from "@/lib/i18n";
 
 export const revalidate = 3600;
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     openGraph: {
       type: "article",
-      locale,
+      locale: OG_LOCALES[locale],
       url: localePath(locale, path),
       siteName: "TidyDisk",
       title: post.meta.title,
@@ -55,5 +56,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocaleBlogPost({ params }: Props) {
   const { locale, slug } = await params;
-  return <BlogArticle locale={locale as Locale} slug={slug} />;
+  if (!isLocale(locale)) notFound();
+  return <BlogArticle locale={locale} slug={slug} />;
 }

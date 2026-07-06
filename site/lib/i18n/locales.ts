@@ -20,11 +20,15 @@ export function isLocale(x: string): x is Locale {
 /**
  * Turn a root-relative English path into its locale-specific form.
  * English is returned unchanged; other locales get their segment prefixed
- * ahead of the path (including hash-only paths like `/#features`).
+ * ahead of the path.
  */
 export function localePath(locale: Locale, path: string): string {
   if (locale === "en") return path;
   if (path === "/") return `/${locale}`;
+  // Home-anchor paths ("/#features") attach the hash directly to the locale
+  // root ("/fr#features"); "/fr/#features" would have a stray slash that
+  // 308-redirects and reads as a non-canonical URL.
+  if (path.startsWith("/#")) return `/${locale}${path.slice(1)}`;
   return `/${locale}${path}`;
 }
 
@@ -34,4 +38,13 @@ export const LOCALE_NAMES: Record<Locale, string> = {
   es: "Español",
   de: "Deutsch",
   pt: "Português",
+};
+
+/** OpenGraph `og:locale` values (language_TERRITORY), not the bare codes. */
+export const OG_LOCALES: Record<Locale, string> = {
+  en: "en_US",
+  fr: "fr_FR",
+  es: "es_ES",
+  de: "de_DE",
+  pt: "pt_BR",
 };

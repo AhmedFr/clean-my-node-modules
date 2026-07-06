@@ -60,7 +60,7 @@ export async function BlogArticle({
               <span>{blog.byline}</span>
               <span className="h-1 w-1 rounded-full bg-ink-4" />
               <time dateTime={post.meta.date}>
-                {formatPostDate(post.meta.date)}
+                {formatPostDate(post.meta.date, locale)}
               </time>
             </div>
           </header>
