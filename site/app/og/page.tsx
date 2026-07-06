@@ -57,8 +57,8 @@ export default function OgCard() {
             letterSpacing: "-0.02em",
           }}
         >
-          Reclaim every byte your{" "}
-          <span style={{ color: "var(--accent)" }}>dependencies</span> cost.
+          A <span style={{ color: "var(--accent)" }}>tidy disk</span>, without
+          thinking about it.
         </h1>
         <p
           style={{
@@ -69,9 +69,9 @@ export default function OgCard() {
             maxWidth: 520,
           }}
         >
-          A macOS menu bar app for every node_modules folder, your pnpm store,
-          and every package you&apos;ve installed: sized, ranked, and safe to
-          reclaim.
+          Dev work quietly eats your Mac. TidyDisk watches from the menu bar,
+          shows what it costs, and gives the space back in one click. Safely,
+          to the Trash.
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 32 }}>
           <span
