@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPostHtml, getPublishedPosts } from "@/lib/blog";
 import { JsonLd } from "@/components/JsonLd";
@@ -61,9 +62,9 @@ export default async function BlogPost({ params }: Props) {
         }}
       />
       <header className="blog-article-head">
-        <a className="blog-back" href="/blog">
+        <Link className="blog-back" href="/blog">
           ← All articles
-        </a>
+        </Link>
         <h1>{post.meta.title}</h1>
         <div className="blog-byline">
           <span>TidyDisk team</span>
