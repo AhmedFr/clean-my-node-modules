@@ -21,8 +21,8 @@ export default function OgCard() {
         alignItems: "center",
         gap: 40,
         padding: "0 72px",
-        fontFamily: "var(--ui)",
-        color: "var(--ink)",
+        fontFamily: "var(--font-ui)",
+        color: "var(--color-ink)",
         background:
           "radial-gradient(900px 560px at 84% -12%, #2c1d3a 0%, transparent 56%), radial-gradient(760px 560px at -6% 24%, #2a1622 0%, transparent 52%), radial-gradient(700px 600px at 60% 130%, #12262c 0%, transparent 55%), #0a0a0d",
       }}
@@ -43,13 +43,13 @@ export default function OgCard() {
           >
             <Icon id="logo-module" style={{ width: 27, height: 27, color: "#fff" }} />
           </span>
-          <span style={{ fontSize: 23, fontWeight: 700, fontFamily: "var(--display)" }}>
+          <span style={{ fontSize: 23, fontWeight: 700, fontFamily: "var(--font-display)" }}>
             TidyDisk
           </span>
         </div>
         <h1
           style={{
-            fontFamily: "var(--display)",
+            fontFamily: "var(--font-display)",
             fontSize: 62,
             lineHeight: 1.03,
             fontWeight: 800,
@@ -57,13 +57,13 @@ export default function OgCard() {
             letterSpacing: "-0.02em",
           }}
         >
-          A <span style={{ color: "var(--accent)" }}>tidy disk</span>, without
+          A <span style={{ color: "var(--color-accent)" }}>tidy disk</span>, without
           thinking about it.
         </h1>
         <p
           style={{
             fontSize: 22,
-            color: "var(--ink-2)",
+            color: "var(--color-ink-2)",
             marginTop: 22,
             lineHeight: 1.4,
             maxWidth: 520,
@@ -90,7 +90,7 @@ export default function OgCard() {
             <Icon id="i-download" style={{ width: 18, height: 18 }} />
             Download for macOS
           </span>
-          <span style={{ fontSize: 16, color: "var(--ink-3)" }}>
+          <span style={{ fontSize: 16, color: "var(--color-ink-3)" }}>
             Free scan · 19 euro lifetime cleanup
           </span>
         </div>
