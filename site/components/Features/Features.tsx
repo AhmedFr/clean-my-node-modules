@@ -126,7 +126,7 @@ export function Features() {
                       used={5.42}
                       threshold={5}
                       cells={16}
-                      className="sm"
+                      size="sm"
                       style={{ width: 120 }}
                     />
                   </div>
@@ -277,7 +277,7 @@ export function Features() {
                     used={5.42}
                     threshold={5}
                     cells={20}
-                    className="sm"
+                    size="sm"
                   />
                 </div>
                 <div className="arrow">
@@ -294,7 +294,7 @@ export function Features() {
                     used={2.71}
                     threshold={5}
                     cells={20}
-                    className="sm"
+                    size="sm"
                   />
                 </div>
                 <div className="saved">+ 2.71 GB reclaimed in one sweep</div>
