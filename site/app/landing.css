@@ -226,7 +226,7 @@ section { position: relative; }
 .lp-lead { font-size: 18px; color: var(--ink-2); margin: 16px auto 0; max-width: 600px; }
 
 /* feature rows */
-.lp-features { padding: 100px 0 0; display: flex; flex-direction: column; gap: 110px; }
+.lp-features { padding: 100px 0 0; display: flex; flex-direction: column; gap: 150px; }
 .lp-feature { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
 .lp-feature.flip .lp-feat-visual { order: -1; }
 .lp-feat-text .tag { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font-family: var(--mono); font-size: 12px;
@@ -460,6 +460,7 @@ section { position: relative; }
 @media (max-width: 900px) {
   .lp-navlinks { display: none; }
   .lp-explain { grid-template-columns: 1fr; }
+  .lp-features { gap: 96px; }
   .lp-feature { grid-template-columns: 1fr; gap: 32px; }
   .lp-feature.flip .lp-feat-visual { order: 0; }
   .lp-grid, .lp-steps { grid-template-columns: 1fr; }
