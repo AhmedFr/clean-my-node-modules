@@ -1,4 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
+import type { Locale } from "@/lib/i18n/locales";
+import { isLocale } from "@/lib/i18n/locales";
 import { getAllPosts, getPublishedPosts, getPostHtml } from "./posts";
 
 describe("getAllPosts", () => {
@@ -50,4 +54,32 @@ describe("getPostHtml", () => {
     const now = new Date("2026-07-05T00:00:00Z");
     expect(await getPostHtml("why-is-node-modules-so-huge", now)).toBeNull();
   });
+});
+
+describe("locale parity", () => {
+  // Every locale directory must expose exactly the same {slug, date} set as
+  // English. Today only en/ exists so this trivially passes; once fr/es/de/pt
+  // land, a missing, extra, or wrong-dated translation fails the build.
+  const blogRoot = path.join(process.cwd(), "content", "blog");
+  const localeDirs = fs
+    .readdirSync(blogRoot, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && isLocale(d.name))
+    .map((d) => d.name as Locale);
+
+  const key = (locale: Locale) =>
+    getAllPosts(locale)
+      .map((p) => `${p.slug}@${p.date}`)
+      .sort();
+
+  it("includes English", () => {
+    expect(localeDirs).toContain("en");
+  });
+
+  const enKeys = key("en");
+
+  for (const locale of localeDirs) {
+    it(`${locale} has the same slugs and dates as en`, () => {
+      expect(key(locale)).toEqual(enKeys);
+    });
+  }
 });
