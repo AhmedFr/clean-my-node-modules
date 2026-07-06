@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { HomePage } from "@/components/pages/HomePage";
 import {
   EXTRA_LOCALES,
@@ -6,7 +7,7 @@ import {
   isLocale,
   languageAlternates,
   localePath,
-  type Locale,
+  OG_LOCALES,
 } from "@/lib/i18n";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -26,11 +27,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: localePath(locale, "/"),
       languages: languageAlternates("/"),
     },
-    openGraph: { locale },
+    openGraph: { locale: OG_LOCALES[locale] },
   };
 }
 
 export default async function LocaleHome({ params }: Props) {
   const { locale } = await params;
-  return <HomePage locale={locale as Locale} />;
+  if (!isLocale(locale)) notFound();
+  return <HomePage locale={locale} />;
 }

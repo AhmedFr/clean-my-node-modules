@@ -36,7 +36,7 @@ export function BlogIndex({ locale }: { locale: Locale }) {
                 className="font-mono text-[12.5px] uppercase tracking-[0.06em] text-ink-3"
                 dateTime={post.date}
               >
-                {formatPostDate(post.date)}
+                {formatPostDate(post.date, locale)}
               </time>
               <h2 className="mt-[10px] font-display text-[24px] font-bold leading-[1.15] tracking-[-0.015em]">
                 {post.title}

@@ -4,6 +4,7 @@ export {
   DEFAULT_LOCALE,
   EXTRA_LOCALES,
   LOCALE_NAMES,
+  OG_LOCALES,
   isLocale,
   localePath,
 } from "./locales";
