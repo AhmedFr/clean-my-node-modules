@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { BlogIndex } from "@/components/pages/BlogIndex";
 import {
   EXTRA_LOCALES,
@@ -6,7 +7,6 @@ import {
   isLocale,
   languageAlternates,
   localePath,
-  type Locale,
 } from "@/lib/i18n";
 
 export const revalidate = 3600;
@@ -36,5 +36,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocaleBlogIndex({ params }: Props) {
   const { locale } = await params;
-  return <BlogIndex locale={locale as Locale} />;
+  if (!isLocale(locale)) notFound();
+  return <BlogIndex locale={locale} />;
 }

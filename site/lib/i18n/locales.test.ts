@@ -50,6 +50,7 @@ describe("localePath", () => {
     expect(localePath("fr", "/")).toBe("/fr");
     expect(localePath("fr", "/blog")).toBe("/fr/blog");
     expect(localePath("fr", "/blog/x")).toBe("/fr/blog/x");
-    expect(localePath("fr", "/#features")).toBe("/fr/#features");
+    // Home-anchor: hash attaches to the locale root with no stray slash.
+    expect(localePath("fr", "/#features")).toBe("/fr#features");
   });
 });
