@@ -37,11 +37,20 @@ Copy only; scene, CTAs, eyebrow, and micro-line unchanged.
   (`rm -rf` keeps its `<code>` styling; it is the safety differentiator.)
 - No em dashes. node_modules is no longer mentioned in the hero; its first
   appearance is the statement band, as the user wants.
-- Out of scope, noted for later: the /og card and `public/og.png` still carry
-  the old "Reclaim every byte your dependencies cost" headline, and the
-  `<title>`/description in layout.tsx are already broad ("see what is eating
-  your dev disk"). OG re-capture is a separate decision since it changes
-  social embeds.
+- The `<title>`/description in layout.tsx are already broad ("see what is
+  eating your dev disk") and stay unchanged.
+
+### 1b. OG card follows the hero (user added to scope 2026-07-06)
+
+`app/og/page.tsx` (the 1200x630 capture helper) gets the same repositioning:
+headline `A tidy disk, without thinking about it.` with the accent span on
+"tidy disk", and the subline broadened to match the hero's voice:
+`Dev work quietly eats your Mac. TidyDisk watches from the menu bar, shows
+what it costs, and gives the space back in one click. Safely, to the Trash.`
+The badge row ("Download for macOS", "Free scan · 19 euro lifetime cleanup")
+and the AppPanel visual stay. `public/og.png` is re-captured via
+`scripts/make-og.mjs` (temporary playwright dep, per the script header) and
+committed; social embeds change with the deploy.
 
 ### 2. Statement band mirrored pixel strips (components/Pixrow, StatementBand)
 
@@ -95,7 +104,6 @@ in general.
 
 ## Out of scope
 
-- OG card / og.png re-capture (flagged above, separate decision).
 - Metadata title/description changes (already broad).
 - Any reordering of page sections (user confirmed the current order works:
   broad hero first, node_modules band + features after).
