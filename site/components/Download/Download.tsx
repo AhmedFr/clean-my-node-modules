@@ -83,7 +83,7 @@ export function Download() {
               </li>
             </ul>
             <a className="lp-btn lp-btn-primary" href={BUY_URL}>
-              <Icon id="i-broom" />
+              <Icon id="i-sparkles" />
               Buy TidyDisk · €19
             </a>
           </div>
