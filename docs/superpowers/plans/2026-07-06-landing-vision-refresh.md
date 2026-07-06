@@ -150,7 +150,19 @@ export function Pixrow({ cells = 7, mirror = false }: PixrowProps) {
 
 - [ ] **Step 4: Commit** `feat(site): sparkles icon on the buy CTAs`
 
-### Task 5: Visual verification + PR
+### Task 5: OG card copy + re-capture og.png
+
+**Files:**
+- Modify: `site/app/og/page.tsx` (h1 + subline only; badge row and AppPanel stay)
+- Regenerate: `site/public/og.png` via `site/scripts/make-og.mjs`
+
+- [ ] **Step 1:** In `app/og/page.tsx` replace the h1 text with `A <span style={{ color: "var(--accent)" }}>tidy disk</span>, without thinking about it.` and the `<p>` text with `Dev work quietly eats your Mac. TidyDisk watches from the menu bar, shows what it costs, and gives the space back in one click. Safely, to the Trash.`
+
+- [ ] **Step 2:** Per the script header: `pnpm add -D playwright` (chromium already installed locally), `pnpm build && PORT=3212 pnpm start &`, `BASE_URL=http://localhost:3212 node scripts/make-og.mjs`, kill the server, `pnpm remove playwright`. Confirm `public/og.png` is 1200x630 and shows the new headline.
+
+- [ ] **Step 3: Commit** `feat(site): OG card follows the tidy-disk hero` (includes the regenerated og.png)
+
+### Task 6: Visual verification + PR
 
 - [ ] **Step 1:** `pnpm build && pnpm start -p 3456`; Playwright screenshots of: hero (new copy, "tidy disk" accented), statement band (green outer edges, red converging on the statement from BOTH sides), features section (gap visibly larger), Download + FinalCta buttons (sparkles renders crisply at button size). Fix anything off before proceeding.
 - [ ] **Step 2:** Kill the server. Full gates: `pnpm typecheck && pnpm test && pnpm build`.
