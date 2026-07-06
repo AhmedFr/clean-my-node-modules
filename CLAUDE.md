@@ -39,5 +39,9 @@ need changes for routine updates.
   (pnpm 11), not package.json.
 - One folder per component: `index.ts`, `Component.tsx`, `Component.types.ts`,
   optionally `.constants.ts` and tests.
-- `clean-my-node-modules/` is the original design handoff bundle — reference only,
-  never modify it.
+- Site styling is Tailwind v4: tokens in `site/app/globals.css` `@theme`
+  (colors like `ink-2`/`accent`/`ok`, fonts `display`/`ui`/`mono`), arbitrary
+  values over scale-snapping for exact px, custom `max900:`/`max560:` variants
+  for the inclusive breakpoints. The residual classes in globals.css
+  (`lp-nav`, `reveal`, `lp-screen`, `blog-prose`, ...) are behavior hooks or
+  markdown-facing; keep them stable.
