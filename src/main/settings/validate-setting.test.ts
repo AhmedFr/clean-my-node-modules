@@ -69,6 +69,16 @@ describe('coerceSetting — pnpm overrides', () => {
   it('rejects a non-string override', () => {
     expect(coerceSetting('pnpmBinaryPath', 42)).toBeNull()
   })
+
+  it('validates the docker settings keys', () => {
+    expect(coerceSetting('docker', true)).toEqual({ key: 'docker', value: true })
+    expect(coerceSetting('docker', 'yes')).toBeNull()
+    expect(coerceSetting('dockerBinaryPath', ' /usr/local/bin/docker ')).toEqual({
+      key: 'dockerBinaryPath',
+      value: '/usr/local/bin/docker',
+    })
+    expect(coerceSetting('dockerBinaryPath', 42)).toBeNull()
+  })
 })
 
 describe('scanRoots', () => {

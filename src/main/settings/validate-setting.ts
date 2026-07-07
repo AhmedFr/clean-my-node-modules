@@ -38,6 +38,7 @@ export function coerceSetting(
     case 'onboarded':
       return typeof value === 'boolean' ? { key, value } : null
     case 'checkUpdates':
+    case 'docker':
       return typeof value === 'boolean' ? { key, value } : null
     case 'thresholdGB':
       return typeof value === 'number' && Number.isFinite(value)
@@ -45,6 +46,7 @@ export function coerceSetting(
         : null
     case 'pnpmStorePath':
     case 'pnpmBinaryPath':
+    case 'dockerBinaryPath':
       return typeof value === 'string' ? { key, value: value.trim() } : null
     case 'scanRoots':
       return Array.isArray(value) && value.every((v) => typeof v === 'string' && isAbsolute(v))

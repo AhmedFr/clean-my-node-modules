@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS: Settings = {
   checkUpdates: true,
   analytics: true,
   scanRoots: [],
+  docker: true,
 }
 
 export const SCAN_INTERVAL_MS: Record<Exclude<Settings['scanInterval'], 'manual'>, number> = {
