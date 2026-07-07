@@ -213,6 +213,54 @@ export function SettingsView({
             hint="Override detection if the store or pnpm can't be found automatically"
           />
           <PnpmStoreSettings settings={settings} setSetting={setSetting} store={store} onRefresh={onRefreshStore} />
+          <Divider />
+          <SettingsRow
+            label="Docker cleanup"
+            hint="Show the Docker tab and reclaim image, volume, container and build-cache space"
+          >
+            <Toggle
+              on={settings.docker ?? true}
+              accent={accent}
+              onToggle={() => setSetting('docker', !(settings.docker ?? true))}
+            />
+          </SettingsRow>
+          {(settings.docker ?? true) && (
+            <>
+              <SectionHeading title="docker binary" hint="Override detection if docker can't be found automatically" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 4px 8px' }}>
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    fontSize: 12,
+                    color: settings.dockerBinaryPath ? 'var(--text-muted)' : 'var(--text-dim)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    fontFamily: 'ui-monospace, monospace',
+                  }}
+                  title={settings.dockerBinaryPath || 'Auto-detected. Choose to override'}
+                >
+                  {settings.dockerBinaryPath || 'Auto-detected. Choose to override'}
+                </div>
+                <button
+                  className="cc-btn ghost"
+                  onClick={() => {
+                    void window.clean.pickPath('file').then((p) => {
+                      if (p) void setSetting('dockerBinaryPath', p)
+                    })
+                  }}
+                >
+                  Choose…
+                </button>
+                {settings.dockerBinaryPath && (
+                  <button className="cc-btn ghost" onClick={() => void setSetting('dockerBinaryPath', '')}>
+                    Clear
+                  </button>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
 

@@ -4,6 +4,7 @@ import { Kbd } from '@renderer/components/Kbd'
 import { RescanHint } from '@renderer/components/RescanHint'
 import { ResultView } from '@renderer/components/ResultView'
 import { Row } from '@renderer/components/Row'
+import type { SegmentedOption } from '@renderer/components/Segmented'
 import { Segmented } from '@renderer/components/Segmented'
 import { Spinner } from '@renderer/components/Spinner'
 import { UIIcon } from '@renderer/components/UIIcon'
@@ -66,6 +67,16 @@ export function LauncherApp(): ReactNode {
   const [cardCopied, setCardCopied] = useState(false)
   const { toast, flashToast } = useToast<LauncherToast>()
   const { store, loading: storeLoading, pruning, prune, refresh } = usePnpmStore()
+  const dockerEnabled = settings.docker !== false
+  const tabOptions = useMemo<SegmentedOption<LauncherTab>[]>(
+    () => [
+      { value: 'projects', label: 'Projects' },
+      { value: 'caches', label: 'Caches' },
+      { value: 'packages', label: 'Packages' },
+      ...(dockerEnabled ? [{ value: 'docker', label: 'Docker' } as const] : []),
+    ],
+    [dockerEnabled],
+  )
   const docker = useDocker()
   const pkgActive = view === 'list' && tab === 'packages'
   const {
@@ -104,6 +115,14 @@ export function LauncherApp(): ReactNode {
       if (nav === 'settings') setView('settings')
     })
   }, [])
+  // If the user disables Docker while on that tab, fall back to Projects so the
+  // hidden tab can't stay selected via keyboard or stale state.
+  useEffect(() => {
+    if (!dockerEnabled && tab === 'docker') {
+      setTab('projects')
+      setSel(0)
+    }
+  }, [dockerEnabled, tab])
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -294,6 +313,7 @@ export function LauncherApp(): ReactNode {
         return
       }
       if (meta && ['1', '2', '3', '4'].includes(e.key)) {
+        if (e.key === '4' && !dockerEnabled) return
         e.preventDefault()
         setTab(e.key === '1' ? 'projects' : e.key === '2' ? 'caches' : e.key === '3' ? 'packages' : 'docker')
         setSel(0)
@@ -412,6 +432,7 @@ export function LauncherApp(): ReactNode {
     togglePkgExpand,
     collapsePkg,
     docker,
+    dockerEnabled,
   ])
 
   // The window is hidden (not destroyed) on blur/esc, so it keeps its React
@@ -576,12 +597,7 @@ export function LauncherApp(): ReactNode {
                     setUnlock(null)
                     collapsePkg()
                   }}
-                  options={[
-                    { value: 'projects', label: 'Projects' },
-                    { value: 'caches', label: 'Caches' },
-                    { value: 'packages', label: 'Packages' },
-                    { value: 'docker', label: 'Docker' },
-                  ]}
+                  options={tabOptions}
                 />
                 {tab === 'projects' && !isEmpty && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -626,7 +642,7 @@ export function LauncherApp(): ReactNode {
                   onSelectIndex={setSel}
                   onPrune={handlePrune}
                 />
-              ) : tab === 'docker' ? (
+              ) : tab === 'docker' && dockerEnabled ? (
                 <DockerView
                   info={docker.info}
                   loading={docker.loading}
