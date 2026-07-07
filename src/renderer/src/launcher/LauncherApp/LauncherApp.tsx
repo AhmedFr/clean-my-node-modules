@@ -9,6 +9,7 @@ import { Spinner } from '@renderer/components/Spinner'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { UnlockPrompt } from '@renderer/components/UnlockPrompt'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
+import { useDocker } from '@renderer/hooks/useDocker'
 import { useLicense } from '@renderer/hooks/useLicense'
 import { useLiveProjects } from '@renderer/hooks/useLiveProjects'
 import { usePackagesTab } from '@renderer/hooks/usePackagesTab'
@@ -23,6 +24,7 @@ import type { PackageEntry } from '@shared/package.types'
 import type { Project } from '@shared/project.types'
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { CachesView } from '../views/CachesView'
+import { DockerView } from '../views/DockerView'
 import { EmptyView } from '../views/EmptyView'
 import { Onboarding } from '../views/Onboarding'
 import { PackagesView } from '../views/PackagesView'
@@ -64,6 +66,7 @@ export function LauncherApp(): ReactNode {
   const [cardCopied, setCardCopied] = useState(false)
   const { toast, flashToast } = useToast<LauncherToast>()
   const { store, loading: storeLoading, pruning, prune, refresh } = usePnpmStore()
+  const docker = useDocker()
   const pkgActive = view === 'list' && tab === 'packages'
   const {
     inventory,
@@ -286,12 +289,13 @@ export function LauncherApp(): ReactNode {
       if (meta && (e.key === 'r' || e.key === 'R')) {
         e.preventDefault()
         if (tab === 'packages') void refreshPackages()
+        else if (tab === 'docker') void docker.refresh()
         else rescan()
         return
       }
-      if (meta && (e.key === '1' || e.key === '2' || e.key === '3')) {
+      if (meta && ['1', '2', '3', '4'].includes(e.key)) {
         e.preventDefault()
-        setTab(e.key === '1' ? 'projects' : e.key === '2' ? 'caches' : 'packages')
+        setTab(e.key === '1' ? 'projects' : e.key === '2' ? 'caches' : e.key === '3' ? 'packages' : 'docker')
         setSel(0)
         setConfirm(null)
         setUnlock(null)
@@ -402,6 +406,7 @@ export function LauncherApp(): ReactNode {
     expandedPkg,
     togglePkgExpand,
     collapsePkg,
+    docker,
   ])
 
   // The window is hidden (not destroyed) on blur/esc, so it keeps its React
@@ -478,7 +483,9 @@ export function LauncherApp(): ReactNode {
                     ? 'Search node_modules by project or path…'
                     : tab === 'packages'
                       ? 'Search packages…'
-                      : 'Search caches…'
+                      : tab === 'docker'
+                        ? 'Search Docker…'
+                        : 'Search caches…'
                 }
               />
               <Gauge
@@ -568,6 +575,7 @@ export function LauncherApp(): ReactNode {
                     { value: 'projects', label: 'Projects' },
                     { value: 'caches', label: 'Caches' },
                     { value: 'packages', label: 'Packages' },
+                    { value: 'docker', label: 'Docker' },
                   ]}
                 />
                 {tab === 'projects' && !isEmpty && (
@@ -612,6 +620,13 @@ export function LauncherApp(): ReactNode {
                   query={query}
                   onSelectIndex={setSel}
                   onPrune={handlePrune}
+                />
+              ) : tab === 'docker' ? (
+                <DockerView
+                  info={docker.info}
+                  loading={docker.loading}
+                  query={query}
+                  onRefresh={() => void docker.refresh()}
                 />
               ) : isEmpty ? (
                 <EmptyView
