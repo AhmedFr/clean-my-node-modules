@@ -15,7 +15,15 @@ const KIND_ICON: Record<DockerItemKind, IconRenderer> = {
 
 /** The launcher's "Docker" tab: images/volumes/containers/build cache, grouped by kind.
  * Phase A is read-only — no remove/prune actions yet (Task 9 adds them). */
-export function DockerView({ info, query }: DockerViewProps): ReactNode {
+export function DockerView({ info, loading, query }: DockerViewProps): ReactNode {
+  if (loading && !info) {
+    return (
+      <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 }}>
+        Checking Docker…
+      </div>
+    )
+  }
+
   if (!info?.available) {
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 }}>

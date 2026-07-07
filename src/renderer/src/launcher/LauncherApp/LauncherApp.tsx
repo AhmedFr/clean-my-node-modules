@@ -352,6 +352,11 @@ export function LauncherApp(): ReactNode {
         }
         return
       }
+      if (tab === 'docker') {
+        // Phase A is read-only: no row actions yet, so just don't let
+        // Arrow/Enter/⌘⌫ fall through to the projects-list logic below.
+        return
+      }
       if (tab === 'packages') {
         if (e.key === 'ArrowDown') {
           e.preventDefault()
