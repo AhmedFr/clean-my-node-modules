@@ -1,3 +1,4 @@
+import { homedir } from 'node:os'
 import { IPC } from '@shared/ipc.constants'
 import { GB } from '@shared/units.constants'
 import { app } from 'electron'
@@ -8,6 +9,7 @@ import { LicenseStore } from './license'
 import { ThresholdNotifier } from './notifications/threshold-notifier'
 import { PackageStore } from './packages/package-store'
 import { ProjectStore } from './projects/project-store'
+import { resolveScanRoots } from './scanner/resolve-scan-roots'
 import { Scanner } from './scanner/scanner'
 import { ScanScheduler } from './scheduler/scan-scheduler'
 import { SettingsStore } from './settings/settings-store'
@@ -45,7 +47,8 @@ app.whenReady().then(() => {
     if (scanner.isScanning) return
     const startedAt = Date.now()
     try {
-      const result = await scanner.scan((progress) => broadcast(IPC.onScanProgress, progress))
+      const roots = resolveScanRoots(settings.get().scanRoots, { home: homedir() })
+      const result = await scanner.scan(roots, (progress) => broadcast(IPC.onScanProgress, progress))
       projects.replaceAll(result)
       analytics.capture('scan_completed', {
         total_gb: Math.round((result.reduce((a, p) => a + (p.uniqueSize ?? p.size), 0) / GB) * 10) / 10,

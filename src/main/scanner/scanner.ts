@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto'
 import { readdir, stat } from 'node:fs/promises'
-import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import type { Project, ScanProgress } from '@shared/project.types'
 import { abbreviateHome } from '../lib/abbreviate-home'
@@ -17,20 +16,18 @@ export type ProgressCallback = (progress: ScanProgress) => void
 export class Scanner {
   private current: Promise<Project[]> | null = null
 
-  constructor(private roots: string[] = [homedir()]) {}
-
   get isScanning(): boolean {
     return this.current !== null
   }
 
   /** Concurrent callers share the in-flight scan instead of starting a second. */
-  scan(onProgress?: ProgressCallback): Promise<Project[]> {
+  scan(roots: string[], onProgress?: ProgressCallback): Promise<Project[]> {
     if (this.current) return this.current
-    this.current = this.run(onProgress)
+    this.current = this.run(roots, onProgress)
     return this.current
   }
 
-  private async run(onProgress?: ProgressCallback): Promise<Project[]> {
+  private async run(roots: string[], onProgress?: ProgressCallback): Promise<Project[]> {
     try {
       const found: string[] = []
       let checked = 0
@@ -63,7 +60,7 @@ export class Scanner {
         for (const sub of subdirs) await walk(sub, depth + 1)
       }
 
-      for (const root of this.roots) await walk(root, 0)
+      for (const root of roots) await walk(root, 0)
 
       // Shared across projects so monorepo siblings resolve their repo root once.
       const repoRootCache = new Map<string, string | null>()
