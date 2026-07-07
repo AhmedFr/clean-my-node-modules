@@ -41,6 +41,14 @@ const DF = JSON.stringify({
       CreatedAt: '2026-01-02 09:00:00 +0000 UTC',
       Size: '5MB',
     },
+    {
+      ID: 'ctr333',
+      Names: 'paused-one',
+      State: 'paused',
+      Image: 'node:20',
+      CreatedAt: '2026-01-02 09:30:00 +0000 UTC',
+      Size: '6MB',
+    },
   ],
   BuildCache: [{ ID: 'cache1', Size: '800MB', CreatedAt: '2026-01-01 08:00:00 +0000 UTC', InUse: 'false' }],
 })
@@ -76,6 +84,12 @@ describe('buildDockerItems', () => {
   it('only stopped containers are removable', () => {
     expect(items.find((i) => i.id === 'ctr111')?.removable).toBe(false) // running
     expect(items.find((i) => i.id === 'ctr222')?.removable).toBe(true) // exited
+  })
+
+  it('paused containers are in-use and not removable (docker rm refuses paused)', () => {
+    const paused = items.find((i) => i.id === 'ctr333')
+    expect(paused?.inUse).toBe(true)
+    expect(paused?.removable).toBe(false)
   })
 
   it('build-cache rows are never per-item removable', () => {

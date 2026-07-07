@@ -21,10 +21,15 @@ export function parseSize(s: string): number {
   return Number.isFinite(n) ? Math.round(n * mult) : 0
 }
 
-/** "2026-01-02 10:00:00 +0000 UTC" → ms epoch (0 if unparseable). */
+/** "2026-01-02 10:00:00 +0000 UTC" | "2026-01-02 10:00:00 -0500 EST" → ms epoch (0 if unparseable). */
 export function parseDate(s: string): number {
   if (!s) return 0
-  const t = Date.parse(s.replace(' UTC', '').replace(' +0000', 'Z').replace(' ', 'T'))
+  // Strip a trailing zone word (e.g. "UTC", "EST") and normalize a numeric
+  // "+HHMM"/"-HHMM" offset into the "+HH:MM" form Date.parse understands, so
+  // any docker-reported timezone (not just +0000) parses correctly.
+  const withoutZoneWord = s.replace(/\s+[A-Za-z]+$/, '')
+  const isoish = withoutZoneWord.replace(' ', 'T').replace(/([+-])(\d{2})(\d{2})$/, '$1$2:$3')
+  const t = Date.parse(isoish)
   return Number.isFinite(t) ? t : 0
 }
 
@@ -145,15 +150,18 @@ export function buildDockerItems(
     })
   }
   for (const c of df.containers) {
-    const running = c.State === 'running'
+    // `docker rm` (no -f) only accepts truly stopped containers; it refuses
+    // running, paused, restarting, and removing states.
+    const inUse = c.State === 'running' || c.State === 'paused'
+    const removable = c.State === 'exited' || c.State === 'created' || c.State === 'dead'
     items.push({
       id: c.ID,
       kind: 'container',
       name: c.Names || c.ID.slice(0, 12),
       sizeBytes: parseSize(c.Size),
       createdAt: parseDate(c.CreatedAt),
-      inUse: running,
-      removable: !running,
+      inUse,
+      removable,
     })
   }
   for (const cache of df.buildCache) {
