@@ -17,4 +17,7 @@ export interface Settings {
   pnpmStorePath?: string
   /** Manual override: path to the pnpm executable. */
   pnpmBinaryPath?: string
+  /** Extra scan roots opted in by the user (absolute paths): toggled external
+   *  volumes and arbitrary "Add folder…" paths. Home is implicit, never stored. */
+  scanRoots: string[]
 }

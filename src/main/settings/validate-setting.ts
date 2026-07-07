@@ -1,3 +1,4 @@
+import { isAbsolute } from 'node:path'
 import type { Density, ScanInterval, Settings, SizeStyle } from '@shared/settings.types'
 
 const SIZE_STYLES: SizeStyle[] = ['plain', 'bar', 'ring']
@@ -45,6 +46,10 @@ export function coerceSetting(
     case 'pnpmStorePath':
     case 'pnpmBinaryPath':
       return typeof value === 'string' ? { key, value: value.trim() } : null
+    case 'scanRoots':
+      return Array.isArray(value) && value.every((v) => typeof v === 'string' && isAbsolute(v))
+        ? { key, value: value as string[] }
+        : null
     default:
       return null
   }

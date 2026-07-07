@@ -1,3 +1,4 @@
+import { isAbsolute } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { coerceSetting } from './validate-setting'
 
@@ -68,5 +69,26 @@ describe('coerceSetting — pnpm overrides', () => {
 
   it('rejects a non-string override', () => {
     expect(coerceSetting('pnpmBinaryPath', 42)).toBeNull()
+  })
+})
+
+describe('scanRoots', () => {
+  it('accepts an array of absolute paths', () => {
+    expect(coerceSetting('scanRoots', ['/Volumes/SSD', '/data/projects'])).toEqual({
+      key: 'scanRoots',
+      value: ['/Volumes/SSD', '/data/projects'],
+    })
+  })
+  it('accepts an empty array', () => {
+    expect(coerceSetting('scanRoots', [])).toEqual({ key: 'scanRoots', value: [] })
+  })
+  it('rejects a non-array', () => {
+    expect(coerceSetting('scanRoots', '/Volumes/SSD')).toBeNull()
+  })
+  it('rejects relative paths', () => {
+    expect(coerceSetting('scanRoots', ['relative/path'])).toBeNull()
+  })
+  it('rejects non-string members', () => {
+    expect(coerceSetting('scanRoots', ['/ok', 42])).toBeNull()
   })
 })
