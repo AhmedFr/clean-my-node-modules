@@ -24,6 +24,7 @@ export const IPC = {
   getLicense: 'license:get',
   activateLicense: 'license:activate',
   copyShareCard: 'share:copy-card',
+  listVolumes: 'volumes:list',
   // events (main -> renderer)
   onScanProgress: 'scan:progress',
   onProjectsChanged: 'projects:changed',

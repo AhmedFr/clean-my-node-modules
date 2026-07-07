@@ -10,6 +10,7 @@ import type { AppContext } from '../app-context.types'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
 import { coerceSetting } from '../settings/validate-setting'
 import { coerceCardPayload, copyCardToClipboard } from '../share'
+import { listExternalVolumes } from '../volumes/list-external-volumes'
 
 export function registerIpc(ctx: AppContext): void {
   ipcMain.handle(IPC.getProjects, () => ctx.projects.all)
@@ -21,6 +22,12 @@ export function registerIpc(ctx: AppContext): void {
     const ok = coerceSetting(key, value)
     if (!ok) return ctx.settings.get()
     return ctx.settings.set(ok.key, ok.value as never)
+  })
+
+  ipcMain.handle(IPC.listVolumes, async () => {
+    const roots = new Set(ctx.settings.get().scanRoots)
+    const vols = await listExternalVolumes()
+    return vols.map((v) => ({ ...v, included: roots.has(v.path) }))
   })
 
   ipcMain.handle(IPC.getLicense, () => ctx.license.get())

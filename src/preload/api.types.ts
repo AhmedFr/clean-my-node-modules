@@ -4,6 +4,7 @@ import type { PnpmPruneResult, PnpmStoreInfo } from '@shared/pnpm-store.types'
 import type { Project, ScanProgress } from '@shared/project.types'
 import type { Settings } from '@shared/settings.types'
 import type { ShareCardPayload } from '@shared/share.types'
+import type { VolumeOption } from '@shared/volume.types'
 
 export interface CleanApi {
   getProjects(): Promise<Project[]>
@@ -22,6 +23,8 @@ export interface CleanApi {
   openProject(id: string): Promise<void>
   getSettings(): Promise<Settings>
   setSetting<K extends keyof Settings>(key: K, value: Settings[K]): Promise<Settings>
+  /** Mounted external volumes offered as scan-location toggles. */
+  listVolumes(): Promise<VolumeOption[]>
   getLicense(): Promise<LicenseState>
   /** Verifies + persists a license key; broadcasts license:changed on success. */
   activateLicense(key: string): Promise<ActivateResult>
