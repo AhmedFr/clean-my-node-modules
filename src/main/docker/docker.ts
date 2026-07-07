@@ -31,6 +31,7 @@ let cached: DockerInfo | null = null
 let cachedKey = ''
 let diskLoaded = false
 let inFlight: Promise<DockerInfo> | null = null
+let inFlightKey = ''
 
 const cacheFile = (): string => join(app.getPath('userData'), 'docker-cache.json')
 
@@ -90,7 +91,7 @@ export async function getDockerInfo(force = false, opts: DockerOpts = {}): Promi
   loadDiskCache()
   const key = opts.binaryPath ?? ''
   if (!force && cached && key === cachedKey) return cached
-  if (inFlight) return inFlight
+  if (inFlight && inFlightKey === key) return inFlight
   const pending = (async (): Promise<DockerInfo> => {
     const info = await readDockerInfo(opts)
     cached = info
@@ -99,6 +100,7 @@ export async function getDockerInfo(force = false, opts: DockerOpts = {}): Promi
     return info
   })()
   inFlight = pending
+  inFlightKey = key
   void pending.finally(() => {
     if (inFlight === pending) inFlight = null
   })

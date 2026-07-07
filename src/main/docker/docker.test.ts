@@ -2,11 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('electron', () => ({ app: { getPath: () => '/tmp/tidydisk-test' } }))
 vi.mock('./find-docker', () => ({
-  findDocker: vi.fn(async () => '/usr/local/bin/docker'),
+  findDocker: vi.fn(async (override?: string) => override ?? '/usr/local/bin/docker'),
   dockerExecEnv: vi.fn(async () => ({})),
 }))
 
 import { __setExecForTests, getDockerInfo } from './docker'
+import { findDocker } from './find-docker'
 
 const DF = JSON.stringify({
   Images: [{ ID: 'i1', Repository: '<none>', Tag: '<none>', CreatedAt: '', Size: '400MB', Containers: '0' }],
@@ -14,6 +15,8 @@ const DF = JSON.stringify({
   Containers: [],
   BuildCache: [],
 })
+
+const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
 describe('getDockerInfo', () => {
   it('reports available with parsed items when the daemon responds', async () => {
@@ -36,5 +39,35 @@ describe('getDockerInfo', () => {
     const info = await getDockerInfo(true)
     expect(info.available).toBe(false)
     expect(info.reason).toBe('daemon not running')
+  })
+
+  it('reports not installed when the binary cannot be found', async () => {
+    vi.mocked(findDocker).mockResolvedValueOnce(null)
+    const info = await getDockerInfo(true)
+    expect(info.available).toBe(false)
+    expect(info.reason).toBe('not installed')
+  })
+
+  it('does not alias in-flight requests for different binary paths', async () => {
+    const versionCallsByBin: Record<string, number> = {}
+    __setExecForTests(async (bin, args) => {
+      if (args[0] === 'version') {
+        versionCallsByBin[bin] = (versionCallsByBin[bin] ?? 0) + 1
+        await delay(10)
+        return { stdout: `${bin}-version`, stderr: '' }
+      }
+      if (args[0] === 'system' && args[1] === 'df') return { stdout: DF, stderr: '' }
+      return { stdout: '', stderr: '' }
+    })
+
+    const [infoA, infoB] = await Promise.all([
+      getDockerInfo(true, { binaryPath: '/a/docker' }),
+      getDockerInfo(true, { binaryPath: '/b/docker' }),
+    ])
+
+    expect(infoA.available).toBe(true)
+    expect(infoB.available).toBe(true)
+    expect(versionCallsByBin['/a/docker']).toBe(1)
+    expect(versionCallsByBin['/b/docker']).toBe(1)
   })
 })
