@@ -1,3 +1,4 @@
+import type { DeleteResult } from '@shared/delete.types'
 import type { ActivateResult, LicenseState } from '@shared/license.types'
 import type { PackageInventory } from '@shared/package.types'
 import type { PnpmPruneResult, PnpmStoreInfo } from '@shared/pnpm-store.types'
@@ -18,7 +19,7 @@ export interface CleanApi {
   /** Opens an https URL in the user's default browser. */
   openExternal(url: string): Promise<void>
   scan(): Promise<void>
-  deleteNodeModules(id: string): Promise<number>
+  deleteNodeModules(id: string): Promise<DeleteResult>
   revealInFinder(id: string): Promise<void>
   openProject(id: string): Promise<void>
   getSettings(): Promise<Settings>

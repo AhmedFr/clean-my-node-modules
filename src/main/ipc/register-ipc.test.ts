@@ -23,8 +23,10 @@ vi.mock('electron', () => ({
 }))
 
 const deleteNodeModules = vi.fn(async (p: Project) => p.size)
+const guardExists = vi.fn(() => null)
 vi.mock('../actions/project-actions', () => ({
   deleteNodeModules: (p: Project) => deleteNodeModules(p),
+  guardExists: () => guardExists(),
   revealInFinder: vi.fn(),
   openProject: vi.fn(),
 }))
@@ -44,7 +46,7 @@ vi.mock('../share', async () => ({
 const { IPC } = await import('@shared/ipc.constants')
 const { registerIpc } = await import('./register-ipc')
 
-const project = { id: 'p1', size: 1024 } as Project
+const project = { id: 'p1', size: 1024, absPath: '/projects/p1' } as Project
 
 function makeCtx(pro: boolean) {
   const remove = vi.fn()
@@ -63,6 +65,7 @@ function makeCtx(pro: boolean) {
   handlers.clear()
   sent.length = 0
   deleteNodeModules.mockClear()
+  guardExists.mockClear()
   prunePnpmStore.mockClear()
   copyCardToClipboard.mockClear()
   // biome-ignore lint/suspicious/noExplicitAny: deliberately partial test double
@@ -75,15 +78,23 @@ const invoke = (ch: string, ...args: unknown[]) => handlers.get(ch)?.({}, ...arg
 describe('license enforcement in IPC handlers', () => {
   it('unlicensed delete refuses: returns 0, nothing trashed, project kept', async () => {
     const { remove } = makeCtx(false)
-    expect(await invoke(IPC.deleteNodeModules, 'p1')).toBe(0)
+    expect(await invoke(IPC.deleteNodeModules, 'p1')).toEqual({ freed: 0 })
     expect(deleteNodeModules).not.toHaveBeenCalled()
     expect(remove).not.toHaveBeenCalled()
   })
 
   it('licensed delete goes through', async () => {
     const { remove } = makeCtx(true)
-    expect(await invoke(IPC.deleteNodeModules, 'p1')).toBe(1024)
+    expect(await invoke(IPC.deleteNodeModules, 'p1')).toEqual({ freed: 1024 })
     expect(deleteNodeModules).toHaveBeenCalledOnce()
+    expect(remove).toHaveBeenCalledWith('p1')
+  })
+
+  it('delete refuses when the guard reports unmounted, and still drops the project', async () => {
+    const { remove } = makeCtx(true)
+    guardExists.mockReturnValueOnce({ freed: 0, blocked: 'unmounted' } as never)
+    expect(await invoke(IPC.deleteNodeModules, 'p1')).toEqual({ freed: 0, blocked: 'unmounted' })
+    expect(deleteNodeModules).not.toHaveBeenCalled()
     expect(remove).toHaveBeenCalledWith('p1')
   })
 

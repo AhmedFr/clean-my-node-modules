@@ -189,7 +189,8 @@ export function LauncherApp(): ReactNode {
       }
       setConfirm(null)
       setDeleting((s) => new Set(s).add(p.id))
-      void window.clean.deleteNodeModules(p.id).then((freed) => {
+      void window.clean.deleteNodeModules(p.id).then(({ freed, blocked }) => {
+        if (blocked) return // row already gone / not deletable; keep silent for now
         setDeleting((s) => {
           const n = new Set(s)
           n.delete(p.id)

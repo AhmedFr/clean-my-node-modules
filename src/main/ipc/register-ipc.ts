@@ -1,9 +1,11 @@
+import { join } from 'node:path'
+import type { DeleteResult } from '@shared/delete.types'
 import { IPC } from '@shared/ipc.constants'
 import { GB } from '@shared/units.constants'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import { uninstallApp } from '../actions/app-actions'
 import { pickPath } from '../actions/pick-path'
-import { deleteNodeModules, openProject, revealInFinder } from '../actions/project-actions'
+import { deleteNodeModules, guardExists, openProject, revealInFinder } from '../actions/project-actions'
 import type { AnalyticsEvent, AnalyticsProps } from '../analytics'
 import { RENDERER_EVENTS } from '../analytics'
 import type { AppContext } from '../app-context.types'
@@ -79,14 +81,19 @@ export function registerIpc(ctx: AppContext): void {
     ctx.packages.compute(ctx.projects.all, ctx.settings.get(), force),
   )
 
-  ipcMain.handle(IPC.deleteNodeModules, async (_e, id: string) => {
-    if (!ctx.license.get().pro) return 0
+  ipcMain.handle(IPC.deleteNodeModules, async (_e, id: string): Promise<DeleteResult> => {
+    if (!ctx.license.get().pro) return { freed: 0 }
     const project = ctx.projects.all.find((p) => p.id === id)
-    if (!project) return 0
+    if (!project) return { freed: 0 }
+    const guard = guardExists(join(project.absPath, 'node_modules'))
+    if (guard) {
+      ctx.projects.remove(id)
+      return guard
+    }
     const freed = await deleteNodeModules(project)
     ctx.projects.remove(id)
     ctx.analytics.capture('clean_performed', { kind: 'delete', freed_gb: Math.round((freed / GB) * 10) / 10 })
-    return freed
+    return { freed }
   })
 
   ipcMain.handle(IPC.revealInFinder, (_e, id: string) => {

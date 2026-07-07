@@ -79,7 +79,10 @@ export function PanelApp(): ReactNode {
       }
       setDeleting((s) => new Set([...s, ...ids]))
       let freed = 0
-      for (const id of ids) freed += await window.clean.deleteNodeModules(id)
+      for (const id of ids) {
+        const res = await window.clean.deleteNodeModules(id)
+        freed += res.freed
+      }
       setDeleting((s) => {
         const n = new Set(s)
         for (const i of ids) n.delete(i)
