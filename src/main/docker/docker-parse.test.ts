@@ -1,0 +1,90 @@
+import { describe, expect, it } from 'vitest'
+import { buildDockerItems, parseContainers, parseDf, parseSize } from './docker-parse'
+
+const DF = JSON.stringify({
+  Images: [
+    {
+      ID: 'sha256:aaa',
+      Repository: 'node',
+      Tag: '20',
+      CreatedAt: '2026-01-02 10:00:00 +0000 UTC',
+      Size: '1.1GB',
+      Containers: '1',
+    },
+    {
+      ID: 'sha256:bbb',
+      Repository: '<none>',
+      Tag: '<none>',
+      CreatedAt: '2026-01-01 10:00:00 +0000 UTC',
+      Size: '400MB',
+      Containers: '0',
+    },
+  ],
+  Volumes: [
+    { Name: 'pgdata', Size: '2.0GB', Links: '1' },
+    { Name: 'scratch', Size: '512MB', Links: '0' },
+  ],
+  Containers: [
+    {
+      ID: 'ctr111',
+      Names: 'web',
+      State: 'running',
+      Image: 'node:20',
+      CreatedAt: '2026-01-03 10:00:00 +0000 UTC',
+      Size: '10MB',
+    },
+    {
+      ID: 'ctr222',
+      Names: 'old',
+      State: 'exited',
+      Image: 'node:20',
+      CreatedAt: '2026-01-02 09:00:00 +0000 UTC',
+      Size: '5MB',
+    },
+  ],
+  BuildCache: [{ ID: 'cache1', Size: '800MB', CreatedAt: '2026-01-01 08:00:00 +0000 UTC', InUse: 'false' }],
+})
+
+describe('parseSize', () => {
+  it('parses docker human sizes to bytes', () => {
+    expect(parseSize('0B')).toBe(0)
+    expect(parseSize('512MB')).toBe(512 * 1000 * 1000)
+    expect(parseSize('1.1GB')).toBeCloseTo(1.1 * 1e9, -6)
+    expect(parseSize('')).toBe(0)
+  })
+})
+
+describe('buildDockerItems', () => {
+  const df = parseDf(DF)
+  const ps = parseContainers('') // df already carries containers; ps not needed for this fixture
+  const { items, totals } = buildDockerItems(df, ps)
+
+  it('marks dangling/untagged images unused+removable and tagged-in-container in-use', () => {
+    const dangling = items.find((i) => i.id === 'sha256:bbb')
+    expect(dangling?.inUse).toBe(false)
+    expect(dangling?.removable).toBe(true)
+    const used = items.find((i) => i.id === 'sha256:aaa')
+    expect(used?.inUse).toBe(true) // Containers > 0
+    expect(used?.removable).toBe(false)
+  })
+
+  it('marks volumes with Links>0 in-use (not removable) and Links=0 removable', () => {
+    expect(items.find((i) => i.name === 'pgdata')?.removable).toBe(false)
+    expect(items.find((i) => i.name === 'scratch')?.removable).toBe(true)
+  })
+
+  it('only stopped containers are removable', () => {
+    expect(items.find((i) => i.id === 'ctr111')?.removable).toBe(false) // running
+    expect(items.find((i) => i.id === 'ctr222')?.removable).toBe(true) // exited
+  })
+
+  it('build-cache rows are never per-item removable', () => {
+    expect(items.find((i) => i.kind === 'buildcache')?.removable).toBe(false)
+  })
+
+  it('totals reclaimable = sum of removable item sizes per kind', () => {
+    const vol = totals.find((t) => t.kind === 'volume')
+    expect(vol?.reclaimableBytes).toBe(512 * 1000 * 1000) // only scratch
+    expect(vol?.count).toBe(2)
+  })
+})
