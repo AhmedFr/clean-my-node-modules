@@ -24,12 +24,11 @@ export function parseSize(s: string): number {
 /** "2026-01-02 10:00:00 +0000 UTC" | "2026-01-02 10:00:00 -0500 EST" → ms epoch (0 if unparseable). */
 export function parseDate(s: string): number {
   if (!s) return 0
-  // Strip a trailing zone word (e.g. "UTC", "EST") and normalize a numeric
-  // "+HHMM"/"-HHMM" offset into the "+HH:MM" form Date.parse understands, so
-  // any docker-reported timezone (not just +0000) parses correctly.
-  const withoutZoneWord = s.replace(/\s+[A-Za-z]+$/, '')
-  const isoish = withoutZoneWord.replace(' ', 'T').replace(/([+-])(\d{2})(\d{2})$/, '$1$2:$3')
-  const t = Date.parse(isoish)
+  // Docker prints Go's time.Time.String(): "2006-01-02 15:04:05[.frac] -0700 MST".
+  const m = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})(?:\.\d+)?(?:\s+([+-]\d{4}))?/.exec(s.trim())
+  if (!m) return 0
+  const offset = m[3] ? `${m[3].slice(0, 3)}:${m[3].slice(3)}` : 'Z'
+  const t = Date.parse(`${m[1]}T${m[2]}${offset}`)
   return Number.isFinite(t) ? t : 0
 }
 

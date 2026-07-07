@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildDockerItems, parseContainers, parseDf, parseSize } from './docker-parse'
+import { buildDockerItems, parseContainers, parseDate, parseDf, parseSize } from './docker-parse'
 
 const DF = JSON.stringify({
   Images: [
@@ -59,6 +59,19 @@ describe('parseSize', () => {
     expect(parseSize('512MB')).toBe(512 * 1000 * 1000)
     expect(parseSize('1.1GB')).toBeCloseTo(1.1 * 1e9, -6)
     expect(parseSize('')).toBe(0)
+  })
+})
+
+describe('parseDate', () => {
+  it('parses docker UTC timestamps to the correct epoch', () => {
+    expect(parseDate('2026-01-02 10:00:00 +0000 UTC')).toBe(Date.parse('2026-01-02T10:00:00Z'))
+    expect(parseDate('2026-01-02 10:00:00.482635131 +0000 UTC')).toBe(Date.parse('2026-01-02T10:00:00Z'))
+    expect(parseDate('')).toBe(0)
+    expect(parseDate('not a date')).toBe(0)
+  })
+
+  it('honors a non-UTC numeric offset', () => {
+    expect(parseDate('2026-01-02 10:00:00 +0530 IST')).toBe(Date.parse('2026-01-02T10:00:00+05:30'))
   })
 })
 
