@@ -14,6 +14,7 @@ const api: CleanApi = {
   getProjects: () => ipcRenderer.invoke(IPC.getProjects),
   getLastScanTime: () => ipcRenderer.invoke(IPC.getLastScanTime),
   getPnpmStore: (force) => ipcRenderer.invoke(IPC.getPnpmStore, force),
+  getDocker: (force) => ipcRenderer.invoke(IPC.getDocker, force),
   prunePnpmStore: () => ipcRenderer.invoke(IPC.prunePnpmStore),
   getPackages: () => ipcRenderer.invoke(IPC.getPackages),
   computePackages: (force) => ipcRenderer.invoke(IPC.computePackages, force),

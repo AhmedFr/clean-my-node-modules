@@ -14,6 +14,7 @@ import { RENDERER_EVENTS } from '../analytics'
 import type { AppContext } from '../app-context.types'
 import { liveGuard } from '../liveness/guard-live'
 import { detectLiveProjects } from '../liveness/liveness'
+import { getDockerInfo } from '../docker/docker'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
 import { coerceSetting } from '../settings/validate-setting'
 import { coerceCardPayload, copyCardToClipboard } from '../share'
@@ -64,6 +65,10 @@ export function registerIpc(ctx: AppContext): void {
   ipcMain.handle(IPC.getPnpmStore, (_e, force?: boolean) => {
     const s = ctx.settings.get()
     return getPnpmStoreInfo(force, { storePath: s.pnpmStorePath, binaryPath: s.pnpmBinaryPath })
+  })
+  ipcMain.handle(IPC.getDocker, (_e, force?: boolean) => {
+    const s = ctx.settings.get()
+    return getDockerInfo(force, { binaryPath: s.dockerBinaryPath })
   })
   ipcMain.handle(IPC.prunePnpmStore, async () => {
     // Free tier sees everything but mutates nothing — cleanup is the paid unlock.
