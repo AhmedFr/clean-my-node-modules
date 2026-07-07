@@ -1,0 +1,34 @@
+import { statSync } from 'node:fs'
+import { readdir as readdirP } from 'node:fs/promises'
+import { join } from 'node:path'
+
+interface Deps {
+  volumesDir?: string
+  readdir?: (dir: string) => Promise<string[]>
+  statDev?: (p: string) => number | null
+}
+
+const defaultStatDev = (p: string): number | null => {
+  try {
+    return statSync(p).dev
+  } catch {
+    return null
+  }
+}
+
+/** Mounted external volumes under /Volumes, excluding the boot disk. */
+export async function listExternalVolumes(deps: Deps = {}): Promise<{ path: string; name: string }[]> {
+  const volumesDir = deps.volumesDir ?? '/Volumes'
+  const readdir = deps.readdir ?? ((dir: string) => readdirP(dir))
+  const statDev = deps.statDev ?? defaultStatDev
+  const rootDev = statDev('/')
+  const names = await readdir(volumesDir).catch(() => [] as string[])
+  const out: { path: string; name: string }[] = []
+  for (const name of names) {
+    const path = join(volumesDir, name)
+    const dev = statDev(path)
+    if (dev === null || dev === rootDev) continue
+    out.push({ path, name })
+  }
+  return out
+}
