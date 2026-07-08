@@ -4,6 +4,7 @@ export const IPC = {
   getProjects: 'projects:get',
   scan: 'projects:scan',
   deleteNodeModules: 'projects:delete',
+  deleteManyNodeModules: 'projects:delete-many',
   revealInFinder: 'projects:reveal',
   openProject: 'projects:open',
   getSettings: 'settings:get',

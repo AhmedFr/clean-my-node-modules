@@ -1,4 +1,4 @@
-import { statSync } from 'node:fs'
+import { lstatSync } from 'node:fs'
 import { readdir as readdirP } from 'node:fs/promises'
 import { join } from 'node:path'
 
@@ -8,9 +8,13 @@ interface Deps {
   statDev?: (p: string) => number | null
 }
 
+// lstat (not stat) so a symlink under /Volumes reports its own device id, not the
+// target's — a symlink that points back at the boot disk is then correctly
+// excluded by the `dev === rootDev` check below, instead of resolving through to
+// whatever device it links to.
 const defaultStatDev = (p: string): number | null => {
   try {
-    return statSync(p).dev
+    return lstatSync(p).dev
   } catch {
     return null
   }

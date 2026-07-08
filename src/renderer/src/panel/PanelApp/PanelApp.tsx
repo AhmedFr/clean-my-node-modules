@@ -80,21 +80,18 @@ export function PanelApp(): ReactNode {
         return
       }
       setDeleting((s) => new Set([...s, ...ids]))
-      let freed = 0
-      for (const id of ids) {
-        const res = await window.clean.deleteNodeModules(id)
-        // A blocked delete (e.g. the app is running) frees nothing; the disabled
-        // affordance already prevents this click, this is defense in depth.
-        if (res.blocked) continue
-        freed += res.freed
-      }
+      // One liveness check for the whole batch instead of one lsof spawn per id.
+      const { freed } = await window.clean.deleteManyNodeModules(ids)
       setDeleting((s) => {
         const n = new Set(s)
         for (const i of ids) n.delete(i)
         return n
       })
       setReclaimed((r) => r + freed)
-      flashToast({ text: `Reclaimed ${formatSizeStr(freed)}${label ? ` · ${label}` : ''}`, good: true })
+      // Everything blocked/skipped and nothing freed — nothing worth flashing.
+      if (freed > 0) {
+        flashToast({ text: `Reclaimed ${formatSizeStr(freed)}${label ? ` · ${label}` : ''}`, good: true })
+      }
     },
     [flashToast, license.pro, projects],
   )

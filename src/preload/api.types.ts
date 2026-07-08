@@ -1,4 +1,4 @@
-import type { DeleteResult } from '@shared/delete.types'
+import type { DeleteManyResult, DeleteResult } from '@shared/delete.types'
 import type { ActivateResult, LicenseState } from '@shared/license.types'
 import type { LiveInfo } from '@shared/liveness.types'
 import type { PackageInventory } from '@shared/package.types'
@@ -21,6 +21,8 @@ export interface CleanApi {
   openExternal(url: string): Promise<void>
   scan(): Promise<void>
   deleteNodeModules(id: string): Promise<DeleteResult>
+  /** Deletes node_modules for several projects, running the liveness check once for the batch. */
+  deleteManyNodeModules(ids: string[]): Promise<DeleteManyResult>
   revealInFinder(id: string): Promise<void>
   openProject(id: string): Promise<void>
   getSettings(): Promise<Settings>

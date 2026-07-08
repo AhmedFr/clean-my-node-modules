@@ -204,6 +204,10 @@ export function LauncherApp(): ReactNode {
           flashToast({ icon: UIIcon.trash, text: `Cannot delete, ${p.name} is running`, tone: 'neutral' })
           return
         }
+        if (blocked === 'unmounted') {
+          flashToast({ icon: UIIcon.trash, text: `Could not delete ${p.name}, drive not connected`, tone: 'neutral' })
+          return
+        }
         if (blocked) return
         setReclaimed((r) => r + freed)
         flashToast({

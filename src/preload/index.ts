@@ -20,6 +20,7 @@ const api: CleanApi = {
   openExternal: (url) => ipcRenderer.invoke(IPC.openExternal, url),
   scan: () => ipcRenderer.invoke(IPC.scan),
   deleteNodeModules: (id) => ipcRenderer.invoke(IPC.deleteNodeModules, id),
+  deleteManyNodeModules: (ids) => ipcRenderer.invoke(IPC.deleteManyNodeModules, ids),
   revealInFinder: (id) => ipcRenderer.invoke(IPC.revealInFinder, id),
   openProject: (id) => ipcRenderer.invoke(IPC.openProject, id),
   getSettings: () => ipcRenderer.invoke(IPC.getSettings),

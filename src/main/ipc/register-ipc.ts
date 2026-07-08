@@ -1,7 +1,8 @@
 import { join } from 'node:path'
-import type { DeleteResult } from '@shared/delete.types'
+import type { DeleteManyResult, DeleteResult } from '@shared/delete.types'
 import { IPC } from '@shared/ipc.constants'
 import type { LiveInfo } from '@shared/liveness.types'
+import type { Project } from '@shared/project.types'
 import { GB } from '@shared/units.constants'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import { uninstallApp } from '../actions/app-actions'
@@ -110,6 +111,40 @@ export function registerIpc(ctx: AppContext): void {
     ctx.projects.remove(id)
     ctx.analytics.capture('clean_performed', { kind: 'delete', freed_gb: Math.round((freed / GB) * 10) / 10 })
     return { freed }
+  })
+
+  ipcMain.handle(IPC.deleteManyNodeModules, async (_e, rawIds: unknown): Promise<DeleteManyResult> => {
+    if (!ctx.license.get().pro) return { freed: 0, blockedIds: [] }
+    // Never trust the renderer's payload — coerce to a plain string list.
+    const ids = Array.isArray(rawIds) ? rawIds.filter((id): id is string => typeof id === 'string') : []
+    const projects = ids
+      .map((id) => ctx.projects.all.find((p) => p.id === id))
+      .filter((p): p is Project => p !== undefined)
+    // One liveness check for the whole batch instead of one per project.
+    const live = await detectLiveProjects(projects.map((p) => p.absPath))
+    let freed = 0
+    const blockedIds: string[] = []
+    for (const project of projects) {
+      const guard = guardExists(join(project.absPath, 'node_modules'))
+      if (guard) {
+        // Path vanished since the scan (e.g. an unmounted drive) — drop it silently,
+        // it's skipped rather than blocked and contributes nothing to `freed`.
+        ctx.projects.remove(project.id)
+        continue
+      }
+      if (live.has(project.absPath)) {
+        blockedIds.push(project.id)
+        continue
+      }
+      const projectFreed = await deleteNodeModules(project)
+      ctx.projects.remove(project.id)
+      freed += projectFreed
+      ctx.analytics.capture('clean_performed', {
+        kind: 'delete',
+        freed_gb: Math.round((projectFreed / GB) * 10) / 10,
+      })
+    }
+    return { freed, blockedIds }
   })
 
   ipcMain.handle(IPC.revealInFinder, (_e, id: string) => {
