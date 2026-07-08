@@ -51,7 +51,9 @@ function loadDiskCache(): void {
   try {
     const raw = JSON.parse(readFileSync(cacheFile(), 'utf8')) as { key: string; info: DockerInfo }
     if (raw?.info) {
-      cached = raw.info
+      // A cache written before project enrichment existed has no `projects`;
+      // normalize so the renderer never iterates an undefined.
+      cached = { ...raw.info, projects: Array.isArray(raw.info.projects) ? raw.info.projects : [] }
       cachedKey = raw.key ?? ''
     }
   } catch {

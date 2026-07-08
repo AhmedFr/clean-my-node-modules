@@ -62,6 +62,15 @@ describe('groupDockerForDisplay', () => {
   it('query filters by item name or project name', () => {
     expect(groupDockerForDisplay(info(items), { sortBy: 'size', typeFilter: 'all', query: 'redis' }).length).toBe(1)
   })
+
+  it('does not throw when info.projects is missing (stale cache from an older build)', () => {
+    // A docker-cache.json written before project enrichment has no `projects` field.
+    const stale = { available: true, checkedAt: 0, totals: [], items } as unknown as DockerInfo
+    const g = groupDockerForDisplay(stale, { sortBy: 'size', typeFilter: 'all', query: '' })
+    // No project groups; every item falls into the "Other" section instead of crashing.
+    expect(g.some((x) => x.kind === 'project')).toBe(false)
+    expect(g.length).toBeGreaterThan(0)
+  })
 })
 
 describe('dockerItemDetail', () => {

@@ -33,9 +33,11 @@ export function groupDockerForDisplay(
     return i.name.toLowerCase().includes(q) || (i.project?.toLowerCase().includes(q) ?? false)
   })
 
-  // Project groups
+  // Project groups. Guard `projects`: a cache written by an older build (or any
+  // DockerInfo that predates project enrichment) has no `projects` field, so it
+  // would be undefined here and blow up the iteration.
   const projectGroups: DisplayGroup[] = []
-  for (const p of info.projects) {
+  for (const p of Array.isArray(info.projects) ? info.projects : []) {
     const of = items.filter((i) => i.project === p.name).sort(bySizeDesc)
     if (of.length)
       projectGroups.push({ kind: 'project', id: `project:${p.name}`, label: p.name, project: p, items: of })
