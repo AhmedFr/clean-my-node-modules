@@ -40,6 +40,13 @@ const detectLiveProjects = vi.fn(async (_dirs: string[]) => new Map())
 vi.mock('../liveness/liveness', () => ({
   detectLiveProjects: (dirs: string[]) => detectLiveProjects(dirs),
 }))
+const removeDockerItem = vi.fn(async (_kind: unknown, _id: unknown) => ({ ok: true, freedBytes: 2048 }))
+const pruneDocker = vi.fn(async (_target: unknown) => ({ ok: true, freedBytes: 4096 }))
+vi.mock('../docker/docker', () => ({
+  getDockerInfo: vi.fn(),
+  removeDockerItem: (kind: unknown, id: unknown) => removeDockerItem(kind, id),
+  pruneDocker: (target: unknown) => pruneDocker(target),
+}))
 vi.mock('../actions/app-actions', () => ({ uninstallApp: vi.fn() }))
 vi.mock('../actions/pick-path', () => ({ pickPath: vi.fn() }))
 const copyCardToClipboard = vi.fn(async (_p: unknown) => true)
@@ -72,6 +79,8 @@ function makeCtx(pro: boolean, extraProjects: Project[] = []) {
   deleteNodeModules.mockClear()
   guardExists.mockClear()
   prunePnpmStore.mockClear()
+  removeDockerItem.mockClear()
+  pruneDocker.mockClear()
   copyCardToClipboard.mockClear()
   detectLiveProjects.mockClear()
   detectLiveProjects.mockImplementation(async () => new Map())
@@ -207,5 +216,35 @@ describe('license enforcement in IPC handlers', () => {
     })
     expect(res).toEqual({ ok: true })
     expect(analytics.capture).toHaveBeenCalledWith('share_card_copied', { total_gb: 247.3, source: 'header' })
+  })
+
+  it('unlicensed docker:remove refuses without invoking the docker CLI', async () => {
+    const { analytics } = makeCtx(false)
+    expect(await invoke(IPC.removeDockerItem, 'image', 'abc123')).toEqual({ ok: false, freedBytes: 0 })
+    expect(removeDockerItem).not.toHaveBeenCalled()
+    expect(analytics.capture).not.toHaveBeenCalledWith('clean_performed', expect.anything())
+  })
+
+  it('unlicensed docker:prune refuses without invoking the docker CLI', async () => {
+    const { analytics } = makeCtx(false)
+    expect(await invoke(IPC.pruneDocker, 'danglingImages')).toEqual({ ok: false, freedBytes: 0 })
+    expect(pruneDocker).not.toHaveBeenCalled()
+    expect(analytics.capture).not.toHaveBeenCalledWith('clean_performed', expect.anything())
+  })
+
+  it('licensed docker:remove rejects a malformed payload before calling the docker CLI', async () => {
+    makeCtx(true)
+    expect(await invoke(IPC.removeDockerItem, 'buildcache', 'abc123')).toEqual({ ok: false, freedBytes: 0 })
+    expect(await invoke(IPC.removeDockerItem, 'image', '')).toEqual({ ok: false, freedBytes: 0 })
+    expect(await invoke(IPC.removeDockerItem, 'image', 42)).toEqual({ ok: false, freedBytes: 0 })
+    expect(removeDockerItem).not.toHaveBeenCalled()
+  })
+
+  it('licensed docker:remove with a valid payload calls the docker CLI and captures clean_performed', async () => {
+    const { analytics } = makeCtx(true)
+    const res = await invoke(IPC.removeDockerItem, 'image', 'abc123')
+    expect(removeDockerItem).toHaveBeenCalledWith('image', 'abc123')
+    expect(res).toEqual({ ok: true, freedBytes: 2048 })
+    expect(analytics.capture).toHaveBeenCalledWith('clean_performed', { kind: 'docker_image', freed_gb: 0 })
   })
 })
