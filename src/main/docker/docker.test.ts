@@ -6,7 +6,7 @@ vi.mock('./find-docker', () => ({
   dockerExecEnv: vi.fn(async () => ({})),
 }))
 
-import { __setExecForTests, getDockerInfo } from './docker'
+import { __setExecForTests, getDockerInfo, pruneDocker, removeDockerItem } from './docker'
 import { findDocker } from './find-docker'
 
 const DF = JSON.stringify({
@@ -70,4 +70,33 @@ describe('getDockerInfo', () => {
     expect(versionCallsByBin['/a/docker']).toBe(1)
     expect(versionCallsByBin['/b/docker']).toBe(1)
   })
+})
+
+it('removeDockerItem maps kind→command and reports freed bytes from df delta', async () => {
+  const calls: string[][] = []
+  let phase = 0
+  __setExecForTests(async (_bin, args) => {
+    calls.push(args)
+    if (args[0] === 'system' && args[1] === 'df' && !args.includes('-v')) {
+      // grand-total df prints ONE JSON object per line; shrink after removal.
+      return { stdout: JSON.stringify({ Type: 'Images', Size: phase++ === 0 ? '1GB' : '0B' }), stderr: '' }
+    }
+    return { stdout: '', stderr: '' }
+  })
+  const r = await removeDockerItem('image', 'sha256:bbb')
+  expect(r.ok).toBe(true)
+  expect(calls.some((a) => a[0] === 'rmi' && a[1] === 'sha256:bbb')).toBe(true)
+})
+
+it('pruneDocker maps each target to the right prune command', async () => {
+  const seen: string[] = []
+  __setExecForTests(async (_bin, args) => {
+    if (args[0] === 'system' && args[1] === 'df') return { stdout: '[]', stderr: '' }
+    seen.push(args.join(' '))
+    return { stdout: '', stderr: '' }
+  })
+  await pruneDocker('buildCache')
+  await pruneDocker('unusedVolumes')
+  expect(seen).toContain('builder prune -f')
+  expect(seen).toContain('volume prune -f')
 })

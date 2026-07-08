@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { promisify } from 'node:util'
-import type { DockerInfo } from '@shared/docker.types'
+import type { DockerActionResult, DockerInfo, DockerItemKind, DockerPruneTarget } from '@shared/docker.types'
 import { app } from 'electron'
 import { buildDockerItems, parseContainers, parseDf } from './docker-parse'
 import { dockerExecEnv, findDocker } from './find-docker'
@@ -105,6 +105,74 @@ export async function getDockerInfo(force = false, opts: DockerOpts = {}): Promi
     if (inFlight === pending) inFlight = null
   })
   return pending
+}
+
+/** Grand-total docker disk usage in bytes (sum of `docker system df` rows). */
+async function totalDiskBytes(bin: string): Promise<number> {
+  try {
+    const out = await run(bin, ['system', 'df', '--format', '{{json .}}'])
+    // df grand total prints one JSON object per row (Type, Size, Reclaimable, ...)
+    const { parseSize } = await import('./docker-parse')
+    return out
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .reduce((sum, line) => {
+        try {
+          return sum + parseSize((JSON.parse(line) as { Size: string }).Size)
+        } catch {
+          return sum
+        }
+      }, 0)
+  } catch {
+    return 0
+  }
+}
+
+const REMOVE_ARGS: Record<Exclude<DockerItemKind, 'buildcache'>, (id: string) => string[]> = {
+  image: (id) => ['rmi', id],
+  volume: (id) => ['volume', 'rm', id],
+  container: (id) => ['rm', id],
+}
+
+export async function removeDockerItem(
+  kind: DockerItemKind,
+  id: string,
+  opts: DockerOpts = {},
+): Promise<DockerActionResult> {
+  const bin = await findDocker(opts.binaryPath)
+  if (!bin || kind === 'buildcache') return { ok: false, freedBytes: 0 }
+  const before = await totalDiskBytes(bin)
+  try {
+    // in-use guard lives in the UI/validation; the CLI itself also refuses an
+    // in-use image/volume without -f (which we never pass), so this is safe.
+    await run(bin, REMOVE_ARGS[kind](id))
+  } catch {
+    return { ok: false, freedBytes: 0 }
+  }
+  const after = await totalDiskBytes(bin)
+  return { ok: true, freedBytes: Math.max(0, before - after) }
+}
+
+const PRUNE_ARGS: Record<DockerPruneTarget, string[]> = {
+  danglingImages: ['image', 'prune', '-f'],
+  unusedImages: ['image', 'prune', '-a', '-f'],
+  stoppedContainers: ['container', 'prune', '-f'],
+  buildCache: ['builder', 'prune', '-f'],
+  unusedVolumes: ['volume', 'prune', '-f'],
+}
+
+export async function pruneDocker(target: DockerPruneTarget, opts: DockerOpts = {}): Promise<DockerActionResult> {
+  const bin = await findDocker(opts.binaryPath)
+  if (!bin) return { ok: false, freedBytes: 0 }
+  const before = await totalDiskBytes(bin)
+  try {
+    await run(bin, PRUNE_ARGS[target], PRUNE_TIMEOUT_MS)
+  } catch {
+    return { ok: false, freedBytes: 0 }
+  }
+  const after = await totalDiskBytes(bin)
+  return { ok: true, freedBytes: Math.max(0, before - after) }
 }
 
 export { CLI_TIMEOUT_MS, PRUNE_TIMEOUT_MS, run }
