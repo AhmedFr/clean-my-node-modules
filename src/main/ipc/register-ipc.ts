@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import type { DeleteResult } from '@shared/delete.types'
 import { IPC } from '@shared/ipc.constants'
+import type { LiveInfo } from '@shared/liveness.types'
 import { GB } from '@shared/units.constants'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import { uninstallApp } from '../actions/app-actions'
@@ -9,6 +10,7 @@ import { deleteNodeModules, guardExists, openProject, revealInFinder } from '../
 import type { AnalyticsEvent, AnalyticsProps } from '../analytics'
 import { RENDERER_EVENTS } from '../analytics'
 import type { AppContext } from '../app-context.types'
+import { detectLiveProjects } from '../liveness/liveness'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
 import { coerceSetting } from '../settings/validate-setting'
 import { coerceCardPayload, copyCardToClipboard } from '../share'
@@ -30,6 +32,17 @@ export function registerIpc(ctx: AppContext): void {
     const roots = new Set(ctx.settings.get().scanRoots)
     const vols = await listExternalVolumes()
     return vols.map((v) => ({ ...v, included: roots.has(v.path) }))
+  })
+
+  ipcMain.handle(IPC.getLiveProjects, async (): Promise<Record<string, LiveInfo>> => {
+    const projects = ctx.projects.all
+    const byDir = await detectLiveProjects(projects.map((p) => p.absPath))
+    const out: Record<string, LiveInfo> = {}
+    for (const p of projects) {
+      const info = byDir.get(p.absPath)
+      if (info) out[p.id] = info
+    }
+    return out
   })
 
   ipcMain.handle(IPC.getLicense, () => ctx.license.get())

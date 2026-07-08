@@ -25,6 +25,7 @@ const api: CleanApi = {
   getSettings: () => ipcRenderer.invoke(IPC.getSettings),
   setSetting: (key, value) => ipcRenderer.invoke(IPC.setSetting, key, value),
   listVolumes: () => ipcRenderer.invoke(IPC.listVolumes),
+  getLiveProjects: () => ipcRenderer.invoke(IPC.getLiveProjects),
   getLicense: () => ipcRenderer.invoke(IPC.getLicense),
   activateLicense: (key) => ipcRenderer.invoke(IPC.activateLicense, key),
   copyShareCard: (payload) => ipcRenderer.invoke(IPC.copyShareCard, payload),

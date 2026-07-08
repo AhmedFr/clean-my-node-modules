@@ -1,5 +1,5 @@
 import { sep } from 'node:path'
-import type { LiveInfo } from './liveness.types'
+import type { LiveInfo } from '@shared/liveness.types'
 
 interface Proc {
   pid: number

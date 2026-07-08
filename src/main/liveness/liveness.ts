@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import type { LiveInfo } from './liveness.types'
+import type { LiveInfo } from '@shared/liveness.types'
 import { matchLive } from './match-live'
 import { parseLsofCwd } from './parse-lsof-cwd'
 import { parseLsofPorts } from './parse-lsof-ports'

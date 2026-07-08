@@ -1,5 +1,6 @@
 import type { DeleteResult } from '@shared/delete.types'
 import type { ActivateResult, LicenseState } from '@shared/license.types'
+import type { LiveInfo } from '@shared/liveness.types'
 import type { PackageInventory } from '@shared/package.types'
 import type { PnpmPruneResult, PnpmStoreInfo } from '@shared/pnpm-store.types'
 import type { Project, ScanProgress } from '@shared/project.types'
@@ -26,6 +27,8 @@ export interface CleanApi {
   setSetting<K extends keyof Settings>(key: K, value: Settings[K]): Promise<Settings>
   /** Mounted external volumes offered as scan-location toggles. */
   listVolumes(): Promise<VolumeOption[]>
+  /** Currently running projects, keyed by project id. */
+  getLiveProjects(): Promise<Record<string, LiveInfo>>
   getLicense(): Promise<LicenseState>
   /** Verifies + persists a license key; broadcasts license:changed on success. */
   activateLicense(key: string): Promise<ActivateResult>
