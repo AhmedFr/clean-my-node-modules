@@ -100,3 +100,117 @@ it('pruneDocker maps each target to the right prune command', async () => {
   expect(seen).toContain('builder prune -f')
   expect(seen).toContain('volume prune -f')
 })
+
+it('pruneDocker maps ALL FIVE targets to the exact args', async () => {
+  const seen: string[] = []
+  __setExecForTests(async (_bin, args) => {
+    if (args[0] === 'system' && args[1] === 'df') return { stdout: '[]', stderr: '' }
+    seen.push(args.join(' '))
+    return { stdout: '', stderr: '' }
+  })
+  await pruneDocker('danglingImages')
+  await pruneDocker('unusedImages')
+  await pruneDocker('stoppedContainers')
+  await pruneDocker('buildCache')
+  await pruneDocker('unusedVolumes')
+  expect(seen).toEqual([
+    'image prune -f',
+    'image prune -a -f',
+    'container prune -f',
+    'builder prune -f',
+    'volume prune -f',
+  ])
+})
+
+it('removeDockerItem("volume", ...) issues volume rm with no -f/--force', async () => {
+  const calls: string[][] = []
+  __setExecForTests(async (_bin, args) => {
+    if (args[0] === 'system' && args[1] === 'df') return { stdout: '[]', stderr: '' }
+    calls.push(args)
+    return { stdout: '', stderr: '' }
+  })
+  const r = await removeDockerItem('volume', 'pgdata')
+  expect(r.ok).toBe(true)
+  expect(calls).toContainEqual(['volume', 'rm', 'pgdata'])
+  for (const call of calls) {
+    expect(call).not.toContain('-f')
+    expect(call).not.toContain('--force')
+  }
+})
+
+it('removeDockerItem("container", ...) issues rm with no -f/--force', async () => {
+  const calls: string[][] = []
+  __setExecForTests(async (_bin, args) => {
+    if (args[0] === 'system' && args[1] === 'df') return { stdout: '[]', stderr: '' }
+    calls.push(args)
+    return { stdout: '', stderr: '' }
+  })
+  const r = await removeDockerItem('container', 'ctr222')
+  expect(r.ok).toBe(true)
+  expect(calls).toContainEqual(['rm', 'ctr222'])
+  for (const call of calls) {
+    expect(call).not.toContain('-f')
+    expect(call).not.toContain('--force')
+  }
+})
+
+it('removeDockerItem("buildcache", ...) refuses without ever invoking a remove command', async () => {
+  const removeVerbCalls: string[][] = []
+  __setExecForTests(async (_bin, args) => {
+    if (args[0] === 'rmi' || args[0] === 'rm' || (args[0] === 'volume' && args[1] === 'rm')) {
+      removeVerbCalls.push(args)
+    }
+    return { stdout: '[]', stderr: '' }
+  })
+  const r = await removeDockerItem('buildcache', 'x')
+  expect(r).toEqual({ ok: false, freedBytes: 0 })
+  expect(removeVerbCalls).toHaveLength(0)
+})
+
+it('removeDockerItem returns {ok:false, freedBytes:0} when the remove command itself throws', async () => {
+  __setExecForTests(async (_bin, args) => {
+    if (args[0] === 'system' && args[1] === 'df') return { stdout: '[]', stderr: '' }
+    if (args[0] === 'rmi') throw new Error('image is being used')
+    return { stdout: '', stderr: '' }
+  })
+  const r = await removeDockerItem('image', 'sha256:aaa')
+  expect(r).toEqual({ ok: false, freedBytes: 0 })
+})
+
+it('pruneDocker returns {ok:false, freedBytes:0} when the prune command itself throws', async () => {
+  __setExecForTests(async (_bin, args) => {
+    if (args[0] === 'system' && args[1] === 'df') return { stdout: '[]', stderr: '' }
+    if (args[0] === 'image' && args[1] === 'prune') throw new Error('prune failed')
+    return { stdout: '', stderr: '' }
+  })
+  const r = await pruneDocker('danglingImages')
+  expect(r).toEqual({ ok: false, freedBytes: 0 })
+})
+
+it('removeDockerItem does NOT fabricate freedBytes from the pre-existing total when the AFTER df read fails (regression for Fix 1)', async () => {
+  let dfCalls = 0
+  __setExecForTests(async (_bin, args) => {
+    if (args[0] === 'system' && args[1] === 'df' && !args.includes('-v')) {
+      dfCalls++
+      if (dfCalls === 1) return { stdout: JSON.stringify({ Type: 'Images', Size: '1GB' }), stderr: '' }
+      throw new Error('daemon unreachable')
+    }
+    return { stdout: '', stderr: '' }
+  })
+  const r = await removeDockerItem('image', 'sha256:bbb')
+  expect(r).toEqual({ ok: true, freedBytes: 0 })
+})
+
+it('pruneDocker does NOT fabricate freedBytes from the pre-existing total when the AFTER df read fails (regression for Fix 1)', async () => {
+  let dfCalls = 0
+  __setExecForTests(async (_bin, args) => {
+    if (args[0] === 'system' && args[1] === 'df' && !args.includes('-v')) {
+      dfCalls++
+      if (dfCalls === 1) return { stdout: JSON.stringify({ Type: 'Images', Size: '2GB' }), stderr: '' }
+      throw new Error('daemon unreachable')
+    }
+    return { stdout: '', stderr: '' }
+  })
+  const r = await pruneDocker('danglingImages')
+  expect(r).toEqual({ ok: true, freedBytes: 0 })
+})

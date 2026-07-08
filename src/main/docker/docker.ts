@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path'
 import { promisify } from 'node:util'
 import type { DockerActionResult, DockerInfo, DockerItemKind, DockerPruneTarget } from '@shared/docker.types'
 import { app } from 'electron'
-import { buildDockerItems, parseContainers, parseDf } from './docker-parse'
+import { buildDockerItems, parseContainers, parseDf, parseSize } from './docker-parse'
 import { dockerExecEnv, findDocker } from './find-docker'
 
 const CLI_TIMEOUT_MS = 60_000
@@ -107,12 +107,11 @@ export async function getDockerInfo(force = false, opts: DockerOpts = {}): Promi
   return pending
 }
 
-/** Grand-total docker disk usage in bytes (sum of `docker system df` rows). */
-async function totalDiskBytes(bin: string): Promise<number> {
+/** Grand-total docker disk usage in bytes (sum of `docker system df` rows), or null if it could not be measured. */
+async function totalDiskBytes(bin: string): Promise<number | null> {
   try {
     const out = await run(bin, ['system', 'df', '--format', '{{json .}}'])
     // df grand total prints one JSON object per row (Type, Size, Reclaimable, ...)
-    const { parseSize } = await import('./docker-parse')
     return out
       .split('\n')
       .map((l) => l.trim())
@@ -125,7 +124,7 @@ async function totalDiskBytes(bin: string): Promise<number> {
         }
       }, 0)
   } catch {
-    return 0
+    return null
   }
 }
 
@@ -151,7 +150,8 @@ export async function removeDockerItem(
     return { ok: false, freedBytes: 0 }
   }
   const after = await totalDiskBytes(bin)
-  return { ok: true, freedBytes: Math.max(0, before - after) }
+  const freedBytes = before !== null && after !== null ? Math.max(0, before - after) : 0
+  return { ok: true, freedBytes }
 }
 
 const PRUNE_ARGS: Record<DockerPruneTarget, string[]> = {
@@ -172,7 +172,8 @@ export async function pruneDocker(target: DockerPruneTarget, opts: DockerOpts = 
     return { ok: false, freedBytes: 0 }
   }
   const after = await totalDiskBytes(bin)
-  return { ok: true, freedBytes: Math.max(0, before - after) }
+  const freedBytes = before !== null && after !== null ? Math.max(0, before - after) : 0
+  return { ok: true, freedBytes }
 }
 
 export { CLI_TIMEOUT_MS, PRUNE_TIMEOUT_MS, run }
