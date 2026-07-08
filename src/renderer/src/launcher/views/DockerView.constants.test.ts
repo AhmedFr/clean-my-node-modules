@@ -1,33 +1,60 @@
-import type { DockerItem } from '@shared/docker.types'
+import type { DockerInfo, DockerItem } from '@shared/docker.types'
 import { describe, expect, it } from 'vitest'
-import { dockerItemDetail, groupDockerItems, pruneEstimateBytes } from './DockerView.constants'
+import { dockerItemDetail, groupDockerForDisplay, pruneEstimateBytes } from './DockerView.constants'
 
-const items: DockerItem[] = [
-  { id: 'i1', kind: 'image', name: 'node:20', sizeBytes: 1e9, createdAt: 0, inUse: false, removable: true },
-  { id: 'v1', kind: 'volume', name: 'pgdata', sizeBytes: 2e9, createdAt: 0, inUse: true, removable: false },
-  { id: 'c1', kind: 'container', name: 'app', sizeBytes: 3e8, createdAt: 0, inUse: true, removable: false },
-]
+const item = (o: Partial<DockerItem> & Pick<DockerItem, 'id' | 'kind' | 'name'>): DockerItem => ({
+  sizeBytes: 0,
+  createdAt: 0,
+  inUse: false,
+  removable: true,
+  ...o,
+})
+const info = (
+  items: DockerItem[],
+  projects = [{ name: 'myapp', workingDir: '/w', kind: 'node' as const }],
+): DockerInfo => ({
+  available: true,
+  checkedAt: 0,
+  totals: [],
+  items,
+  projects,
+})
 
-describe('groupDockerItems', () => {
-  it('groups items by kind in Images/Volumes/Containers/Build cache order, omitting empty groups', () => {
-    const groups = groupDockerItems(items, '')
-    expect(groups.map((g) => g.label)).toEqual(['Images', 'Volumes', 'Containers'])
-    expect(groups.find((g) => g.label === 'Images')?.items.map((i) => i.name)).toEqual(['node:20'])
+describe('groupDockerForDisplay', () => {
+  const items = [
+    item({ id: 'c1', kind: 'container', name: 'myapp-web', project: 'myapp', sizeBytes: 10 }),
+    item({ id: 'i1', kind: 'image', name: 'node:20', project: 'myapp', repository: 'node', sizeBytes: 100 }),
+    item({ id: 'i2', kind: 'image', name: 'redis:7', repository: 'redis', sizeBytes: 500 }),
+    item({ id: 'bc', kind: 'buildcache', name: 'bc', removable: false, sizeBytes: 300 }),
+    item({ id: 'v9', kind: 'volume', name: 'orphan', sizeBytes: 5 }),
+  ]
+
+  it('puts project groups first, then repository/buildcache/unaffiliated under "Other"', () => {
+    const g = groupDockerForDisplay(info(items), { sortBy: 'size', typeFilter: 'all', query: '' })
+    expect(g[0]).toMatchObject({ kind: 'project', project: { name: 'myapp' } })
+    const kinds = g.map((x) => x.kind)
+    expect(kinds).toContain('repository') // redis
+    expect(kinds).toContain('buildcache')
+    expect(kinds).toContain('unaffiliated') // orphan volume
+    // project group before any "Other" group
+    expect(kinds.indexOf('project')).toBeLessThan(kinds.indexOf('repository'))
   })
 
-  it('filters items by name, case-insensitively', () => {
-    const groups = groupDockerItems(items, 'NODE')
-    expect(groups).toHaveLength(1)
-    expect(groups[0]?.label).toBe('Images')
-    expect(groups[0]?.items.map((i) => i.name)).toEqual(['node:20'])
+  it('sorts groups by total size when sortBy=size', () => {
+    const g = groupDockerForDisplay(info(items), { sortBy: 'size', typeFilter: 'all', query: '' })
+    const other = g.filter((x) => x.kind !== 'project')
+    // redis repo (500) sorts before buildcache (300) before orphan volume (5)
+    expect(other[0].kind === 'repository').toBe(true)
   })
 
-  it('returns no groups when nothing matches the query', () => {
-    expect(groupDockerItems(items, 'zzz')).toEqual([])
+  it('type filter keeps only matching items and drops empty groups', () => {
+    const g = groupDockerForDisplay(info(items), { sortBy: 'size', typeFilter: 'volume', query: '' })
+    expect(g.every((x) => x.items.every((i) => i.kind === 'volume'))).toBe(true)
+    expect(g.some((x) => x.kind === 'repository')).toBe(false) // images filtered out
   })
 
-  it('returns no groups for an empty item list', () => {
-    expect(groupDockerItems([], '')).toEqual([])
+  it('query filters by item name or project name', () => {
+    expect(groupDockerForDisplay(info(items), { sortBy: 'size', typeFilter: 'all', query: 'redis' }).length).toBe(1)
   })
 })
 

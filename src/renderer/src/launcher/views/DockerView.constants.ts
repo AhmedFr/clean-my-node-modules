@@ -1,30 +1,73 @@
 import { relativeTime } from '@renderer/lib/format'
-import type { DockerItem, DockerItemKind, DockerPruneTarget } from '@shared/docker.types'
+import type { DockerInfo, DockerItem, DockerItemKind, DockerProject, DockerPruneTarget } from '@shared/docker.types'
 
-export interface DockerGroup {
-  kind: DockerItemKind
-  label: string
-  items: DockerItem[]
+export type DockerSortKey = 'size' | 'name' | 'recent'
+export type DockerTypeFilter = 'all' | DockerItemKind
+
+export type DisplayGroup =
+  | { kind: 'project'; id: string; label: string; project: DockerProject; items: DockerItem[] }
+  | { kind: 'repository'; id: string; label: string; items: DockerItem[] }
+  | { kind: 'buildcache'; id: string; label: string; items: DockerItem[] }
+  | { kind: 'unaffiliated'; id: string; label: string; items: DockerItem[] }
+
+const bytes = (items: DockerItem[]): number => items.reduce((s, i) => s + i.sizeBytes, 0)
+const recent = (items: DockerItem[]): number => items.reduce((m, i) => Math.max(m, i.createdAt), 0)
+const bySizeDesc = (a: DockerItem, b: DockerItem): number => b.sizeBytes - a.sizeBytes
+
+function sortGroups(groups: DisplayGroup[], sortBy: DockerSortKey): DisplayGroup[] {
+  return [...groups].sort((a, b) => {
+    if (sortBy === 'name') return a.label.localeCompare(b.label)
+    if (sortBy === 'recent') return recent(b.items) - recent(a.items)
+    return bytes(b.items) - bytes(a.items)
+  })
 }
 
-/** Fixed display order for the Docker tab's sections. */
-const GROUP_ORDER: Array<{ kind: DockerItemKind; label: string }> = [
-  { kind: 'image', label: 'Images' },
-  { kind: 'volume', label: 'Volumes' },
-  { kind: 'container', label: 'Containers' },
-  { kind: 'buildcache', label: 'Build cache' },
-]
+export function groupDockerForDisplay(
+  info: DockerInfo,
+  opts: { sortBy: DockerSortKey; typeFilter: DockerTypeFilter; query: string },
+): DisplayGroup[] {
+  const q = opts.query.trim().toLowerCase()
+  const items = info.items.filter((i) => {
+    if (opts.typeFilter !== 'all' && i.kind !== opts.typeFilter) return false
+    if (!q) return true
+    return i.name.toLowerCase().includes(q) || (i.project?.toLowerCase().includes(q) ?? false)
+  })
 
-/** Filters items by name (case-insensitive substring) and groups them by kind, in a fixed
- * display order. Groups with no matching items are omitted entirely. */
-export function groupDockerItems(items: DockerItem[], query: string): DockerGroup[] {
-  const q = query.trim().toLowerCase()
-  const filtered = q ? items.filter((i) => i.name.toLowerCase().includes(q)) : items
-  return GROUP_ORDER.map(({ kind, label }) => ({
-    kind,
-    label,
-    items: filtered.filter((i) => i.kind === kind),
-  })).filter((g) => g.items.length > 0)
+  // Project groups
+  const projectGroups: DisplayGroup[] = []
+  for (const p of info.projects) {
+    const of = items.filter((i) => i.project === p.name).sort(bySizeDesc)
+    if (of.length)
+      projectGroups.push({ kind: 'project', id: `project:${p.name}`, label: p.name, project: p, items: of })
+  }
+
+  // "Other": unaffiliated items → repository groups (images) + buildcache + unaffiliated (rest)
+  const other = items.filter((i) => !i.project)
+  const repoGroups: DisplayGroup[] = []
+  const repos = new Map<string, DockerItem[]>()
+  for (const i of other) {
+    if (i.kind === 'image' && i.repository) {
+      if (!repos.has(i.repository)) repos.set(i.repository, [])
+      repos.get(i.repository)!.push(i)
+    }
+  }
+  for (const [repo, of] of repos)
+    repoGroups.push({ kind: 'repository', id: `repo:${repo}`, label: repo, items: of.sort(bySizeDesc) })
+
+  const cache = other.filter((i) => i.kind === 'buildcache').sort(bySizeDesc)
+  const buildcacheGroup: DisplayGroup[] = cache.length
+    ? [{ kind: 'buildcache', id: 'buildcache', label: 'Build cache', items: cache }]
+    : []
+
+  const rest = other.filter((i) => i.kind !== 'buildcache' && !(i.kind === 'image' && i.repository)).sort(bySizeDesc)
+  const unaffiliatedGroup: DisplayGroup[] = rest.length
+    ? [{ kind: 'unaffiliated', id: 'unaffiliated', label: 'Not linked to a project', items: rest }]
+    : []
+
+  return [
+    ...sortGroups(projectGroups, opts.sortBy),
+    ...sortGroups([...repoGroups, ...buildcacheGroup, ...unaffiliatedGroup], opts.sortBy),
+  ]
 }
 
 /** Detail line for a Docker row: relative created date (or "unknown date") plus in-use badge. */
