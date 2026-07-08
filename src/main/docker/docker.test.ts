@@ -5,6 +5,8 @@ vi.mock('./find-docker', () => ({
   findDocker: vi.fn(async (override?: string) => override ?? '/usr/local/bin/docker'),
   dockerExecEnv: vi.fn(async () => ({})),
 }))
+vi.mock('../scanner/detect-kind', () => ({ detectKind: vi.fn(async () => 'node') }))
+vi.mock('../scanner/find-project-icon', () => ({ findProjectIcon: vi.fn(async () => undefined) }))
 
 import { __setExecForTests, getDockerInfo, pruneDocker, removeDockerItem } from './docker'
 import { findDocker } from './find-docker'
@@ -69,6 +71,67 @@ describe('getDockerInfo', () => {
     expect(infoB.available).toBe(true)
     expect(versionCallsByBin['/a/docker']).toBe(1)
     expect(versionCallsByBin['/b/docker']).toBe(1)
+  })
+
+  it('associates items with compose projects and attaches a logo from working_dir', async () => {
+    const df = JSON.stringify({
+      Images: [{ ID: 'sha256:img1', Repository: 'node', Tag: '20', CreatedAt: '', Size: '400MB', Containers: '1' }],
+      Volumes: [],
+      Containers: [],
+      BuildCache: [],
+    })
+    const containerInspect = JSON.stringify([
+      {
+        Id: 'ctr1',
+        Image: 'sha256:img1',
+        Config: {
+          Image: 'node:20',
+          Labels: {
+            'com.docker.compose.project': 'myapp',
+            'com.docker.compose.project.working_dir': '/w/myapp',
+          },
+        },
+        Mounts: [],
+      },
+    ])
+    __setExecForTests(async (_bin, args) => {
+      if (args[0] === 'version') return { stdout: '27.0.0', stderr: '' }
+      if (args[0] === 'system' && args[1] === 'df') return { stdout: df, stderr: '' }
+      if (args[0] === 'ps') return { stdout: 'ctr1\n', stderr: '' }
+      if (args[0] === 'container' && args[1] === 'inspect') return { stdout: containerInspect, stderr: '' }
+      if (args[0] === 'volume' && args[1] === 'inspect') return { stdout: '[]', stderr: '' }
+      return { stdout: '', stderr: '' }
+    })
+    const info = await getDockerInfo(true)
+    expect(info.available).toBe(true)
+    expect(info.projects).toContainEqual({
+      name: 'myapp',
+      workingDir: '/w/myapp',
+      kind: 'node',
+      iconDataUrl: undefined,
+    })
+    const image = info.items.find((i) => i.kind === 'image')
+    expect(image?.project).toBe('myapp')
+  })
+
+  it('leaves items unassociated (fail-soft) when container inspect throws', async () => {
+    const df = JSON.stringify({
+      Images: [{ ID: 'sha256:img1', Repository: 'node', Tag: '20', CreatedAt: '', Size: '400MB', Containers: '1' }],
+      Volumes: [],
+      Containers: [],
+      BuildCache: [],
+    })
+    __setExecForTests(async (_bin, args) => {
+      if (args[0] === 'version') return { stdout: '27.0.0', stderr: '' }
+      if (args[0] === 'system' && args[1] === 'df') return { stdout: df, stderr: '' }
+      if (args[0] === 'ps') return { stdout: 'ctr1\n', stderr: '' }
+      if (args[0] === 'container' && args[1] === 'inspect') throw new Error('daemon unreachable')
+      return { stdout: '', stderr: '' }
+    })
+    const info = await getDockerInfo(true)
+    expect(info.available).toBe(true)
+    expect(info.items.every((i) => i.project === undefined)).toBe(true)
+    expect(info.projects).toEqual([])
   })
 })
 

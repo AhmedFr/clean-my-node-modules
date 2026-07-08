@@ -2,8 +2,18 @@ import { execFile } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { promisify } from 'node:util'
-import type { DockerActionResult, DockerInfo, DockerItemKind, DockerPruneTarget } from '@shared/docker.types'
+import type {
+  DockerActionResult,
+  DockerInfo,
+  DockerItemKind,
+  DockerProject,
+  DockerPruneTarget,
+} from '@shared/docker.types'
 import { app } from 'electron'
+import { detectKind } from '../scanner/detect-kind'
+import { findProjectIcon } from '../scanner/find-project-icon'
+import { associateProjects } from './docker-associate'
+import { parseContainerInspect, parseVolumeInspect } from './docker-inspect'
 import { buildDockerItems, parseDf, parseSize } from './docker-parse'
 import { dockerExecEnv, findDocker } from './find-docker'
 
@@ -82,7 +92,44 @@ async function readDockerInfo(opts: DockerOpts): Promise<DockerInfo> {
     return { available: false, reason: 'daemon not running', checkedAt: now, totals: [], items: [], projects: [] }
   }
   const { items, totals } = buildDockerItems(parseDf(df))
-  return { available: true, checkedAt: now, totals, items, projects: [] }
+
+  // Enrich with project association (fail-soft: any inspect failure → everything in "Other").
+  let enriched = items
+  let projects: DockerProject[] = []
+  try {
+    const ids = (await run(bin, ['ps', '-aq', '--no-trunc']))
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    const containers = ids.length ? parseContainerInspect(await run(bin, ['container', 'inspect', ...ids])) : []
+    const volNames = items.filter((i) => i.kind === 'volume').map((i) => i.id)
+    const volProjects = volNames.length
+      ? parseVolumeInspect(await run(bin, ['volume', 'inspect', ...volNames]))
+      : new Map<string, string>()
+    const assoc = associateProjects(items, containers, volProjects)
+    enriched = assoc.items
+    projects = await withLogos(assoc.projects)
+  } catch {
+    // leave items unassociated
+  }
+  return { available: true, checkedAt: now, totals, items: enriched, projects }
+}
+
+/** Attach a project logo (framework kind + favicon) from each project's working_dir.
+ * Fail-soft per project: a missing/unreadable dir leaves kind/iconDataUrl undefined,
+ * and the renderer shows a generic Docker icon. */
+async function withLogos(projects: DockerProject[]): Promise<DockerProject[]> {
+  return Promise.all(
+    projects.map(async (p) => {
+      if (!p.workingDir) return p
+      try {
+        const [kind, iconDataUrl] = await Promise.all([detectKind(p.workingDir), findProjectIcon(p.workingDir)])
+        return { ...p, kind, iconDataUrl }
+      } catch {
+        return p
+      }
+    }),
+  )
 }
 
 export async function getDockerInfo(force = false, opts: DockerOpts = {}): Promise<DockerInfo> {
