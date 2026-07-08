@@ -69,20 +69,20 @@ async function run(bin: string, args: string[], timeout = CLI_TIMEOUT_MS): Promi
 async function readDockerInfo(opts: DockerOpts): Promise<DockerInfo> {
   const now = Date.now()
   const bin = await findDocker(opts.binaryPath)
-  if (!bin) return { available: false, reason: 'not installed', checkedAt: now, totals: [], items: [] }
+  if (!bin) return { available: false, reason: 'not installed', checkedAt: now, totals: [], items: [], projects: [] }
   try {
     await run(bin, ['version', '--format', '{{.Server.Version}}'])
   } catch {
-    return { available: false, reason: 'daemon not running', checkedAt: now, totals: [], items: [] }
+    return { available: false, reason: 'daemon not running', checkedAt: now, totals: [], items: [], projects: [] }
   }
   let df = ''
   try {
     df = await run(bin, ['system', 'df', '-v', '--format', '{{json .}}'])
   } catch {
-    return { available: false, reason: 'daemon not running', checkedAt: now, totals: [], items: [] }
+    return { available: false, reason: 'daemon not running', checkedAt: now, totals: [], items: [], projects: [] }
   }
   const { items, totals } = buildDockerItems(parseDf(df))
-  return { available: true, checkedAt: now, totals, items }
+  return { available: true, checkedAt: now, totals, items, projects: [] }
 }
 
 export async function getDockerInfo(force = false, opts: DockerOpts = {}): Promise<DockerInfo> {

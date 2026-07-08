@@ -1,3 +1,5 @@
+import type { FrameworkKind } from './project.types'
+
 export type DockerItemKind = 'image' | 'volume' | 'container' | 'buildcache'
 
 export type DockerPruneTarget = 'danglingImages' | 'unusedImages' | 'stoppedContainers' | 'buildCache' | 'unusedVolumes'
@@ -15,6 +17,17 @@ export interface DockerItem {
   inUse: boolean
   /** false whenever inUse, or for build-cache rows (no per-item removal) */
   removable: boolean
+  /** Compose project this resource is grouped under; undefined = unaffiliated ("Other"). */
+  project?: string
+  /** Image repository (name before the last ':'), for repo sub-grouping in "Other". */
+  repository?: string
+}
+
+export interface DockerProject {
+  name: string
+  workingDir?: string
+  kind?: FrameworkKind
+  iconDataUrl?: string
 }
 
 export interface DockerCategoryTotal {
@@ -32,6 +45,7 @@ export interface DockerInfo {
   checkedAt: number
   totals: DockerCategoryTotal[]
   items: DockerItem[]
+  projects: DockerProject[]
 }
 
 export interface DockerActionResult {
