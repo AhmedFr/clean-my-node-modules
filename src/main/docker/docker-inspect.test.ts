@@ -5,10 +5,13 @@ const CONTAINERS = JSON.stringify([
   {
     Id: 'c1abc',
     Image: 'node:20',
-    Config: { Image: 'node:20', Labels: {
-      'com.docker.compose.project': 'myapp',
-      'com.docker.compose.project.working_dir': '/Users/x/code/myapp',
-    } },
+    Config: {
+      Image: 'node:20',
+      Labels: {
+        'com.docker.compose.project': 'myapp',
+        'com.docker.compose.project.working_dir': '/Users/x/code/myapp',
+      },
+    },
     Mounts: [{ Type: 'volume', Name: 'myapp_pgdata' }],
   },
   { Id: 'c2def', Image: 'redis:7', Config: { Image: 'redis:7', Labels: {} }, Mounts: [] },
@@ -17,7 +20,13 @@ const CONTAINERS = JSON.stringify([
 describe('parseContainerInspect', () => {
   it('extracts compose project, working_dir, image ref, and named-volume mounts', () => {
     const r = parseContainerInspect(CONTAINERS)
-    expect(r[0]).toMatchObject({ id: 'c1abc', imageRef: 'node:20', project: 'myapp', workingDir: '/Users/x/code/myapp', mounts: ['myapp_pgdata'] })
+    expect(r[0]).toMatchObject({
+      id: 'c1abc',
+      imageRef: 'node:20',
+      project: 'myapp',
+      workingDir: '/Users/x/code/myapp',
+      mounts: ['myapp_pgdata'],
+    })
     expect(r[1].project).toBeUndefined()
     expect(r[1].mounts).toEqual([])
   })
