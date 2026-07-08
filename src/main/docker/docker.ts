@@ -107,8 +107,9 @@ async function readDockerInfo(opts: DockerOpts): Promise<DockerInfo> {
       ? parseVolumeInspect(await run(bin, ['volume', 'inspect', ...volNames]))
       : new Map<string, string>()
     const assoc = associateProjects(items, containers, volProjects)
+    const projectsWithLogos = await withLogos(assoc.projects)
     enriched = assoc.items
-    projects = await withLogos(assoc.projects)
+    projects = projectsWithLogos
   } catch {
     // leave items unassociated
   }
