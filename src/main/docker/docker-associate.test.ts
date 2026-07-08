@@ -56,6 +56,16 @@ describe('associateProjects', () => {
     expect(out[0].repository).toBe('node')
   })
 
+  it('leaves an image unassociated when one project matches by imageId and a different project matches by imageRef (union, not fallback)', () => {
+    const items = [mk({ id: 'imgIdX', kind: 'image', name: 'shared:tag' })]
+    const containers = [
+      { id: 'c1', imageRef: 'other:tag', imageId: 'imgIdX', project: 'app1', workingDir: '/w/a', mounts: [] },
+      { id: 'c2', imageRef: 'shared:tag', imageId: 'imgIdY', project: 'app2', workingDir: '/w/b', mounts: [] },
+    ]
+    const { items: out } = associateProjects(items, containers, new Map())
+    expect(out[0].project).toBeUndefined()
+  })
+
   it('associates a volume by compose label, else by mounting container', () => {
     const items = [
       mk({ id: 'myapp_pgdata', kind: 'volume', name: 'myapp_pgdata' }),

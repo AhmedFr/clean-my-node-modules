@@ -48,7 +48,7 @@ export function associateProjects(
       project = byId.get(item.id)?.project
     } else if (item.kind === 'image') {
       repository = repositoryOf(item.name)
-      project = soleProject(imageProjects.get(item.id) ?? imageProjects.get(item.name) ?? new Set())
+      project = soleProject(new Set([...(imageProjects.get(item.id) ?? []), ...(imageProjects.get(item.name) ?? [])]))
     } else if (item.kind === 'volume') {
       project = volumeProjects.get(item.name) ?? soleProject(volumeMountProjects.get(item.name) ?? new Set())
     }
