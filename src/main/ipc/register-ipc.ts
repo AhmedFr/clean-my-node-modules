@@ -10,6 +10,7 @@ import { deleteNodeModules, guardExists, openProject, revealInFinder } from '../
 import type { AnalyticsEvent, AnalyticsProps } from '../analytics'
 import { RENDERER_EVENTS } from '../analytics'
 import type { AppContext } from '../app-context.types'
+import { liveGuard } from '../liveness/guard-live'
 import { detectLiveProjects } from '../liveness/liveness'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
 import { coerceSetting } from '../settings/validate-setting'
@@ -103,6 +104,8 @@ export function registerIpc(ctx: AppContext): void {
       ctx.projects.remove(id)
       return guard
     }
+    const live = await liveGuard(project.absPath, detectLiveProjects)
+    if (live) return live
     const freed = await deleteNodeModules(project)
     ctx.projects.remove(id)
     ctx.analytics.capture('clean_performed', { kind: 'delete', freed_gb: Math.round((freed / GB) * 10) / 10 })

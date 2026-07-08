@@ -35,6 +35,11 @@ vi.mock('../pnpm-store/pnpm-store', () => ({
   getPnpmStoreInfo: vi.fn(),
   prunePnpmStore: () => prunePnpmStore(),
 }))
+// Never let delete tests shell out to real lsof; default to "nothing is live".
+const detectLiveProjects = vi.fn(async (_dirs: string[]) => new Map())
+vi.mock('../liveness/liveness', () => ({
+  detectLiveProjects: (dirs: string[]) => detectLiveProjects(dirs),
+}))
 vi.mock('../actions/app-actions', () => ({ uninstallApp: vi.fn() }))
 vi.mock('../actions/pick-path', () => ({ pickPath: vi.fn() }))
 const copyCardToClipboard = vi.fn(async (_p: unknown) => true)
@@ -68,6 +73,8 @@ function makeCtx(pro: boolean) {
   guardExists.mockClear()
   prunePnpmStore.mockClear()
   copyCardToClipboard.mockClear()
+  detectLiveProjects.mockClear()
+  detectLiveProjects.mockImplementation(async () => new Map())
   // biome-ignore lint/suspicious/noExplicitAny: deliberately partial test double
   registerIpc(ctx as any)
   return { ctx, remove, activate, analytics }
@@ -96,6 +103,14 @@ describe('license enforcement in IPC handlers', () => {
     expect(await invoke(IPC.deleteNodeModules, 'p1')).toEqual({ freed: 0, blocked: 'unmounted' })
     expect(deleteNodeModules).not.toHaveBeenCalled()
     expect(remove).toHaveBeenCalledWith('p1')
+  })
+
+  it('delete refuses when the project is live, and keeps the project in the list', async () => {
+    const { remove } = makeCtx(true)
+    detectLiveProjects.mockImplementationOnce(async () => new Map([[project.absPath, { pid: 1, command: 'node' }]]))
+    expect(await invoke(IPC.deleteNodeModules, 'p1')).toEqual({ freed: 0, blocked: 'live' })
+    expect(deleteNodeModules).not.toHaveBeenCalled()
+    expect(remove).not.toHaveBeenCalled()
   })
 
   it('unlicensed prune refuses without spawning pnpm', async () => {
