@@ -81,28 +81,6 @@ export function parseDf(json: string): DfParsed {
   }
 }
 
-export interface PsContainer {
-  ID: string
-  Image: string
-  State: string
-}
-
-/** `docker ps -a --format '{{json .}}'` = one JSON object per line. */
-export function parseContainers(text: string): PsContainer[] {
-  return (text ?? '')
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .map((l) => {
-      try {
-        return JSON.parse(l) as PsContainer
-      } catch {
-        return null
-      }
-    })
-    .filter((x): x is PsContainer => x !== null)
-}
-
 function totalsOf(items: DockerItem[]): DockerCategoryTotal[] {
   const kinds: DockerItemKind[] = ['image', 'volume', 'container', 'buildcache']
   return kinds.map((kind) => {
@@ -116,10 +94,7 @@ function totalsOf(items: DockerItem[]): DockerCategoryTotal[] {
   })
 }
 
-export function buildDockerItems(
-  df: DfParsed,
-  _ps: PsContainer[],
-): { items: DockerItem[]; totals: DockerCategoryTotal[] } {
+export function buildDockerItems(df: DfParsed): { items: DockerItem[]; totals: DockerCategoryTotal[] } {
   const items: DockerItem[] = []
 
   for (const img of df.images) {

@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path'
 import { promisify } from 'node:util'
 import type { DockerActionResult, DockerInfo, DockerItemKind, DockerPruneTarget } from '@shared/docker.types'
 import { app } from 'electron'
-import { buildDockerItems, parseContainers, parseDf, parseSize } from './docker-parse'
+import { buildDockerItems, parseDf, parseSize } from './docker-parse'
 import { dockerExecEnv, findDocker } from './find-docker'
 
 const CLI_TIMEOUT_MS = 60_000
@@ -76,14 +76,12 @@ async function readDockerInfo(opts: DockerOpts): Promise<DockerInfo> {
     return { available: false, reason: 'daemon not running', checkedAt: now, totals: [], items: [] }
   }
   let df = ''
-  let ps = ''
   try {
     df = await run(bin, ['system', 'df', '-v', '--format', '{{json .}}'])
-    ps = await run(bin, ['ps', '-a', '--no-trunc', '--format', '{{json .}}'])
   } catch {
     return { available: false, reason: 'daemon not running', checkedAt: now, totals: [], items: [] }
   }
-  const { items, totals } = buildDockerItems(parseDf(df), parseContainers(ps))
+  const { items, totals } = buildDockerItems(parseDf(df))
   return { available: true, checkedAt: now, totals, items }
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildDockerItems, parseContainers, parseDate, parseDf, parseSize } from './docker-parse'
+import { buildDockerItems, parseDate, parseDf, parseSize } from './docker-parse'
 
 const DF = JSON.stringify({
   Images: [
@@ -77,8 +77,7 @@ describe('parseDate', () => {
 
 describe('buildDockerItems', () => {
   const df = parseDf(DF)
-  const ps = parseContainers('') // df already carries containers; ps not needed for this fixture
-  const { items, totals } = buildDockerItems(df, ps)
+  const { items, totals } = buildDockerItems(df)
 
   it('marks dangling/untagged images unused+removable and tagged-in-container in-use', () => {
     const dangling = items.find((i) => i.id === 'sha256:bbb')

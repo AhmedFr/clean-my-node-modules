@@ -302,6 +302,12 @@ export function LauncherApp(): ReactNode {
             text: `Reclaimed ${formatSizeStr(r.freedBytes || item.sizeBytes)} · ${item.name}`,
             tone: 'good',
           })
+        } else {
+          flashToast({
+            icon: UIIcon.alert,
+            text: `Couldn't remove ${item.name} — it may now be in use.`,
+            tone: 'neutral',
+          })
         }
       })
     },
@@ -317,6 +323,12 @@ export function LauncherApp(): ReactNode {
             icon: UIIcon.checkCircle,
             text: `Reclaimed ${formatSizeStr(r.freedBytes || estimatedBytes)} · ${PRUNE_TARGET_LABEL[target]}`,
             tone: 'good',
+          })
+        } else {
+          flashToast({
+            icon: UIIcon.alert,
+            text: "Couldn't prune — nothing was removed.",
+            tone: 'neutral',
           })
         }
       })
@@ -399,8 +411,10 @@ export function LauncherApp(): ReactNode {
       if (meta && (e.key === 'r' || e.key === 'R')) {
         e.preventDefault()
         if (tab === 'packages') void refreshPackages()
-        else if (tab === 'docker') void docker.refresh()
-        else rescan()
+        else if (tab === 'docker') {
+          closeDockerConfirm()
+          void docker.refresh()
+        } else rescan()
         return
       }
       if (meta && ['1', '2', '3', '4'].includes(e.key)) {
