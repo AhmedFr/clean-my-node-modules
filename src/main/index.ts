@@ -18,7 +18,14 @@ import { LauncherWindow } from './windows/launcher-window'
 import { PanelWindow } from './windows/panel-window'
 import { is } from './windows/window-utils'
 
+// Single-instance: a second launch (double-click, or a stray `pnpm dev`) hands off
+// to the already-running app instead of spawning a duplicate tray icon + windows.
+// The first instance surfaces its window via the 'second-instance' handler below.
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) app.quit()
+
 app.whenReady().then(() => {
+  if (!gotLock) return
   app.dock?.hide()
 
   const settings = new SettingsStore()
@@ -108,6 +115,9 @@ app.whenReady().then(() => {
     if (projects.all.length === 0) void runScan()
     if (is.dev) launcher.open()
   }
+
+  // A second launch surfaces the full window instead of starting another instance.
+  app.on('second-instance', () => launcher.open())
 
   // menu bar app: keep running with no windows open
   app.on('window-all-closed', () => {})
