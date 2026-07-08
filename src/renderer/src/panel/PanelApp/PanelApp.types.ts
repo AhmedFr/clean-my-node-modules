@@ -1,4 +1,4 @@
-export type PanelView = 'main' | 'scan' | 'settings'
+export type PanelView = 'main' | 'scan'
 
 export interface PanelToast {
   text: string

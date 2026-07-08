@@ -10,6 +10,7 @@ import { UIIcon } from '@renderer/components/UIIcon'
 import { UnlockPrompt } from '@renderer/components/UnlockPrompt'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { useLicense } from '@renderer/hooks/useLicense'
+import { useLiveProjects } from '@renderer/hooks/useLiveProjects'
 import { usePackagesTab } from '@renderer/hooks/usePackagesTab'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
@@ -47,6 +48,7 @@ export function LauncherApp(): ReactNode {
   const [settings, setSetting, settingsLoaded] = useSettings()
   const { license, activate: activateLicense } = useLicense()
   const projects = useProjects()
+  const liveById = useLiveProjects()
   const accent = settings.accent
   const threshold = settings.thresholdGB * GB
 
@@ -87,6 +89,18 @@ export function LauncherApp(): ReactNode {
     if (wasScanning.current && !scanning) void refresh()
     wasScanning.current = scanning
   }, [scanning, refresh])
+
+  // The menu-bar settings entry opens the launcher straight to Settings: pull any
+  // target queued for this (possibly fresh) window on mount, and listen for live
+  // navigation when the already-open window is reopened onto Settings.
+  useEffect(() => {
+    void window.clean.consumeLauncherNav().then((nav) => {
+      if (nav === 'settings') setView('settings')
+    })
+    return window.clean.onLauncherNavigate((nav) => {
+      if (nav === 'settings') setView('settings')
+    })
+  }, [])
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -189,12 +203,24 @@ export function LauncherApp(): ReactNode {
       }
       setConfirm(null)
       setDeleting((s) => new Set(s).add(p.id))
-      void window.clean.deleteNodeModules(p.id).then((freed) => {
+      void window.clean.deleteNodeModules(p.id).then(({ freed, blocked }) => {
+        // Always clear the exit-animation state, even on a refused delete, so a
+        // still-present row (e.g. a live project) is restored rather than left
+        // stuck invisible.
         setDeleting((s) => {
           const n = new Set(s)
           n.delete(p.id)
           return n
         })
+        if (blocked === 'live') {
+          flashToast({ icon: UIIcon.trash, text: `Cannot delete, ${p.name} is running`, tone: 'neutral' })
+          return
+        }
+        if (blocked === 'unmounted') {
+          flashToast({ icon: UIIcon.trash, text: `Could not delete ${p.name}, drive not connected`, tone: 'neutral' })
+          return
+        }
+        if (blocked) return
         setReclaimed((r) => r + freed)
         flashToast({
           icon: UIIcon.checkCircle,
@@ -630,6 +656,7 @@ export function LauncherApp(): ReactNode {
                             maxBytes={maxBytes}
                             accent={accent}
                             deleting={deleting.has(p.id)}
+                            live={liveById[p.id]}
                             rowRef={(el) => {
                               if (el) rowEls.current[p.id] = el
                             }}

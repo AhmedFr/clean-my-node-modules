@@ -1,15 +1,23 @@
+import { join } from 'node:path'
+import type { DeleteManyResult, DeleteResult } from '@shared/delete.types'
 import { IPC } from '@shared/ipc.constants'
+import type { LauncherNavTarget } from '@shared/launcher-nav.types'
+import type { LiveInfo } from '@shared/liveness.types'
+import type { Project } from '@shared/project.types'
 import { GB } from '@shared/units.constants'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import { uninstallApp } from '../actions/app-actions'
 import { pickPath } from '../actions/pick-path'
-import { deleteNodeModules, openProject, revealInFinder } from '../actions/project-actions'
+import { deleteNodeModules, guardExists, openProject, revealInFinder } from '../actions/project-actions'
 import type { AnalyticsEvent, AnalyticsProps } from '../analytics'
 import { RENDERER_EVENTS } from '../analytics'
 import type { AppContext } from '../app-context.types'
+import { liveGuard } from '../liveness/guard-live'
+import { detectLiveProjects } from '../liveness/liveness'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
 import { coerceSetting } from '../settings/validate-setting'
 import { coerceCardPayload, copyCardToClipboard } from '../share'
+import { listExternalVolumes } from '../volumes/list-external-volumes'
 
 export function registerIpc(ctx: AppContext): void {
   ipcMain.handle(IPC.getProjects, () => ctx.projects.all)
@@ -21,6 +29,23 @@ export function registerIpc(ctx: AppContext): void {
     const ok = coerceSetting(key, value)
     if (!ok) return ctx.settings.get()
     return ctx.settings.set(ok.key, ok.value as never)
+  })
+
+  ipcMain.handle(IPC.listVolumes, async () => {
+    const roots = new Set(ctx.settings.get().scanRoots)
+    const vols = await listExternalVolumes()
+    return vols.map((v) => ({ ...v, included: roots.has(v.path) }))
+  })
+
+  ipcMain.handle(IPC.getLiveProjects, async (): Promise<Record<string, LiveInfo>> => {
+    const projects = ctx.projects.all
+    const byDir = await detectLiveProjects(projects.map((p) => p.absPath))
+    const out: Record<string, LiveInfo> = {}
+    for (const p of projects) {
+      const info = byDir.get(p.absPath)
+      if (info) out[p.id] = info
+    }
+    return out
   })
 
   ipcMain.handle(IPC.getLicense, () => ctx.license.get())
@@ -72,14 +97,55 @@ export function registerIpc(ctx: AppContext): void {
     ctx.packages.compute(ctx.projects.all, ctx.settings.get(), force),
   )
 
-  ipcMain.handle(IPC.deleteNodeModules, async (_e, id: string) => {
-    if (!ctx.license.get().pro) return 0
+  ipcMain.handle(IPC.deleteNodeModules, async (_e, id: string): Promise<DeleteResult> => {
+    if (!ctx.license.get().pro) return { freed: 0 }
     const project = ctx.projects.all.find((p) => p.id === id)
-    if (!project) return 0
+    if (!project) return { freed: 0 }
+    const guard = guardExists(join(project.absPath, 'node_modules'))
+    if (guard) {
+      ctx.projects.remove(id)
+      return guard
+    }
+    const live = await liveGuard(project.absPath, detectLiveProjects)
+    if (live) return live
     const freed = await deleteNodeModules(project)
     ctx.projects.remove(id)
     ctx.analytics.capture('clean_performed', { kind: 'delete', freed_gb: Math.round((freed / GB) * 10) / 10 })
-    return freed
+    return { freed }
+  })
+
+  ipcMain.handle(IPC.deleteManyNodeModules, async (_e, rawIds: unknown): Promise<DeleteManyResult> => {
+    if (!ctx.license.get().pro) return { freed: 0, blockedIds: [] }
+    // Never trust the renderer's payload — coerce to a plain string list.
+    const ids = Array.isArray(rawIds) ? rawIds.filter((id): id is string => typeof id === 'string') : []
+    const projects = ids
+      .map((id) => ctx.projects.all.find((p) => p.id === id))
+      .filter((p): p is Project => p !== undefined)
+    // One liveness check for the whole batch instead of one per project.
+    const live = await detectLiveProjects(projects.map((p) => p.absPath))
+    let freed = 0
+    const blockedIds: string[] = []
+    for (const project of projects) {
+      const guard = guardExists(join(project.absPath, 'node_modules'))
+      if (guard) {
+        // Path vanished since the scan (e.g. an unmounted drive) — drop it silently,
+        // it's skipped rather than blocked and contributes nothing to `freed`.
+        ctx.projects.remove(project.id)
+        continue
+      }
+      if (live.has(project.absPath)) {
+        blockedIds.push(project.id)
+        continue
+      }
+      const projectFreed = await deleteNodeModules(project)
+      ctx.projects.remove(project.id)
+      freed += projectFreed
+      ctx.analytics.capture('clean_performed', {
+        kind: 'delete',
+        freed_gb: Math.round((projectFreed / GB) * 10) / 10,
+      })
+    }
+    return { freed, blockedIds }
   })
 
   ipcMain.handle(IPC.revealInFinder, (_e, id: string) => {
@@ -92,10 +158,12 @@ export function registerIpc(ctx: AppContext): void {
     if (project) await openProject(project)
   })
 
-  ipcMain.handle(IPC.openLauncher, () => {
+  ipcMain.handle(IPC.openLauncher, (_e, nav?: LauncherNavTarget) => {
     ctx.panel.hide()
-    ctx.launcher.open()
+    ctx.launcher.open(nav)
   })
+
+  ipcMain.handle(IPC.consumeLauncherNav, () => ctx.launcher.consumePendingNav())
 
   ipcMain.handle(IPC.closeWindow, (e) => {
     const win = BrowserWindow.fromWebContents(e.sender)

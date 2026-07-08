@@ -1,9 +1,13 @@
+import type { DeleteManyResult, DeleteResult } from '@shared/delete.types'
+import type { LauncherNavTarget } from '@shared/launcher-nav.types'
 import type { ActivateResult, LicenseState } from '@shared/license.types'
+import type { LiveInfo } from '@shared/liveness.types'
 import type { PackageInventory } from '@shared/package.types'
 import type { PnpmPruneResult, PnpmStoreInfo } from '@shared/pnpm-store.types'
 import type { Project, ScanProgress } from '@shared/project.types'
 import type { Settings } from '@shared/settings.types'
 import type { ShareCardPayload } from '@shared/share.types'
+import type { VolumeOption } from '@shared/volume.types'
 
 export interface CleanApi {
   getProjects(): Promise<Project[]>
@@ -17,17 +21,26 @@ export interface CleanApi {
   /** Opens an https URL in the user's default browser. */
   openExternal(url: string): Promise<void>
   scan(): Promise<void>
-  deleteNodeModules(id: string): Promise<number>
+  deleteNodeModules(id: string): Promise<DeleteResult>
+  /** Deletes node_modules for several projects, running the liveness check once for the batch. */
+  deleteManyNodeModules(ids: string[]): Promise<DeleteManyResult>
   revealInFinder(id: string): Promise<void>
   openProject(id: string): Promise<void>
   getSettings(): Promise<Settings>
   setSetting<K extends keyof Settings>(key: K, value: Settings[K]): Promise<Settings>
+  /** Mounted external volumes offered as scan-location toggles. */
+  listVolumes(): Promise<VolumeOption[]>
+  /** Currently running projects, keyed by project id. */
+  getLiveProjects(): Promise<Record<string, LiveInfo>>
   getLicense(): Promise<LicenseState>
   /** Verifies + persists a license key; broadcasts license:changed on success. */
   activateLicense(key: string): Promise<ActivateResult>
   /** Renders the share card offscreen and copies the PNG to the clipboard. */
   copyShareCard(payload: ShareCardPayload): Promise<{ ok: boolean }>
-  openLauncher(): Promise<void>
+  /** Opens the full launcher window, optionally landing on a specific view. */
+  openLauncher(nav?: LauncherNavTarget): Promise<void>
+  /** Pulls (and clears) a nav target queued for a fresh launcher; called once on mount. */
+  consumeLauncherNav(): Promise<LauncherNavTarget | null>
   closeWindow(): Promise<void>
   setWindowHeight(height: number): void
   quitApp(): void
@@ -39,6 +52,8 @@ export interface CleanApi {
   onProjectsChanged(fn: (projects: Project[]) => void): () => void
   onSettingsChanged(fn: (settings: Settings) => void): () => void
   onLicenseChanged(fn: (s: LicenseState) => void): () => void
+  /** Fired when the launcher is asked to navigate to a view while already open. */
+  onLauncherNavigate(fn: (nav: LauncherNavTarget) => void): () => void
 }
 
 declare global {

@@ -20,14 +20,18 @@ const api: CleanApi = {
   openExternal: (url) => ipcRenderer.invoke(IPC.openExternal, url),
   scan: () => ipcRenderer.invoke(IPC.scan),
   deleteNodeModules: (id) => ipcRenderer.invoke(IPC.deleteNodeModules, id),
+  deleteManyNodeModules: (ids) => ipcRenderer.invoke(IPC.deleteManyNodeModules, ids),
   revealInFinder: (id) => ipcRenderer.invoke(IPC.revealInFinder, id),
   openProject: (id) => ipcRenderer.invoke(IPC.openProject, id),
   getSettings: () => ipcRenderer.invoke(IPC.getSettings),
   setSetting: (key, value) => ipcRenderer.invoke(IPC.setSetting, key, value),
+  listVolumes: () => ipcRenderer.invoke(IPC.listVolumes),
+  getLiveProjects: () => ipcRenderer.invoke(IPC.getLiveProjects),
   getLicense: () => ipcRenderer.invoke(IPC.getLicense),
   activateLicense: (key) => ipcRenderer.invoke(IPC.activateLicense, key),
   copyShareCard: (payload) => ipcRenderer.invoke(IPC.copyShareCard, payload),
-  openLauncher: () => ipcRenderer.invoke(IPC.openLauncher),
+  openLauncher: (nav) => ipcRenderer.invoke(IPC.openLauncher, nav),
+  consumeLauncherNav: () => ipcRenderer.invoke(IPC.consumeLauncherNav),
   closeWindow: () => ipcRenderer.invoke(IPC.closeWindow),
   setWindowHeight: (height) => ipcRenderer.send(IPC.setWindowHeight, height),
   quitApp: () => ipcRenderer.send(IPC.quitApp),
@@ -38,6 +42,7 @@ const api: CleanApi = {
   onProjectsChanged: subscribe(IPC.onProjectsChanged),
   onSettingsChanged: subscribe(IPC.onSettingsChanged),
   onLicenseChanged: subscribe(IPC.onLicenseChanged),
+  onLauncherNavigate: subscribe(IPC.onLauncherNavigate),
 }
 
 contextBridge.exposeInMainWorld('clean', api)

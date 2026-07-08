@@ -23,8 +23,10 @@ vi.mock('electron', () => ({
 }))
 
 const deleteNodeModules = vi.fn(async (p: Project) => p.size)
+const guardExists = vi.fn(() => null)
 vi.mock('../actions/project-actions', () => ({
   deleteNodeModules: (p: Project) => deleteNodeModules(p),
+  guardExists: () => guardExists(),
   revealInFinder: vi.fn(),
   openProject: vi.fn(),
 }))
@@ -32,6 +34,11 @@ const prunePnpmStore = vi.fn(async () => ({ ok: true, freedBytes: 512 }))
 vi.mock('../pnpm-store/pnpm-store', () => ({
   getPnpmStoreInfo: vi.fn(),
   prunePnpmStore: () => prunePnpmStore(),
+}))
+// Never let delete tests shell out to real lsof; default to "nothing is live".
+const detectLiveProjects = vi.fn(async (_dirs: string[]) => new Map())
+vi.mock('../liveness/liveness', () => ({
+  detectLiveProjects: (dirs: string[]) => detectLiveProjects(dirs),
 }))
 vi.mock('../actions/app-actions', () => ({ uninstallApp: vi.fn() }))
 vi.mock('../actions/pick-path', () => ({ pickPath: vi.fn() }))
@@ -44,14 +51,14 @@ vi.mock('../share', async () => ({
 const { IPC } = await import('@shared/ipc.constants')
 const { registerIpc } = await import('./register-ipc')
 
-const project = { id: 'p1', size: 1024 } as Project
+const project = { id: 'p1', size: 1024, absPath: '/projects/p1' } as Project
 
-function makeCtx(pro: boolean) {
+function makeCtx(pro: boolean, extraProjects: Project[] = []) {
   const remove = vi.fn()
   const activate = vi.fn(async (): Promise<ActivateResult> => ({ ok: true as const, state: { pro: true } }))
   const analytics = { capture: vi.fn(), identify: vi.fn() }
   const ctx = {
-    projects: { all: [project], remove, lastScanTime: 0 },
+    projects: { all: [project, ...extraProjects], remove, lastScanTime: 0 },
     packages: { get: vi.fn(), compute: vi.fn() },
     settings: { get: () => ({ pnpmStorePath: undefined, pnpmBinaryPath: undefined }) },
     license: { get: () => ({ pro }), activate, revalidateIfStale: vi.fn() },
@@ -63,8 +70,11 @@ function makeCtx(pro: boolean) {
   handlers.clear()
   sent.length = 0
   deleteNodeModules.mockClear()
+  guardExists.mockClear()
   prunePnpmStore.mockClear()
   copyCardToClipboard.mockClear()
+  detectLiveProjects.mockClear()
+  detectLiveProjects.mockImplementation(async () => new Map())
   // biome-ignore lint/suspicious/noExplicitAny: deliberately partial test double
   registerIpc(ctx as any)
   return { ctx, remove, activate, analytics }
@@ -75,16 +85,52 @@ const invoke = (ch: string, ...args: unknown[]) => handlers.get(ch)?.({}, ...arg
 describe('license enforcement in IPC handlers', () => {
   it('unlicensed delete refuses: returns 0, nothing trashed, project kept', async () => {
     const { remove } = makeCtx(false)
-    expect(await invoke(IPC.deleteNodeModules, 'p1')).toBe(0)
+    expect(await invoke(IPC.deleteNodeModules, 'p1')).toEqual({ freed: 0 })
     expect(deleteNodeModules).not.toHaveBeenCalled()
     expect(remove).not.toHaveBeenCalled()
   })
 
   it('licensed delete goes through', async () => {
     const { remove } = makeCtx(true)
-    expect(await invoke(IPC.deleteNodeModules, 'p1')).toBe(1024)
+    expect(await invoke(IPC.deleteNodeModules, 'p1')).toEqual({ freed: 1024 })
     expect(deleteNodeModules).toHaveBeenCalledOnce()
     expect(remove).toHaveBeenCalledWith('p1')
+  })
+
+  it('delete refuses when the guard reports unmounted, and still drops the project', async () => {
+    const { remove } = makeCtx(true)
+    guardExists.mockReturnValueOnce({ freed: 0, blocked: 'unmounted' } as never)
+    expect(await invoke(IPC.deleteNodeModules, 'p1')).toEqual({ freed: 0, blocked: 'unmounted' })
+    expect(deleteNodeModules).not.toHaveBeenCalled()
+    expect(remove).toHaveBeenCalledWith('p1')
+  })
+
+  it('delete refuses when the project is live, and keeps the project in the list', async () => {
+    const { remove } = makeCtx(true)
+    detectLiveProjects.mockImplementationOnce(async () => new Map([[project.absPath, { pid: 1, command: 'node' }]]))
+    expect(await invoke(IPC.deleteNodeModules, 'p1')).toEqual({ freed: 0, blocked: 'live' })
+    expect(deleteNodeModules).not.toHaveBeenCalled()
+    expect(remove).not.toHaveBeenCalled()
+  })
+
+  it('unlicensed batch delete refuses: returns empty result, nothing trashed', async () => {
+    makeCtx(false)
+    expect(await invoke(IPC.deleteManyNodeModules, ['p1'])).toEqual({ freed: 0, blockedIds: [] })
+    expect(deleteNodeModules).not.toHaveBeenCalled()
+  })
+
+  it('batch delete runs liveness once for the batch: blocks live ids without trashing or removing them, sums freed for the rest', async () => {
+    const project2 = { id: 'p2', size: 2048, absPath: '/projects/p2' } as Project
+    const { remove } = makeCtx(true, [project2])
+    detectLiveProjects.mockImplementationOnce(async () => new Map([[project.absPath, { pid: 1, command: 'node' }]]))
+    const res = await invoke(IPC.deleteManyNodeModules, ['p1', 'p2'])
+    expect(res).toEqual({ freed: 2048, blockedIds: ['p1'] })
+    expect(detectLiveProjects).toHaveBeenCalledOnce()
+    expect(detectLiveProjects).toHaveBeenCalledWith([project.absPath, project2.absPath])
+    expect(deleteNodeModules).toHaveBeenCalledOnce()
+    expect(deleteNodeModules).toHaveBeenCalledWith(project2)
+    expect(remove).toHaveBeenCalledWith('p2')
+    expect(remove).not.toHaveBeenCalledWith('p1')
   })
 
   it('unlicensed prune refuses without spawning pnpm', async () => {

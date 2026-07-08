@@ -1,3 +1,4 @@
+import { LiveDot } from '@renderer/components/LiveDot'
 import { ProjectIcon } from '@renderer/components/ProjectIcon'
 import { SizeViz } from '@renderer/components/SizeViz'
 import { UIIcon } from '@renderer/components/UIIcon'
@@ -15,6 +16,7 @@ export function Row({
   maxBytes,
   accent,
   deleting,
+  live,
   rowRef,
   onSelect,
   onOpen,
@@ -68,19 +70,22 @@ export function Row({
           gap: roomy ? 2 : 9,
         }}
       >
-        <span
-          style={{
-            fontWeight: 600,
-            fontSize: roomy ? 14.5 : 13.5,
-            color: 'var(--text-strong)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            maxWidth: '100%',
-            flexShrink: 0,
-          }}
-        >
-          {p.name}
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, maxWidth: '100%', flexShrink: 0 }}>
+          <span
+            style={{
+              fontWeight: 600,
+              fontSize: roomy ? 14.5 : 13.5,
+              color: 'var(--text-strong)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+              minWidth: 0,
+            }}
+          >
+            {p.name}
+          </span>
+          {live && <LiveDot info={live} />}
         </span>
         <span
           style={{
@@ -129,7 +134,13 @@ export function Row({
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <RowAction icon={UIIcon.finder} label="Reveal in Finder" onClick={onFinder} />
           <RowAction icon={UIIcon.chevronRight} label="Open project" onClick={onOpen} />
-          <RowAction icon={UIIcon.trash} label="Delete node_modules" danger onClick={onDelete} />
+          <RowAction
+            icon={UIIcon.trash}
+            label={live ? "Project currently in use, can't delete" : 'Delete node_modules'}
+            danger
+            disabled={!!live}
+            onClick={live ? () => {} : onDelete}
+          />
         </div>
       )}
     </div>

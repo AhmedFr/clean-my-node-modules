@@ -5,6 +5,7 @@ import { UIIcon } from '@renderer/components/UIIcon'
 import { UnlockPrompt } from '@renderer/components/UnlockPrompt'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { useLicense } from '@renderer/hooks/useLicense'
+import { useLiveProjects } from '@renderer/hooks/useLiveProjects'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
 import { useSettings } from '@renderer/hooks/useSettings'
@@ -16,14 +17,14 @@ import { DiskSummary } from './DiskSummary'
 import { STALE_DAYS, VISIBLE_ROWS } from './PanelApp.constants'
 import type { PanelToast, PanelView } from './PanelApp.types'
 import { PanelEmpty } from './PanelEmpty'
-import { PanelSettings } from './PanelSettings'
 import { PnpmStoreRow } from './PnpmStoreRow'
 import { ScanPanel } from './ScanPanel'
 import { Separator } from './Separator'
 
 export function PanelApp(): ReactNode {
-  const [settings, setSetting, settingsLoaded] = useSettings()
+  const [settings, , settingsLoaded] = useSettings()
   const projects = useProjects()
+  const liveById = useLiveProjects()
   const accent = settings.accent
   const threshold = settings.thresholdGB * GB
 
@@ -78,15 +79,18 @@ export function PanelApp(): ReactNode {
         return
       }
       setDeleting((s) => new Set([...s, ...ids]))
-      let freed = 0
-      for (const id of ids) freed += await window.clean.deleteNodeModules(id)
+      // One liveness check for the whole batch instead of one lsof spawn per id.
+      const { freed } = await window.clean.deleteManyNodeModules(ids)
       setDeleting((s) => {
         const n = new Set(s)
         for (const i of ids) n.delete(i)
         return n
       })
       setReclaimed((r) => r + freed)
-      flashToast({ text: `Reclaimed ${formatSizeStr(freed)}${label ? ` · ${label}` : ''}`, good: true })
+      // Everything blocked/skipped and nothing freed — nothing worth flashing.
+      if (freed > 0) {
+        flashToast({ text: `Reclaimed ${formatSizeStr(freed)}${label ? ` · ${label}` : ''}`, good: true })
+      }
     },
     [flashToast, license.pro, projects],
   )
@@ -130,7 +134,7 @@ export function PanelApp(): ReactNode {
         setView('scan')
       } else if (meta && e.key === ',') {
         e.preventDefault()
-        setView((v) => (v === 'settings' ? 'main' : 'settings'))
+        void window.clean.openLauncher('settings')
       } else if (e.key === 'Escape') {
         if (unlock) setUnlock(null)
         else if (view !== 'main') setView('main')
@@ -154,19 +158,6 @@ export function PanelApp(): ReactNode {
   return (
     <div ref={rootRef} className="mb-panel">
       {view === 'scan' && <ScanPanel accent={accent} onDone={() => setView('main')} />}
-
-      {view === 'settings' && (
-        <>
-          <div className="mb-phead">
-            <button className="mb-back" onClick={() => setView('main')} aria-label="Back">
-              {UIIcon.chevronLeft({ size: 17 })}
-            </button>
-            <span style={{ fontSize: 13.5, fontWeight: 650, color: '#fff' }}>Settings</span>
-          </div>
-          <Separator />
-          <PanelSettings settings={settings} setSetting={setSetting} accent={accent} />
-        </>
-      )}
 
       {view === 'main' && (
         <>
@@ -219,6 +210,7 @@ export function PanelApp(): ReactNode {
                   p={p}
                   accent={accent}
                   deleting={deleting.has(p.id)}
+                  live={liveById[p.id]}
                   onDelete={() => void removeMany([p.id], p.name)}
                   onReveal={() => {
                     void window.clean.revealInFinder(p.id)
@@ -287,7 +279,12 @@ export function PanelApp(): ReactNode {
               onClick={() => void window.clean.openLauncher()}
             />
             <MItem icon={UIIcon.refresh} label="Scan now" shortcut="⌘R" onClick={() => setView('scan')} />
-            <MItem icon={UIIcon.gear} label="Settings…" shortcut="⌘," onClick={() => setView('settings')} />
+            <MItem
+              icon={UIIcon.gear}
+              label="Settings…"
+              shortcut="⌘,"
+              onClick={() => void window.clean.openLauncher('settings')}
+            />
             <MItem icon={UIIcon.power} label="Quit" shortcut="⌘Q" onClick={() => window.clean.quitApp()} />
           </div>
           <Separator />

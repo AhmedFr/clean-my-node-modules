@@ -1,3 +1,4 @@
+import { homedir } from 'node:os'
 import { IPC } from '@shared/ipc.constants'
 import { GB } from '@shared/units.constants'
 import { app } from 'electron'
@@ -8,6 +9,7 @@ import { LicenseStore } from './license'
 import { ThresholdNotifier } from './notifications/threshold-notifier'
 import { PackageStore } from './packages/package-store'
 import { ProjectStore } from './projects/project-store'
+import { resolveScanRoots } from './scanner/resolve-scan-roots'
 import { Scanner } from './scanner/scanner'
 import { ScanScheduler } from './scheduler/scan-scheduler'
 import { SettingsStore } from './settings/settings-store'
@@ -16,7 +18,14 @@ import { LauncherWindow } from './windows/launcher-window'
 import { PanelWindow } from './windows/panel-window'
 import { is } from './windows/window-utils'
 
+// Single-instance: a second launch (double-click, or a stray `pnpm dev`) hands off
+// to the already-running app instead of spawning a duplicate tray icon + windows.
+// The first instance surfaces its window via the 'second-instance' handler below.
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) app.quit()
+
 app.whenReady().then(() => {
+  if (!gotLock) return
   app.dock?.hide()
 
   const settings = new SettingsStore()
@@ -45,7 +54,8 @@ app.whenReady().then(() => {
     if (scanner.isScanning) return
     const startedAt = Date.now()
     try {
-      const result = await scanner.scan((progress) => broadcast(IPC.onScanProgress, progress))
+      const roots = resolveScanRoots(settings.get().scanRoots, { home: homedir() })
+      const result = await scanner.scan(roots, (progress) => broadcast(IPC.onScanProgress, progress))
       projects.replaceAll(result)
       analytics.capture('scan_completed', {
         total_gb: Math.round((result.reduce((a, p) => a + (p.uniqueSize ?? p.size), 0) / GB) * 10) / 10,
@@ -105,6 +115,9 @@ app.whenReady().then(() => {
     if (projects.all.length === 0) void runScan()
     if (is.dev) launcher.open()
   }
+
+  // A second launch surfaces the full window instead of starting another instance.
+  app.on('second-instance', () => launcher.open())
 
   // menu bar app: keep running with no windows open
   app.on('window-all-closed', () => {})
