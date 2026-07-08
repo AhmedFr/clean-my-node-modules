@@ -1,0 +1,1 @@
+export { ScanLocationsSettings } from './ScanLocationsSettings'

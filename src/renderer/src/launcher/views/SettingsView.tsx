@@ -1,5 +1,6 @@
 import { PixelStepper } from '@renderer/components/PixelStepper'
 import { PnpmStoreSettings } from '@renderer/components/PnpmStoreSettings'
+import { ScanLocationsSettings } from '@renderer/components/ScanLocationsSettings'
 import { Segmented } from '@renderer/components/Segmented'
 import { Toggle } from '@renderer/components/Toggle'
 import type { SetSetting } from '@renderer/hooks/useSettings'
@@ -129,6 +130,14 @@ export function SettingsView({
           ]}
         />
       </SettingsRow>
+      <div style={{ height: 1, background: 'var(--surface-1)' }} />
+      <div style={{ padding: '13px 4px 4px' }}>
+        <div style={{ fontSize: 13.5, fontWeight: 550, color: 'var(--text)' }}>Scan locations</div>
+        <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 2 }}>
+          Include external drives and other folders in scans and cleanup
+        </div>
+      </div>
+      <ScanLocationsSettings settings={settings} accent={accent} setSetting={setSetting} />
       <div style={{ height: 1, background: 'var(--surface-1)' }} />
       <SettingsRow
         label="Alert threshold"
