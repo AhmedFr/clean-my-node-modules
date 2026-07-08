@@ -1,6 +1,6 @@
 import type { DeleteManyResult, DeleteResult } from '@shared/delete.types'
 import type { LauncherNavTarget } from '@shared/launcher-nav.types'
-import type { DockerInfo } from '@shared/docker.types'
+import type { DockerActionResult, DockerInfo, DockerItemKind, DockerPruneTarget } from '@shared/docker.types'
 import type { ActivateResult, LicenseState } from '@shared/license.types'
 import type { LiveInfo } from '@shared/liveness.types'
 import type { PackageInventory } from '@shared/package.types'
@@ -16,6 +16,10 @@ export interface CleanApi {
   getPnpmStore(force?: boolean): Promise<PnpmStoreInfo>
   prunePnpmStore(): Promise<PnpmPruneResult>
   getDocker(force?: boolean): Promise<DockerInfo>
+  /** Removes a single image/volume/container. Gated: no-op (freedBytes 0) unless the license is pro. */
+  removeDockerItem(kind: DockerItemKind, id: string): Promise<DockerActionResult>
+  /** Prunes a whole docker category. Gated: no-op (freedBytes 0) unless the license is pro. */
+  pruneDocker(target: DockerPruneTarget): Promise<DockerActionResult>
   /** Cached package inventory, or null if never computed. */
   getPackages(): Promise<PackageInventory | null>
   /** Compute (or, with force, recompute) the package inventory. */

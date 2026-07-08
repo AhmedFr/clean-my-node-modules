@@ -14,7 +14,8 @@ import { RENDERER_EVENTS } from '../analytics'
 import type { AppContext } from '../app-context.types'
 import { liveGuard } from '../liveness/guard-live'
 import { detectLiveProjects } from '../liveness/liveness'
-import { getDockerInfo } from '../docker/docker'
+import { getDockerInfo, pruneDocker, removeDockerItem } from '../docker/docker'
+import { coercePruneTarget, coerceRemoveArgs } from '../docker/validate-docker-arg'
 import { getPnpmStoreInfo, prunePnpmStore } from '../pnpm-store/pnpm-store'
 import { coerceSetting } from '../settings/validate-setting'
 import { coerceCardPayload, copyCardToClipboard } from '../share'
@@ -69,6 +70,36 @@ export function registerIpc(ctx: AppContext): void {
   ipcMain.handle(IPC.getDocker, (_e, force?: boolean) => {
     const s = ctx.settings.get()
     return getDockerInfo(force, { binaryPath: s.dockerBinaryPath })
+  })
+  ipcMain.handle(IPC.removeDockerItem, async (_e, kind: unknown, id: unknown) => {
+    // Free tier sees everything but mutates nothing — cleanup is the paid unlock.
+    if (!ctx.license.get().pro) return { ok: false, freedBytes: 0 }
+    const args = coerceRemoveArgs(kind, id)
+    if (!args) return { ok: false, freedBytes: 0 }
+    const s = ctx.settings.get()
+    const result = await removeDockerItem(args.kind, args.id, { binaryPath: s.dockerBinaryPath })
+    if (result.ok) {
+      ctx.analytics.capture('clean_performed', {
+        kind: `docker_${args.kind}`,
+        freed_gb: Math.round((result.freedBytes / GB) * 10) / 10,
+      })
+    }
+    return result
+  })
+  ipcMain.handle(IPC.pruneDocker, async (_e, target: unknown) => {
+    // Free tier sees everything but mutates nothing — cleanup is the paid unlock.
+    if (!ctx.license.get().pro) return { ok: false, freedBytes: 0 }
+    const t = coercePruneTarget(target)
+    if (!t) return { ok: false, freedBytes: 0 }
+    const s = ctx.settings.get()
+    const result = await pruneDocker(t, { binaryPath: s.dockerBinaryPath })
+    if (result.ok) {
+      ctx.analytics.capture('clean_performed', {
+        kind: 'docker_prune',
+        freed_gb: Math.round((result.freedBytes / GB) * 10) / 10,
+      })
+    }
+    return result
   })
   ipcMain.handle(IPC.prunePnpmStore, async () => {
     // Free tier sees everything but mutates nothing — cleanup is the paid unlock.
