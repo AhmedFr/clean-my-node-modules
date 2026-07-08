@@ -1,4 +1,5 @@
 import type { IconRenderer } from '@renderer/components/UIIcon'
+import type { ReactNode } from 'react'
 
 export interface CacheRowProps {
   /** Glyph shown in the leading icon tile. */
@@ -7,6 +8,8 @@ export interface CacheRowProps {
   name: string
   /** Secondary line: the store path, a status, or a "coming soon" note. */
   detail: string
+  /** Optional small chip rendered next to the name (e.g. a Docker item-kind badge). */
+  badge?: ReactNode
   /** Size in bytes; omit when unknown (e.g. disabled placeholders). */
   size?: number
   /** Whether this is the keyboard-selected row. */

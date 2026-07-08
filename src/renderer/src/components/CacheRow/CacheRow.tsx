@@ -6,6 +6,7 @@ import type { CacheRowProps } from './CacheRow.types'
 export function CacheRow({
   icon,
   name,
+  badge,
   detail,
   size,
   selected = false,
@@ -48,7 +49,21 @@ export function CacheRow({
         {icon({ size: 15 })}
       </span>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>{name}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+          <span
+            style={{
+              fontSize: 13.5,
+              fontWeight: 600,
+              color: 'var(--text)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {name}
+          </span>
+          {badge}
+        </div>
         <div
           style={{
             fontSize: 11.5,
