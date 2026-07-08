@@ -12,6 +12,8 @@ export function CacheRow({
   disabled = false,
   busy = false,
   actionLabel,
+  title,
+  busyLabel,
   onAction,
   onSelect,
 }: CacheRowProps): ReactNode {
@@ -80,7 +82,7 @@ export function CacheRow({
             onAction?.()
           }}
           disabled={busy}
-          title="Remove packages no project references (pnpm store prune)"
+          title={title ?? 'Remove packages no project references (pnpm store prune)'}
           style={{
             border: '1px solid var(--surface-4)',
             cursor: busy ? 'default' : 'pointer',
@@ -93,7 +95,7 @@ export function CacheRow({
             flex: 'none',
           }}
         >
-          {busy ? 'Pruning…' : actionLabel}
+          {busy ? (busyLabel ?? 'Pruning…') : actionLabel}
         </button>
       ) : disabled ? (
         <span

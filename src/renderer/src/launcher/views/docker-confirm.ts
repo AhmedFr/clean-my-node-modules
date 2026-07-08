@@ -10,7 +10,11 @@ export function requiredConfirmText(target: { kind: 'volume'; name: string } | {
   return target.kind === 'prune' ? 'prune' : target.name
 }
 
-/** Whether the typed text satisfies the required confirmation text (trimmed, exact match). */
+/**
+ * Whether the typed text satisfies the required confirmation text (trimmed, exact match).
+ * A blank `required` never satisfies — an empty required string must not let an empty
+ * typed value slip through the gate (defense-in-depth for an unexpectedly empty name).
+ */
 export function confirmSatisfied(required: string, typed: string): boolean {
-  return typed.trim() === required
+  return required.length > 0 && typed.trim() === required
 }

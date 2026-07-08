@@ -43,4 +43,12 @@ describe('confirmSatisfied', () => {
   it('is case-sensitive', () => {
     expect(confirmSatisfied('pgdata', 'PGDATA')).toBe(false)
   })
+
+  it('is false when the required text is empty, even if typed is also empty', () => {
+    expect(confirmSatisfied('', '')).toBe(false)
+  })
+
+  it('is true for a real, non-empty volume name typed exactly', () => {
+    expect(confirmSatisfied('pgdata', 'pgdata')).toBe(true)
+  })
 })

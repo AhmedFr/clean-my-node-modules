@@ -100,18 +100,23 @@ export function DockerView({ info, loading, query, busyId, onRemove, onPrune }: 
                   </div>
                 )}
               </div>
-              {g.items.map((item) => (
-                <CacheRow
-                  key={item.id}
-                  icon={KIND_ICON[item.kind]}
-                  name={item.name}
-                  detail={dockerItemDetail(item)}
-                  size={item.sizeBytes}
-                  busy={busyId === item.id}
-                  actionLabel={item.removable && onRemove ? 'Remove' : undefined}
-                  onAction={item.removable && onRemove ? () => onRemove(item) : undefined}
-                />
-              ))}
+              {g.items.map((item) => {
+                const canRemove = item.removable && item.kind !== 'buildcache' && !!onRemove
+                return (
+                  <CacheRow
+                    key={item.id}
+                    icon={KIND_ICON[item.kind]}
+                    name={item.name}
+                    detail={dockerItemDetail(item)}
+                    size={item.sizeBytes}
+                    busy={busyId === item.id}
+                    actionLabel={canRemove ? 'Remove' : undefined}
+                    title={canRemove ? `Remove ${item.name} permanently — not sent to the Trash` : undefined}
+                    busyLabel="Removing…"
+                    onAction={canRemove ? () => onRemove?.(item) : undefined}
+                  />
+                )
+              })}
             </div>
           ))
         )}

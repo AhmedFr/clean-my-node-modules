@@ -17,6 +17,10 @@ export interface CacheRowProps {
   busy?: boolean
   /** Label for the trailing action button (e.g. "Prune"); omit for none. */
   actionLabel?: string
+  /** Tooltip for the action button; defaults to the pnpm store prune copy. */
+  title?: string
+  /** Label shown on the action button while `busy` is true; defaults to "Pruning…". */
+  busyLabel?: string
   /** Fired when the action button is pressed. */
   onAction?: () => void
   /** Fired when the row itself is clicked (selects it). */
