@@ -21,17 +21,20 @@ import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
 import { mixColor, statusColor } from '@renderer/lib/colors'
 import { formatSizeStr, GB } from '@renderer/lib/format'
+import type { DockerItem, DockerPruneTarget } from '@shared/docker.types'
 import type { PackageEntry } from '@shared/package.types'
 import type { Project } from '@shared/project.types'
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { CachesView } from '../views/CachesView'
 import { DockerView } from '../views/DockerView'
+import { PRUNE_TARGET_LABEL, pruneEstimateBytes } from '../views/DockerView.constants'
+import { confirmSatisfied, needsTypedConfirm, requiredConfirmText } from '../views/docker-confirm'
 import { EmptyView } from '../views/EmptyView'
 import { Onboarding } from '../views/Onboarding'
 import { PackagesView } from '../views/PackagesView'
 import { ScanningView } from '../views/ScanningView'
 import { SettingsView } from '../views/SettingsView'
-import type { LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
+import type { DockerConfirmState, LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
 import { SortTab } from './SortTab'
 
 const NEXT_SCAN_LABEL: Record<string, string> = {
@@ -62,6 +65,8 @@ export function LauncherApp(): ReactNode {
   const [tab, setTab] = useState<LauncherTab>('projects')
   const [deleting, setDeleting] = useState<Set<string>>(() => new Set())
   const [confirm, setConfirm] = useState<Project | null>(null)
+  const [dockerConfirm, setDockerConfirm] = useState<DockerConfirmState | null>(null)
+  const [dockerTyped, setDockerTyped] = useState('')
   const [unlock, setUnlock] = useState<{ bytes?: number } | null>(null)
   const [reclaimed, setReclaimed] = useState(0)
   const [cardCopied, setCardCopied] = useState(false)
@@ -254,6 +259,91 @@ export function LauncherApp(): ReactNode {
     [flashToast, license.pro],
   )
 
+  const closeDockerConfirm = useCallback(() => {
+    setDockerConfirm(null)
+    setDockerTyped('')
+  }, [])
+
+  // Free users hit the paywall before any confirm state is set — the destructive IPC
+  // is also gated pro-only in main, but the UI never even offers the affordance here.
+  const requestDockerRemove = useCallback(
+    (item: DockerItem) => {
+      if (!license.pro) {
+        setUnlock({ bytes: item.sizeBytes })
+        window.clean.trackEvent('paywall_shown', { trigger: 'docker' })
+        return
+      }
+      setDockerTyped('')
+      setDockerConfirm({ kind: 'remove', item })
+    },
+    [license.pro],
+  )
+
+  const requestDockerPrune = useCallback(
+    (target: DockerPruneTarget) => {
+      if (!license.pro) {
+        setUnlock({})
+        window.clean.trackEvent('paywall_shown', { trigger: 'docker' })
+        return
+      }
+      setDockerTyped('')
+      setDockerConfirm({ kind: 'prune', target, estimatedBytes: pruneEstimateBytes(docker.info?.items ?? [], target) })
+    },
+    [license.pro, docker.info],
+  )
+
+  const commitDockerRemove = useCallback(
+    (item: DockerItem) => {
+      closeDockerConfirm()
+      void docker.remove(item.kind, item.id).then((r) => {
+        if (r.ok) {
+          flashToast({
+            icon: UIIcon.checkCircle,
+            text: `Reclaimed ${formatSizeStr(r.freedBytes || item.sizeBytes)} · ${item.name}`,
+            tone: 'good',
+          })
+        }
+      })
+    },
+    [docker, flashToast, closeDockerConfirm],
+  )
+
+  const commitDockerPrune = useCallback(
+    (target: DockerPruneTarget, estimatedBytes: number) => {
+      closeDockerConfirm()
+      void docker.prune(target).then((r) => {
+        if (r.ok) {
+          flashToast({
+            icon: UIIcon.checkCircle,
+            text: `Reclaimed ${formatSizeStr(r.freedBytes || estimatedBytes)} · ${PRUNE_TARGET_LABEL[target]}`,
+            tone: 'good',
+          })
+        }
+      })
+    },
+    [docker, flashToast, closeDockerConfirm],
+  )
+
+  // Derived confirm-gate state for the docker confirm footer: only volumes (per-item or the
+  // bulk unusedVolumes prune) need the extra typed confirmation before Remove/↵ can fire.
+  const dockerNeedsTyped = dockerConfirm
+    ? dockerConfirm.kind === 'remove'
+      ? needsTypedConfirm({ kind: dockerConfirm.item.kind })
+      : dockerConfirm.target === 'unusedVolumes'
+    : false
+  const dockerRequiredText = dockerConfirm
+    ? dockerConfirm.kind === 'remove'
+      ? requiredConfirmText({ kind: 'volume', name: dockerConfirm.item.name })
+      : requiredConfirmText({ kind: 'prune' })
+    : ''
+  const dockerConfirmBlocked = dockerNeedsTyped && !confirmSatisfied(dockerRequiredText, dockerTyped)
+
+  const commitDockerConfirm = useCallback(() => {
+    if (!dockerConfirm || dockerConfirmBlocked) return
+    if (dockerConfirm.kind === 'remove') commitDockerRemove(dockerConfirm.item)
+    else commitDockerPrune(dockerConfirm.target, dockerConfirm.estimatedBytes)
+  }, [dockerConfirm, dockerConfirmBlocked, commitDockerRemove, commitDockerPrune])
+
   const rescan = useCallback(() => setView('scanning'), [])
 
   const copyCard = useCallback(
@@ -302,6 +392,7 @@ export function LauncherApp(): ReactNode {
         e.preventDefault()
         setView((v) => (v === 'settings' ? 'list' : 'settings'))
         setConfirm(null)
+        closeDockerConfirm()
         setUnlock(null)
         return
       }
@@ -318,6 +409,7 @@ export function LauncherApp(): ReactNode {
         setTab(e.key === '1' ? 'projects' : e.key === '2' ? 'caches' : e.key === '3' ? 'packages' : 'docker')
         setSel(0)
         setConfirm(null)
+        closeDockerConfirm()
         setUnlock(null)
         collapsePkg()
         return
@@ -333,6 +425,10 @@ export function LauncherApp(): ReactNode {
         }
         if (confirm) {
           setConfirm(null)
+          return
+        }
+        if (dockerConfirm) {
+          closeDockerConfirm()
           return
         }
         if (view === 'list' && tab === 'packages' && expandedPkg) {
@@ -357,6 +453,15 @@ export function LauncherApp(): ReactNode {
         }
         return
       }
+      if (dockerConfirm) {
+        // A blocked confirm (typed volume name not yet matching) still swallows Enter —
+        // an accidental keypress must never fall through to a destructive action.
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          commitDockerConfirm()
+        }
+        return
+      }
       if (view !== 'list') return
       if (tab === 'caches') {
         const cacheCount = store?.available ? 1 : 0
@@ -373,8 +478,10 @@ export function LauncherApp(): ReactNode {
         return
       }
       if (tab === 'docker') {
-        // Phase A is read-only: no row actions yet, so just don't let
-        // Arrow/Enter/⌘⌫ fall through to the projects-list logic below.
+        // Row-level remove/prune is mouse-driven (per-item and per-category buttons in
+        // DockerView); this just keeps Arrow/Enter/⌘⌫ from falling through to the
+        // projects-list logic below. The dockerConfirm branch above is what drives ↵/esc
+        // once a removal is pending.
         return
       }
       if (tab === 'packages') {
@@ -417,6 +524,9 @@ export function LauncherApp(): ReactNode {
     view,
     tab,
     confirm,
+    dockerConfirm,
+    closeDockerConfirm,
+    commitDockerConfirm,
     unlock,
     query,
     commitDelete,
@@ -442,6 +552,7 @@ export function LauncherApp(): ReactNode {
       setView('list')
       setTab('projects')
       setConfirm(null)
+      closeDockerConfirm()
       setUnlock(null)
       setQuery('')
       setSel(0)
@@ -450,7 +561,7 @@ export function LauncherApp(): ReactNode {
     }
     window.addEventListener('focus', onFocus)
     return () => window.removeEventListener('focus', onFocus)
-  }, [collapsePkg])
+  }, [collapsePkg, closeDockerConfirm])
 
   // keep selected row in view (projects list only)
   useEffect(() => {
@@ -594,6 +705,7 @@ export function LauncherApp(): ReactNode {
                     setTab(t)
                     setSel(0)
                     setConfirm(null)
+                    closeDockerConfirm()
                     setUnlock(null)
                     collapsePkg()
                   }}
@@ -648,6 +760,9 @@ export function LauncherApp(): ReactNode {
                   loading={docker.loading}
                   query={query}
                   onRefresh={() => void docker.refresh()}
+                  busyId={docker.busyId}
+                  onRemove={requestDockerRemove}
+                  onPrune={requestDockerPrune}
                 />
               ) : isEmpty ? (
                 <EmptyView
@@ -768,6 +883,67 @@ export function LauncherApp(): ReactNode {
                 </button>
                 <button className="cc-btn danger" style={{ background: accent }} onClick={() => commitDelete(confirm)}>
                   Delete <Kbd wide>↵</Kbd>
+                </button>
+              </div>
+            </div>
+          ) : dockerConfirm ? (
+            <div className="cc-footer" style={{ background: mixColor('rgba(255,99,99,0)', accent, 0.1) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+                <span style={{ color: accent, display: 'flex' }}>{UIIcon.trash({ size: 16 })}</span>
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: 'var(--text)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {dockerConfirm.kind === 'prune' ? 'Prune' : 'Remove'}{' '}
+                  <b>
+                    {dockerConfirm.kind === 'remove'
+                      ? dockerConfirm.item.name
+                      : PRUNE_TARGET_LABEL[dockerConfirm.target]}
+                  </b>
+                  ? Frees ~
+                  <b style={{ color: '#fff' }}>
+                    {formatSizeStr(
+                      dockerConfirm.kind === 'remove' ? dockerConfirm.item.sizeBytes : dockerConfirm.estimatedBytes,
+                    )}
+                  </b>
+                  . <span style={{ color: 'var(--text-dim)' }}>Permanent — not sent to the Trash.</span>
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {dockerNeedsTyped && (
+                  <input
+                    autoFocus
+                    value={dockerTyped}
+                    onChange={(e) => setDockerTyped(e.target.value)}
+                    placeholder={`Type "${dockerRequiredText}"`}
+                    spellCheck={false}
+                    style={{
+                      fontSize: 12.5,
+                      padding: '5px 9px',
+                      borderRadius: 7,
+                      border: '1px solid var(--surface-4)',
+                      background: 'var(--surface-1)',
+                      color: 'var(--text)',
+                      width: 150,
+                      fontFamily: 'var(--ui-font)',
+                    }}
+                  />
+                )}
+                <button className="cc-btn ghost" onClick={closeDockerConfirm}>
+                  Cancel <Kbd wide>esc</Kbd>
+                </button>
+                <button
+                  className="cc-btn danger"
+                  style={{ background: accent, opacity: dockerConfirmBlocked ? 0.5 : 1 }}
+                  disabled={dockerConfirmBlocked}
+                  onClick={commitDockerConfirm}
+                >
+                  {dockerConfirm.kind === 'prune' ? 'Prune' : 'Remove'} <Kbd wide>↵</Kbd>
                 </button>
               </div>
             </div>

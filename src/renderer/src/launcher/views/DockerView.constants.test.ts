@@ -1,6 +1,6 @@
 import type { DockerItem } from '@shared/docker.types'
 import { describe, expect, it } from 'vitest'
-import { dockerItemDetail, groupDockerItems } from './DockerView.constants'
+import { dockerItemDetail, groupDockerItems, pruneEstimateBytes } from './DockerView.constants'
 
 const items: DockerItem[] = [
   { id: 'i1', kind: 'image', name: 'node:20', sizeBytes: 1e9, createdAt: 0, inUse: false, removable: true },
@@ -58,5 +58,38 @@ describe('dockerItemDetail', () => {
       removable: true,
     }
     expect(dockerItemDetail(item, NOW)).toBe('unknown date · unused')
+  })
+})
+
+describe('pruneEstimateBytes', () => {
+  const pruneItems: DockerItem[] = [
+    { id: 'i1', kind: 'image', name: '<none>', sizeBytes: 1e9, createdAt: 0, inUse: false, removable: true },
+    { id: 'i2', kind: 'image', name: 'old:tag', sizeBytes: 2e9, createdAt: 0, inUse: false, removable: true },
+    { id: 'i3', kind: 'image', name: 'in-use:tag', sizeBytes: 5e9, createdAt: 0, inUse: true, removable: false },
+    { id: 'v1', kind: 'volume', name: 'stray', sizeBytes: 3e8, createdAt: 0, inUse: false, removable: true },
+    { id: 'v2', kind: 'volume', name: 'pgdata', sizeBytes: 4e8, createdAt: 0, inUse: true, removable: false },
+    { id: 'c1', kind: 'container', name: 'stopped', sizeBytes: 5e7, createdAt: 0, inUse: false, removable: true },
+    { id: 'c2', kind: 'container', name: 'running', sizeBytes: 6e7, createdAt: 0, inUse: true, removable: false },
+    { id: 'b1', kind: 'buildcache', name: 'b1', sizeBytes: 7e6, createdAt: 0, inUse: false, removable: false },
+  ]
+
+  it('sums only untagged (dangling) removable images for danglingImages', () => {
+    expect(pruneEstimateBytes(pruneItems, 'danglingImages')).toBe(1e9)
+  })
+
+  it('sums all removable images (tagged and untagged) for unusedImages', () => {
+    expect(pruneEstimateBytes(pruneItems, 'unusedImages')).toBe(1e9 + 2e9)
+  })
+
+  it('sums removable containers for stoppedContainers', () => {
+    expect(pruneEstimateBytes(pruneItems, 'stoppedContainers')).toBe(5e7)
+  })
+
+  it('sums all build-cache items for buildCache', () => {
+    expect(pruneEstimateBytes(pruneItems, 'buildCache')).toBe(7e6)
+  })
+
+  it('sums removable volumes for unusedVolumes', () => {
+    expect(pruneEstimateBytes(pruneItems, 'unusedVolumes')).toBe(3e8)
   })
 })

@@ -1,5 +1,5 @@
 import { relativeTime } from '@renderer/lib/format'
-import type { DockerItem, DockerItemKind } from '@shared/docker.types'
+import type { DockerItem, DockerItemKind, DockerPruneTarget } from '@shared/docker.types'
 
 export interface DockerGroup {
   kind: DockerItemKind
@@ -31,4 +31,34 @@ export function groupDockerItems(items: DockerItem[], query: string): DockerGrou
 export function dockerItemDetail(item: DockerItem, now = Date.now()): string {
   const created = item.createdAt > 0 ? relativeTime(item.createdAt, now) : 'unknown date'
   return `${created} · ${item.inUse ? 'in use' : 'unused'}`
+}
+
+/** Display label for each bulk-prune target, used on the per-category prune buttons and confirm footer. */
+export const PRUNE_TARGET_LABEL: Record<DockerPruneTarget, string> = {
+  danglingImages: 'Dangling images',
+  unusedImages: 'Unused images',
+  stoppedContainers: 'Stopped containers',
+  buildCache: 'Build cache',
+  unusedVolumes: 'Unused volumes',
+}
+
+/** Estimated bytes a bulk prune would free, from the currently-known item list (the real
+ * total is only known after the CLI runs). Dangling images are untagged (`name === '<none>'`);
+ * unused images covers all removable images, tagged or not, matching `docker image prune -a`. */
+export function pruneEstimateBytes(items: DockerItem[], target: DockerPruneTarget): number {
+  const sum = (of: DockerItem[]): number => of.reduce((s, i) => s + i.sizeBytes, 0)
+  switch (target) {
+    case 'danglingImages':
+      return sum(items.filter((i) => i.kind === 'image' && i.removable && i.name === '<none>'))
+    case 'unusedImages':
+      return sum(items.filter((i) => i.kind === 'image' && i.removable))
+    case 'stoppedContainers':
+      return sum(items.filter((i) => i.kind === 'container' && i.removable))
+    case 'buildCache':
+      return sum(items.filter((i) => i.kind === 'buildcache'))
+    case 'unusedVolumes':
+      return sum(items.filter((i) => i.kind === 'volume' && i.removable))
+    default:
+      return 0
+  }
 }
