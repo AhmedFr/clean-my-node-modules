@@ -1,4 +1,6 @@
 import { join } from 'node:path'
+import { IPC } from '@shared/ipc.constants'
+import type { LauncherNavTarget } from '@shared/launcher-nav.types'
 import { app, BrowserWindow } from 'electron'
 import { blurShouldDismiss } from './blur-grace'
 import { is } from './window-utils'
@@ -10,6 +12,7 @@ const LAUNCHER_HEIGHT = 640
 export class LauncherWindow {
   private win: BrowserWindow | null = null
   private shownAt = 0
+  private pendingNav: LauncherNavTarget | null = null
 
   /** Bring the app forward and show + focus the window, arming the blur grace. */
   private reveal(): void {
@@ -22,11 +25,14 @@ export class LauncherWindow {
     this.shownAt = Date.now()
   }
 
-  open(): BrowserWindow {
+  open(nav?: LauncherNavTarget): BrowserWindow {
     if (this.win && !this.win.isDestroyed()) {
       this.reveal()
+      // Window already mounted: navigate live. (Fresh windows pull pendingNav on mount.)
+      if (nav) this.win.webContents.send(IPC.onLauncherNavigate, nav)
       return this.win
     }
+    this.pendingNav = nav ?? null
     this.win = new BrowserWindow({
       width: LAUNCHER_WIDTH,
       height: LAUNCHER_HEIGHT,
@@ -73,6 +79,14 @@ export class LauncherWindow {
 
   hide(): void {
     this.win?.hide()
+  }
+
+  /** Returns and clears the nav target queued for a fresh launcher; the renderer
+   *  pulls this once on mount so it lands on the right view without a send/subscribe race. */
+  consumePendingNav(): LauncherNavTarget | null {
+    const nav = this.pendingNav
+    this.pendingNav = null
+    return nav
   }
 
   get browserWindow(): BrowserWindow | null {

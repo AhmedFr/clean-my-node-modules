@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import type { DeleteManyResult, DeleteResult } from '@shared/delete.types'
 import { IPC } from '@shared/ipc.constants'
+import type { LauncherNavTarget } from '@shared/launcher-nav.types'
 import type { LiveInfo } from '@shared/liveness.types'
 import type { Project } from '@shared/project.types'
 import { GB } from '@shared/units.constants'
@@ -157,10 +158,12 @@ export function registerIpc(ctx: AppContext): void {
     if (project) await openProject(project)
   })
 
-  ipcMain.handle(IPC.openLauncher, () => {
+  ipcMain.handle(IPC.openLauncher, (_e, nav?: LauncherNavTarget) => {
     ctx.panel.hide()
-    ctx.launcher.open()
+    ctx.launcher.open(nav)
   })
+
+  ipcMain.handle(IPC.consumeLauncherNav, () => ctx.launcher.consumePendingNav())
 
   ipcMain.handle(IPC.closeWindow, (e) => {
     const win = BrowserWindow.fromWebContents(e.sender)

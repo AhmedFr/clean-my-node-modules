@@ -1,4 +1,5 @@
 import type { DeleteManyResult, DeleteResult } from '@shared/delete.types'
+import type { LauncherNavTarget } from '@shared/launcher-nav.types'
 import type { ActivateResult, LicenseState } from '@shared/license.types'
 import type { LiveInfo } from '@shared/liveness.types'
 import type { PackageInventory } from '@shared/package.types'
@@ -36,7 +37,10 @@ export interface CleanApi {
   activateLicense(key: string): Promise<ActivateResult>
   /** Renders the share card offscreen and copies the PNG to the clipboard. */
   copyShareCard(payload: ShareCardPayload): Promise<{ ok: boolean }>
-  openLauncher(): Promise<void>
+  /** Opens the full launcher window, optionally landing on a specific view. */
+  openLauncher(nav?: LauncherNavTarget): Promise<void>
+  /** Pulls (and clears) a nav target queued for a fresh launcher; called once on mount. */
+  consumeLauncherNav(): Promise<LauncherNavTarget | null>
   closeWindow(): Promise<void>
   setWindowHeight(height: number): void
   quitApp(): void
@@ -48,6 +52,8 @@ export interface CleanApi {
   onProjectsChanged(fn: (projects: Project[]) => void): () => void
   onSettingsChanged(fn: (settings: Settings) => void): () => void
   onLicenseChanged(fn: (s: LicenseState) => void): () => void
+  /** Fired when the launcher is asked to navigate to a view while already open. */
+  onLauncherNavigate(fn: (nav: LauncherNavTarget) => void): () => void
 }
 
 declare global {

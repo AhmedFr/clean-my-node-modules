@@ -27,9 +27,11 @@ export const IPC = {
   copyShareCard: 'share:copy-card',
   listVolumes: 'volumes:list',
   getLiveProjects: 'projects:live',
+  consumeLauncherNav: 'launcher:consume-nav',
   // events (main -> renderer)
   onScanProgress: 'scan:progress',
   onProjectsChanged: 'projects:changed',
   onSettingsChanged: 'settings:changed',
   onLicenseChanged: 'license:changed',
+  onLauncherNavigate: 'launcher:navigate',
 } as const

@@ -11,6 +11,15 @@ import type { Settings } from '@shared/settings.types'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 
+type SettingsTab = 'scanning' | 'packages' | 'privacy' | 'license'
+
+const SETTINGS_TABS: { value: SettingsTab; label: string }[] = [
+  { value: 'scanning', label: 'Scanning' },
+  { value: 'packages', label: 'Packages' },
+  { value: 'privacy', label: 'Privacy' },
+  { value: 'license', label: 'License' },
+]
+
 interface SettingsRowProps {
   label: string
   hint?: string
@@ -33,6 +42,19 @@ function SettingsRow({ label, hint, children }: SettingsRowProps): ReactNode {
         {hint && <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 2 }}>{hint}</div>}
       </div>
       <div style={{ flex: '0 0 auto' }}>{children}</div>
+    </div>
+  )
+}
+
+function Divider(): ReactNode {
+  return <div style={{ height: 1, background: 'var(--surface-1)' }} />
+}
+
+function SectionHeading({ title, hint }: { title: string; hint: string }): ReactNode {
+  return (
+    <div style={{ padding: '13px 4px 4px' }}>
+      <div style={{ fontSize: 13.5, fontWeight: 550, color: 'var(--text)' }}>{title}</div>
+      <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 2 }}>{hint}</div>
     </div>
   )
 }
@@ -115,121 +137,140 @@ export function SettingsView({
   activateLicense,
 }: SettingsViewProps): ReactNode {
   const gb = settings.thresholdGB
+  const [tab, setTab] = useState<SettingsTab>('scanning')
   return (
     <div style={{ padding: '12px 18px 22px' }}>
-      <SettingsRow label="Scan frequency" hint="How often TidyDisk scans your disk in the background">
-        <Segmented
-          accent={accent}
-          value={settings.scanInterval}
-          onChange={(v) => setSetting('scanInterval', v)}
-          options={[
-            { value: '6h', label: '6h' },
-            { value: 'daily', label: 'Daily' },
-            { value: 'weekly', label: 'Weekly' },
-            { value: 'manual', label: 'Off' },
-          ]}
-        />
-      </SettingsRow>
-      <div style={{ height: 1, background: 'var(--surface-1)' }} />
-      <div style={{ padding: '13px 4px 4px' }}>
-        <div style={{ fontSize: 13.5, fontWeight: 550, color: 'var(--text)' }}>Scan locations</div>
-        <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 2 }}>
-          Include external drives and other folders in scans and cleanup
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 6 }}>
+        <Segmented accent={accent} value={tab} onChange={setTab} options={SETTINGS_TABS} />
       </div>
-      <ScanLocationsSettings settings={settings} accent={accent} setSetting={setSetting} />
-      <div style={{ height: 1, background: 'var(--surface-1)' }} />
-      <SettingsRow
-        label="Alert threshold"
-        hint={`Notify me when node_modules folders exceed ${gb.toFixed(0)} GB total`}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, width: 230 }}>
-          <div style={{ flex: 1 }}>
-            <PixelStepper valueGB={gb} accent={accent} onChange={(v) => setSetting('thresholdGB', v)} />
-          </div>
-          <span
-            style={{
-              fontVariantNumeric: 'tabular-nums',
-              fontWeight: 650,
-              fontSize: 13,
-              color: 'var(--text)',
-              minWidth: 42,
-              textAlign: 'right',
-            }}
+
+      {tab === 'scanning' && (
+        <>
+          <SettingsRow label="Scan frequency" hint="How often TidyDisk scans your disk in the background">
+            <Segmented
+              accent={accent}
+              value={settings.scanInterval}
+              onChange={(v) => setSetting('scanInterval', v)}
+              options={[
+                { value: '6h', label: '6h' },
+                { value: 'daily', label: 'Daily' },
+                { value: 'weekly', label: 'Weekly' },
+                { value: 'manual', label: 'Off' },
+              ]}
+            />
+          </SettingsRow>
+          <Divider />
+          <SectionHeading
+            title="Scan locations"
+            hint="Include external drives and other folders in scans and cleanup"
+          />
+          <ScanLocationsSettings settings={settings} accent={accent} setSetting={setSetting} />
+          <Divider />
+          <SettingsRow
+            label="Alert threshold"
+            hint={`Notify me when node_modules folders exceed ${gb.toFixed(0)} GB total`}
           >
-            {gb.toFixed(0)} GB
-          </span>
-        </div>
-      </SettingsRow>
-      <div style={{ height: 1, background: 'var(--surface-1)' }} />
-      <SettingsRow label="Threshold notifications" hint="Show a desktop alert the moment you cross the limit">
-        <Toggle on={settings.notify} accent={accent} onToggle={() => setSetting('notify', !settings.notify)} />
-      </SettingsRow>
-      <div style={{ height: 1, background: 'var(--surface-1)' }} />
-      <SettingsRow
-        label="Check npm for updates & advisories"
-        hint="In the Packages tab, look up latest versions and security warnings from npmjs.org"
-      >
-        <Toggle
-          on={settings.checkUpdates}
-          accent={accent}
-          onToggle={() => setSetting('checkUpdates', !settings.checkUpdates)}
-        />
-      </SettingsRow>
-      <div style={{ height: 1, background: 'var(--surface-1)' }} />
-      <SettingsRow
-        label="Usage analytics"
-        hint="Anonymous usage events help improve the app. No file paths or project names, ever"
-      >
-        <Toggle on={settings.analytics} accent={accent} onToggle={() => setSetting('analytics', !settings.analytics)} />
-      </SettingsRow>
-      <div style={{ height: 1, background: 'var(--surface-1)' }} />
-      <div style={{ padding: '13px 4px 4px' }}>
-        <div style={{ fontSize: 13.5, fontWeight: 550, color: 'var(--text)' }}>pnpm store</div>
-        <div style={{ fontSize: 11.5, color: 'var(--text-dim)', marginTop: 2 }}>
-          Override detection if the store or pnpm can't be found automatically
-        </div>
-      </div>
-      <PnpmStoreSettings settings={settings} setSetting={setSetting} store={store} onRefresh={onRefreshStore} />
-      <div style={{ height: 1, background: 'var(--surface-1)' }} />
-      <SettingsRow
-        label="License"
-        hint={
-          license.pro
-            ? `Pro · ${license.email ?? 'licensed'} · cleanup unlocked`
-            : license.needsReverify
-              ? 'Pro license found. Connect to the internet to re-verify'
-              : 'Free: scan & see everything; one-click cleanup needs a license'
-        }
-      >
-        {license.pro ? (
-          <span style={{ fontSize: 12.5, fontWeight: 650, color: '#34d399' }}>Pro ✓</span>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, width: 230 }}>
+              <div style={{ flex: 1 }}>
+                <PixelStepper valueGB={gb} accent={accent} onChange={(v) => setSetting('thresholdGB', v)} />
+              </div>
+              <span
+                style={{
+                  fontVariantNumeric: 'tabular-nums',
+                  fontWeight: 650,
+                  fontSize: 13,
+                  color: 'var(--text)',
+                  minWidth: 42,
+                  textAlign: 'right',
+                }}
+              >
+                {gb.toFixed(0)} GB
+              </span>
+            </div>
+          </SettingsRow>
+          <Divider />
+          <SettingsRow label="Threshold notifications" hint="Show a desktop alert the moment you cross the limit">
+            <Toggle on={settings.notify} accent={accent} onToggle={() => setSetting('notify', !settings.notify)} />
+          </SettingsRow>
+        </>
+      )}
+
+      {tab === 'packages' && (
+        <>
+          <SettingsRow
+            label="Check npm for updates & advisories"
+            hint="In the Packages tab, look up latest versions and security warnings from npmjs.org"
+          >
+            <Toggle
+              on={settings.checkUpdates}
+              accent={accent}
+              onToggle={() => setSetting('checkUpdates', !settings.checkUpdates)}
+            />
+          </SettingsRow>
+          <Divider />
+          <SectionHeading
+            title="pnpm store"
+            hint="Override detection if the store or pnpm can't be found automatically"
+          />
+          <PnpmStoreSettings settings={settings} setSetting={setSetting} store={store} onRefresh={onRefreshStore} />
+        </>
+      )}
+
+      {tab === 'privacy' && (
+        <SettingsRow
+          label="Usage analytics"
+          hint="Anonymous usage events help improve the app. No file paths or project names, ever"
+        >
+          <Toggle
+            on={settings.analytics}
+            accent={accent}
+            onToggle={() => setSetting('analytics', !settings.analytics)}
+          />
+        </SettingsRow>
+      )}
+
+      {tab === 'license' && (
+        <>
+          <SettingsRow
+            label="License"
+            hint={
+              license.pro
+                ? `Pro · ${license.email ?? 'licensed'} · cleanup unlocked`
+                : license.needsReverify
+                  ? 'Pro license found. Connect to the internet to re-verify'
+                  : 'Free: scan & see everything; one-click cleanup needs a license'
+            }
+          >
+            {license.pro ? (
+              <span style={{ fontSize: 12.5, fontWeight: 650, color: '#34d399' }}>Pro ✓</span>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  className="cc-btn danger"
+                  style={{ background: accent }}
+                  onClick={() => {
+                    window.clean.trackEvent('buy_clicked', { source: 'settings' })
+                    void window.clean.openExternal(BUY_URL)
+                  }}
+                >
+                  Buy · €19
+                </button>
+                <LicenseActivator accent={accent} activate={activateLicense} />
+              </div>
+            )}
+          </SettingsRow>
+          <Divider />
+          <SettingsRow label="Uninstall" hint="Move TidyDisk and its preferences to the Trash">
             <button
               className="cc-btn danger"
-              style={{ background: accent }}
-              onClick={() => {
-                window.clean.trackEvent('buy_clicked', { source: 'settings' })
-                void window.clean.openExternal(BUY_URL)
-              }}
+              style={{ background: '#d4483f' }}
+              onClick={() => void window.clean.uninstall()}
             >
-              Buy · €19
+              Uninstall…
             </button>
-            <LicenseActivator accent={accent} activate={activateLicense} />
-          </div>
-        )}
-      </SettingsRow>
-      <div style={{ height: 1, background: 'var(--surface-1)' }} />
-      <SettingsRow label="Uninstall" hint="Move TidyDisk and its preferences to the Trash">
-        <button
-          className="cc-btn danger"
-          style={{ background: '#d4483f' }}
-          onClick={() => void window.clean.uninstall()}
-        >
-          Uninstall…
-        </button>
-      </SettingsRow>
+          </SettingsRow>
+        </>
+      )}
     </div>
   )
 }

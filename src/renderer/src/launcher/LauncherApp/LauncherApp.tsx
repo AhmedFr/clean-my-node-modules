@@ -90,6 +90,18 @@ export function LauncherApp(): ReactNode {
     wasScanning.current = scanning
   }, [scanning, refresh])
 
+  // The menu-bar settings entry opens the launcher straight to Settings: pull any
+  // target queued for this (possibly fresh) window on mount, and listen for live
+  // navigation when the already-open window is reopened onto Settings.
+  useEffect(() => {
+    void window.clean.consumeLauncherNav().then((nav) => {
+      if (nav === 'settings') setView('settings')
+    })
+    return window.clean.onLauncherNavigate((nav) => {
+      if (nav === 'settings') setView('settings')
+    })
+  }, [])
+
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const rowEls = useRef<Record<string, HTMLDivElement>>({})

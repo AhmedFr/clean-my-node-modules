@@ -66,10 +66,10 @@ export function MiniRow({ p, accent, deleting, live, onDelete, onReveal }: MiniR
             if (live) return
             onDelete()
           }}
-          title={live ? 'This app is running' : 'Delete now'}
+          title={live ? "Project currently in use, can't delete" : 'Delete now'}
           style={{
             border: 'none',
-            cursor: live ? 'default' : 'pointer',
+            cursor: live ? 'not-allowed' : 'pointer',
             width: 26,
             height: 26,
             borderRadius: 7,
@@ -79,7 +79,6 @@ export function MiniRow({ p, accent, deleting, live, onDelete, onReveal }: MiniR
             alignItems: 'center',
             justifyContent: 'center',
             opacity: live ? 0.4 : 1,
-            pointerEvents: live ? 'none' : undefined,
           }}
         >
           {UIIcon.trash({ size: 14 })}

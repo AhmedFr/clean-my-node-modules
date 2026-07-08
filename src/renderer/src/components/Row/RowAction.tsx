@@ -22,13 +22,14 @@ export function RowAction({ icon, label, danger, disabled, onClick }: RowActionP
         height: 28,
         borderRadius: 7,
         border: 'none',
-        cursor: disabled ? 'default' : 'pointer',
+        // Keep the button hoverable when disabled (no pointerEvents:none) so its
+        // title tooltip still explains why it can't be used; the click is guarded above.
+        cursor: disabled ? 'not-allowed' : 'pointer',
         background: h && !disabled ? (danger ? 'rgba(255,99,99,0.18)' : 'var(--surface-3)') : 'var(--surface-1)',
         color: danger ? (h && !disabled ? '#ff8585' : 'rgba(255,99,99,0.85)') : 'var(--text-3)',
         transition: 'background .12s, color .12s, transform .12s',
         transform: h && !disabled ? 'scale(1.06)' : 'scale(1)',
         opacity: disabled ? 0.4 : 1,
-        pointerEvents: disabled ? 'none' : undefined,
       }}
     >
       {icon({ size: 15 })}

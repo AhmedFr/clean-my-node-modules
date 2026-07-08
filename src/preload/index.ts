@@ -30,7 +30,8 @@ const api: CleanApi = {
   getLicense: () => ipcRenderer.invoke(IPC.getLicense),
   activateLicense: (key) => ipcRenderer.invoke(IPC.activateLicense, key),
   copyShareCard: (payload) => ipcRenderer.invoke(IPC.copyShareCard, payload),
-  openLauncher: () => ipcRenderer.invoke(IPC.openLauncher),
+  openLauncher: (nav) => ipcRenderer.invoke(IPC.openLauncher, nav),
+  consumeLauncherNav: () => ipcRenderer.invoke(IPC.consumeLauncherNav),
   closeWindow: () => ipcRenderer.invoke(IPC.closeWindow),
   setWindowHeight: (height) => ipcRenderer.send(IPC.setWindowHeight, height),
   quitApp: () => ipcRenderer.send(IPC.quitApp),
@@ -41,6 +42,7 @@ const api: CleanApi = {
   onProjectsChanged: subscribe(IPC.onProjectsChanged),
   onSettingsChanged: subscribe(IPC.onSettingsChanged),
   onLicenseChanged: subscribe(IPC.onLicenseChanged),
+  onLauncherNavigate: subscribe(IPC.onLauncherNavigate),
 }
 
 contextBridge.exposeInMainWorld('clean', api)

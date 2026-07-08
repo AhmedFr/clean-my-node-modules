@@ -17,13 +17,12 @@ import { DiskSummary } from './DiskSummary'
 import { STALE_DAYS, VISIBLE_ROWS } from './PanelApp.constants'
 import type { PanelToast, PanelView } from './PanelApp.types'
 import { PanelEmpty } from './PanelEmpty'
-import { PanelSettings } from './PanelSettings'
 import { PnpmStoreRow } from './PnpmStoreRow'
 import { ScanPanel } from './ScanPanel'
 import { Separator } from './Separator'
 
 export function PanelApp(): ReactNode {
-  const [settings, setSetting, settingsLoaded] = useSettings()
+  const [settings, , settingsLoaded] = useSettings()
   const projects = useProjects()
   const liveById = useLiveProjects()
   const accent = settings.accent
@@ -135,7 +134,7 @@ export function PanelApp(): ReactNode {
         setView('scan')
       } else if (meta && e.key === ',') {
         e.preventDefault()
-        setView((v) => (v === 'settings' ? 'main' : 'settings'))
+        void window.clean.openLauncher('settings')
       } else if (e.key === 'Escape') {
         if (unlock) setUnlock(null)
         else if (view !== 'main') setView('main')
@@ -159,19 +158,6 @@ export function PanelApp(): ReactNode {
   return (
     <div ref={rootRef} className="mb-panel">
       {view === 'scan' && <ScanPanel accent={accent} onDone={() => setView('main')} />}
-
-      {view === 'settings' && (
-        <>
-          <div className="mb-phead">
-            <button className="mb-back" onClick={() => setView('main')} aria-label="Back">
-              {UIIcon.chevronLeft({ size: 17 })}
-            </button>
-            <span style={{ fontSize: 13.5, fontWeight: 650, color: '#fff' }}>Settings</span>
-          </div>
-          <Separator />
-          <PanelSettings settings={settings} setSetting={setSetting} accent={accent} />
-        </>
-      )}
 
       {view === 'main' && (
         <>
@@ -293,7 +279,12 @@ export function PanelApp(): ReactNode {
               onClick={() => void window.clean.openLauncher()}
             />
             <MItem icon={UIIcon.refresh} label="Scan now" shortcut="⌘R" onClick={() => setView('scan')} />
-            <MItem icon={UIIcon.gear} label="Settings…" shortcut="⌘," onClick={() => setView('settings')} />
+            <MItem
+              icon={UIIcon.gear}
+              label="Settings…"
+              shortcut="⌘,"
+              onClick={() => void window.clean.openLauncher('settings')}
+            />
             <MItem icon={UIIcon.power} label="Quit" shortcut="⌘Q" onClick={() => window.clean.quitApp()} />
           </div>
           <Separator />

@@ -136,7 +136,7 @@ export function Row({
           <RowAction icon={UIIcon.chevronRight} label="Open project" onClick={onOpen} />
           <RowAction
             icon={UIIcon.trash}
-            label={live ? 'This app is running' : 'Delete node_modules'}
+            label={live ? "Project currently in use, can't delete" : 'Delete node_modules'}
             danger
             disabled={!!live}
             onClick={live ? () => {} : onDelete}
