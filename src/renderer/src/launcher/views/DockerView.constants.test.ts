@@ -1,6 +1,12 @@
 import type { DockerInfo, DockerItem } from '@shared/docker.types'
 import { describe, expect, it } from 'vitest'
-import { dockerItemDetail, groupDockerForDisplay, pruneEstimateBytes } from './DockerView.constants'
+import {
+  type DisplayGroup,
+  dockerItemDetail,
+  groupDockerForDisplay,
+  pruneEstimateBytes,
+  prunesForGroup,
+} from './DockerView.constants'
 
 const item = (o: Partial<DockerItem> & Pick<DockerItem, 'id' | 'kind' | 'name'>): DockerItem => ({
   sizeBytes: 0,
@@ -118,5 +124,61 @@ describe('pruneEstimateBytes', () => {
 
   it('sums removable volumes for unusedVolumes', () => {
     expect(pruneEstimateBytes(pruneItems, 'unusedVolumes')).toBe(3e8)
+  })
+})
+
+describe('prunesForGroup', () => {
+  const group = (o: Partial<DisplayGroup> & Pick<DisplayGroup, 'kind' | 'items'>): DisplayGroup =>
+    ({ id: 'g', label: 'g', ...o }) as DisplayGroup
+
+  it('repository group with a removable tagged image offers unusedImages only', () => {
+    const g = group({
+      kind: 'repository',
+      items: [item({ id: 'i1', kind: 'image', name: 'redis:7', removable: true })],
+    })
+    expect(prunesForGroup(g)).toEqual(['unusedImages'])
+  })
+
+  it('repository group with a dangling <none> image also offers danglingImages', () => {
+    const g = group({
+      kind: 'repository',
+      items: [item({ id: 'i1', kind: 'image', name: '<none>', removable: true })],
+    })
+    expect(prunesForGroup(g)).toEqual(['danglingImages', 'unusedImages'])
+  })
+
+  it('unaffiliated group with a dangling <none> image offers both danglingImages and unusedImages', () => {
+    const g = group({
+      kind: 'unaffiliated',
+      items: [item({ id: 'i1', kind: 'image', name: '<none>', removable: true })],
+    })
+    expect(prunesForGroup(g)).toEqual(['danglingImages', 'unusedImages'])
+  })
+
+  it('unaffiliated group with a volume and a removable container offers unusedVolumes and stoppedContainers', () => {
+    const g = group({
+      kind: 'unaffiliated',
+      items: [
+        item({ id: 'v1', kind: 'volume', name: 'orphan', removable: true }),
+        item({ id: 'c1', kind: 'container', name: 'stopped', removable: true }),
+      ],
+    })
+    expect(prunesForGroup(g)).toEqual(['unusedVolumes', 'stoppedContainers'])
+  })
+
+  it('buildcache group offers buildCache', () => {
+    const g = group({ kind: 'buildcache', items: [item({ id: 'b1', kind: 'buildcache', name: 'b1' })] })
+    expect(prunesForGroup(g)).toEqual(['buildCache'])
+  })
+
+  it('project group offers no prune targets', () => {
+    const g = {
+      kind: 'project' as const,
+      id: 'p',
+      label: 'p',
+      project: { name: 'myapp' },
+      items: [item({ id: 'i1', kind: 'image', name: 'x', removable: true })],
+    }
+    expect(prunesForGroup(g)).toEqual([])
   })
 })

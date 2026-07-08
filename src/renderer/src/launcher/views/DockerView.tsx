@@ -5,8 +5,14 @@ import type { IconRenderer } from '@renderer/components/UIIcon'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { formatSizeStr } from '@renderer/lib/format'
 import type { DockerItem, DockerItemKind, DockerProject, DockerPruneTarget } from '@shared/docker.types'
-import { Fragment, type ReactNode } from 'react'
-import { type DisplayGroup, dockerItemDetail, groupDockerForDisplay, PRUNE_TARGET_LABEL } from './DockerView.constants'
+import { Fragment, type ReactNode, useState } from 'react'
+import {
+  type DisplayGroup,
+  dockerItemDetail,
+  groupDockerForDisplay,
+  PRUNE_TARGET_LABEL,
+  prunesForGroup,
+} from './DockerView.constants'
 import type { DockerViewProps } from './DockerView.types'
 
 const KIND_ICON: Record<DockerItemKind, IconRenderer> = {
@@ -23,31 +29,12 @@ const GROUP_ICON: Record<'repository' | 'buildcache' | 'unaffiliated', IconRende
   unaffiliated: UIIcon.hdd,
 }
 
-/** Prune commands are global (`docker <x> prune -f` spans every project), so bulk-prune
- * buttons only appear on the "Other" section headers — never under a project header, where
- * they'd falsely imply a project-scoped prune. Targets are keyed by the item kinds present
- * in that specific group. */
-function prunesForGroup(group: DisplayGroup): DockerPruneTarget[] {
-  if (group.kind === 'repository') {
-    const targets: DockerPruneTarget[] = []
-    if (group.items.some((i) => i.kind === 'image' && i.name === '<none>')) targets.push('danglingImages')
-    if (group.items.some((i) => i.kind === 'image' && i.removable)) targets.push('unusedImages')
-    return targets
-  }
-  if (group.kind === 'buildcache') return ['buildCache']
-  if (group.kind === 'unaffiliated') {
-    const targets: DockerPruneTarget[] = []
-    if (group.items.some((i) => i.kind === 'volume')) targets.push('unusedVolumes')
-    if (group.items.some((i) => i.kind === 'container' && i.removable)) targets.push('stoppedContainers')
-    return targets
-  }
-  return []
-}
-
 /** The project's own favicon when available; its framework mark when known; a generic box
  * glyph otherwise (e.g. a compose project with no detected framework). */
 function DockerProjectIcon({ project, size = 22 }: { project: DockerProject; size?: number }): ReactNode {
-  if (project.iconDataUrl) {
+  const [failed, setFailed] = useState(false)
+
+  if (project.iconDataUrl && !failed) {
     return (
       <div
         style={{
@@ -67,6 +54,7 @@ function DockerProjectIcon({ project, size = 22 }: { project: DockerProject; siz
           src={project.iconDataUrl}
           alt=""
           aria-hidden="true"
+          onError={() => setFailed(true)}
           style={{ width: size * 0.72, height: size * 0.72, objectFit: 'contain', display: 'block' }}
         />
       </div>

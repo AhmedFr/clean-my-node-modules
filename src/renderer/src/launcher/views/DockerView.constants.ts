@@ -85,6 +85,27 @@ export const PRUNE_TARGET_LABEL: Record<DockerPruneTarget, string> = {
   unusedVolumes: 'Unused volumes',
 }
 
+/** Prune commands are global (`docker <x> prune -f` spans every project), so bulk-prune
+ * buttons only appear on the "Other" section headers — never under a project header, where
+ * they'd falsely imply a project-scoped prune. Targets are keyed by the item kinds present
+ * in that specific group. Dangling (`<none>`) images have no `repository`, so they can land
+ * in either a `repository` group (alongside tagged siblings of the same repo) or the
+ * `unaffiliated` group — check both for image targets. */
+export function prunesForGroup(group: DisplayGroup): DockerPruneTarget[] {
+  if (group.kind === 'repository' || group.kind === 'unaffiliated') {
+    const targets: DockerPruneTarget[] = []
+    if (group.items.some((i) => i.kind === 'image' && i.name === '<none>')) targets.push('danglingImages')
+    if (group.items.some((i) => i.kind === 'image' && i.removable)) targets.push('unusedImages')
+    if (group.kind === 'unaffiliated') {
+      if (group.items.some((i) => i.kind === 'volume')) targets.push('unusedVolumes')
+      if (group.items.some((i) => i.kind === 'container' && i.removable)) targets.push('stoppedContainers')
+    }
+    return targets
+  }
+  if (group.kind === 'buildcache') return ['buildCache']
+  return []
+}
+
 /** Estimated bytes a bulk prune would free, from the currently-known item list (the real
  * total is only known after the CLI runs). Dangling images are untagged (`name === '<none>'`);
  * unused images covers all removable images, tagged or not, matching `docker image prune -a`. */
