@@ -315,6 +315,10 @@ export function LauncherApp(): ReactNode {
           collapsePkg()
           return
         }
+        if (view === 'scanning') {
+          void window.clean.cancelScan()
+          return
+        }
         if (view !== 'list') {
           setView('list')
           return
@@ -525,7 +529,11 @@ export function LauncherApp(): ReactNode {
 
           {/* ---------- Body ---------- */}
           {view === 'scanning' && (
-            <ScanningView accent={accent} onDone={() => setView(totalUsed > 0 ? 'result' : 'list')} />
+            <ScanningView
+              accent={accent}
+              onDone={() => setView(totalUsed > 0 ? 'result' : 'list')}
+              onCancel={() => setView('list')}
+            />
           )}
           {view === 'result' && (
             <ResultView
