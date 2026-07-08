@@ -10,6 +10,7 @@ import { UIIcon } from '@renderer/components/UIIcon'
 import { UnlockPrompt } from '@renderer/components/UnlockPrompt'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { useLicense } from '@renderer/hooks/useLicense'
+import { useLiveProjects } from '@renderer/hooks/useLiveProjects'
 import { usePackagesTab } from '@renderer/hooks/usePackagesTab'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
@@ -47,6 +48,7 @@ export function LauncherApp(): ReactNode {
   const [settings, setSetting, settingsLoaded] = useSettings()
   const { license, activate: activateLicense } = useLicense()
   const projects = useProjects()
+  const liveById = useLiveProjects()
   const accent = settings.accent
   const threshold = settings.thresholdGB * GB
 
@@ -192,12 +194,16 @@ export function LauncherApp(): ReactNode {
       void window.clean.deleteNodeModules(p.id).then(({ freed, blocked }) => {
         // Always clear the exit-animation state, even on a refused delete, so a
         // still-present row (e.g. a live project) is restored rather than left
-        // stuck invisible. Keep messaging silent for now.
+        // stuck invisible.
         setDeleting((s) => {
           const n = new Set(s)
           n.delete(p.id)
           return n
         })
+        if (blocked === 'live') {
+          flashToast({ icon: UIIcon.trash, text: `Cannot delete, ${p.name} is running`, tone: 'neutral' })
+          return
+        }
         if (blocked) return
         setReclaimed((r) => r + freed)
         flashToast({
@@ -634,6 +640,7 @@ export function LauncherApp(): ReactNode {
                             maxBytes={maxBytes}
                             accent={accent}
                             deleting={deleting.has(p.id)}
+                            live={liveById[p.id]}
                             rowRef={(el) => {
                               if (el) rowEls.current[p.id] = el
                             }}

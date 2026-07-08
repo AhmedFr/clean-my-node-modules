@@ -1,12 +1,13 @@
 import { type ReactNode, useState } from 'react'
 import type { RowActionProps } from './Row.types'
 
-export function RowAction({ icon, label, danger, onClick }: RowActionProps): ReactNode {
+export function RowAction({ icon, label, danger, disabled, onClick }: RowActionProps): ReactNode {
   const [h, setH] = useState(false)
   return (
     <button
       onClick={(e) => {
         e.stopPropagation()
+        if (disabled) return
         onClick()
       }}
       onMouseEnter={() => setH(true)}
@@ -21,11 +22,13 @@ export function RowAction({ icon, label, danger, onClick }: RowActionProps): Rea
         height: 28,
         borderRadius: 7,
         border: 'none',
-        cursor: 'pointer',
-        background: h ? (danger ? 'rgba(255,99,99,0.18)' : 'var(--surface-3)') : 'var(--surface-1)',
-        color: danger ? (h ? '#ff8585' : 'rgba(255,99,99,0.85)') : 'var(--text-3)',
+        cursor: disabled ? 'default' : 'pointer',
+        background: h && !disabled ? (danger ? 'rgba(255,99,99,0.18)' : 'var(--surface-3)') : 'var(--surface-1)',
+        color: danger ? (h && !disabled ? '#ff8585' : 'rgba(255,99,99,0.85)') : 'var(--text-3)',
         transition: 'background .12s, color .12s, transform .12s',
-        transform: h ? 'scale(1.06)' : 'scale(1)',
+        transform: h && !disabled ? 'scale(1.06)' : 'scale(1)',
+        opacity: disabled ? 0.4 : 1,
+        pointerEvents: disabled ? 'none' : undefined,
       }}
     >
       {icon({ size: 15 })}

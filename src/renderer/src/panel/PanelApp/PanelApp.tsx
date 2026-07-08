@@ -5,6 +5,7 @@ import { UIIcon } from '@renderer/components/UIIcon'
 import { UnlockPrompt } from '@renderer/components/UnlockPrompt'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { useLicense } from '@renderer/hooks/useLicense'
+import { useLiveProjects } from '@renderer/hooks/useLiveProjects'
 import { usePnpmStore } from '@renderer/hooks/usePnpmStore'
 import { useProjects } from '@renderer/hooks/useProjects'
 import { useSettings } from '@renderer/hooks/useSettings'
@@ -24,6 +25,7 @@ import { Separator } from './Separator'
 export function PanelApp(): ReactNode {
   const [settings, setSetting, settingsLoaded] = useSettings()
   const projects = useProjects()
+  const liveById = useLiveProjects()
   const accent = settings.accent
   const threshold = settings.thresholdGB * GB
 
@@ -81,6 +83,9 @@ export function PanelApp(): ReactNode {
       let freed = 0
       for (const id of ids) {
         const res = await window.clean.deleteNodeModules(id)
+        // A blocked delete (e.g. the app is running) frees nothing; the disabled
+        // affordance already prevents this click, this is defense in depth.
+        if (res.blocked) continue
         freed += res.freed
       }
       setDeleting((s) => {
@@ -222,6 +227,7 @@ export function PanelApp(): ReactNode {
                   p={p}
                   accent={accent}
                   deleting={deleting.has(p.id)}
+                  live={liveById[p.id]}
                   onDelete={() => void removeMany([p.id], p.name)}
                   onReveal={() => {
                     void window.clean.revealInFinder(p.id)

@@ -1,3 +1,4 @@
+import { LiveDot } from '@renderer/components/LiveDot'
 import { ProjectIcon } from '@renderer/components/ProjectIcon'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { mixColor } from '@renderer/lib/colors'
@@ -6,7 +7,7 @@ import { type ReactNode, useState } from 'react'
 import type { MiniRowProps } from './MiniRow.types'
 
 /** Compact project row inside the menu bar dropdown. */
-export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProps): ReactNode {
+export function MiniRow({ p, accent, deleting, live, onDelete, onReveal }: MiniRowProps): ReactNode {
   const [h, setH] = useState(false)
   const stale = staleness(p.lastUsed)
   const known = p.uniqueSize !== undefined
@@ -40,6 +41,9 @@ export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProp
       <div style={{ minWidth: 0, flex: 1 }}>
         <div
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
             fontSize: 12.5,
             fontWeight: 550,
             color: 'var(--text)',
@@ -48,7 +52,8 @@ export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProp
             textOverflow: 'ellipsis',
           }}
         >
-          {p.name}
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
+          {live && <LiveDot info={live} />}
         </div>
         <div style={{ fontSize: 10.5, color: mixColor('rgba(150,154,162,0.95)', accent, stale * 0.85) }}>
           {relativeTime(p.lastUsed)}
@@ -58,12 +63,13 @@ export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProp
         <button
           onClick={(e) => {
             e.stopPropagation()
+            if (live) return
             onDelete()
           }}
-          title="Delete now"
+          title={live ? 'This app is running' : 'Delete now'}
           style={{
             border: 'none',
-            cursor: 'pointer',
+            cursor: live ? 'default' : 'pointer',
             width: 26,
             height: 26,
             borderRadius: 7,
@@ -72,6 +78,8 @@ export function MiniRow({ p, accent, deleting, onDelete, onReveal }: MiniRowProp
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            opacity: live ? 0.4 : 1,
+            pointerEvents: live ? 'none' : undefined,
           }}
         >
           {UIIcon.trash({ size: 14 })}
