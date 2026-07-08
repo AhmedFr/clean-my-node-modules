@@ -60,6 +60,7 @@ export function registerIpc(ctx: AppContext): void {
   })
 
   ipcMain.handle(IPC.scan, () => ctx.runScan())
+  ipcMain.handle(IPC.cancelScan, () => ctx.cancelScan())
 
   ipcMain.handle(IPC.getPnpmStore, (_e, force?: boolean) => {
     const s = ctx.settings.get()

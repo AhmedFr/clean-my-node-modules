@@ -50,20 +50,26 @@ app.whenReady().then(() => {
   revalidateLicense()
   const licenseTimer = setInterval(revalidateLicense, 24 * 60 * 60 * 1000)
 
-  const runScan = async (): Promise<void> => {
-    if (scanner.isScanning) return
+  const runScan = async (): Promise<{ cancelled: boolean }> => {
+    if (scanner.isScanning) return { cancelled: false }
     const startedAt = Date.now()
     try {
       const roots = resolveScanRoots(settings.get().scanRoots, { home: homedir() })
-      const result = await scanner.scan(roots, (progress) => broadcast(IPC.onScanProgress, progress))
-      projects.replaceAll(result)
+      const { cancelled, projects: found } = await scanner.scan(roots, (p) => broadcast(IPC.onScanProgress, p))
+      if (cancelled) {
+        analytics.capture('scan_cancelled')
+        return { cancelled: true }
+      }
+      projects.replaceAll(found)
       analytics.capture('scan_completed', {
-        total_gb: Math.round((result.reduce((a, p) => a + (p.uniqueSize ?? p.size), 0) / GB) * 10) / 10,
-        projects_count: result.length,
+        total_gb: Math.round((found.reduce((a, p) => a + (p.uniqueSize ?? p.size), 0) / GB) * 10) / 10,
+        projects_count: found.length,
         duration_s: Math.round((Date.now() - startedAt) / 1000),
       })
+      return { cancelled: false }
     } catch (err) {
       console.error('Scan failed', err)
+      return { cancelled: false }
     }
   }
 
@@ -104,7 +110,17 @@ app.whenReady().then(() => {
 
   tray.create((trayInstance) => panel.toggle(trayInstance))
   panel.create()
-  registerIpc({ projects, packages, settings, license, analytics, panel, launcher, runScan })
+  registerIpc({
+    projects,
+    packages,
+    settings,
+    license,
+    analytics,
+    panel,
+    launcher,
+    runScan,
+    cancelScan: () => scanner.cancel(),
+  })
   syncDerivedState()
 
   // First launch: show onboarding front-and-center; it triggers the first scan.

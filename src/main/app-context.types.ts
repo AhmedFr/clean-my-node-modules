@@ -14,5 +14,6 @@ export interface AppContext {
   analytics: Analytics
   panel: PanelWindow
   launcher: LauncherWindow
-  runScan: () => Promise<void>
+  runScan: () => Promise<{ cancelled: boolean }>
+  cancelScan: () => void
 }

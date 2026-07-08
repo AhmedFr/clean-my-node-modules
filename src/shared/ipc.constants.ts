@@ -3,6 +3,7 @@ export const IPC = {
   // invoke (renderer -> main)
   getProjects: 'projects:get',
   scan: 'projects:scan',
+  cancelScan: 'projects:cancel-scan',
   deleteNodeModules: 'projects:delete',
   deleteManyNodeModules: 'projects:delete-many',
   revealInFinder: 'projects:reveal',
