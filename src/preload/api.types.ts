@@ -1,6 +1,6 @@
 import type { DeleteManyResult, DeleteResult } from '@shared/delete.types'
-import type { LauncherNavTarget } from '@shared/launcher-nav.types'
 import type { DockerActionResult, DockerInfo, DockerItemKind, DockerPruneTarget } from '@shared/docker.types'
+import type { LauncherNavTarget } from '@shared/launcher-nav.types'
 import type { ActivateResult, LicenseState } from '@shared/license.types'
 import type { LiveInfo } from '@shared/liveness.types'
 import type { PackageInventory } from '@shared/package.types'
