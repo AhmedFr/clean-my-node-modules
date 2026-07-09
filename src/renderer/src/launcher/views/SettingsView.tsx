@@ -59,6 +59,36 @@ function SectionHeading({ title, hint }: { title: string; hint: string }): React
   )
 }
 
+function GbInput({ valueGB, onChange }: { valueGB: number; onChange: (v: number) => void }): ReactNode {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <input
+        type="number"
+        min={1}
+        max={1000}
+        value={valueGB}
+        onChange={(e) => {
+          const v = Number(e.target.value)
+          if (Number.isFinite(v)) onChange(v)
+        }}
+        style={{
+          width: 74,
+          background: 'var(--surface-2)',
+          border: '1px solid var(--hairline)',
+          borderRadius: 7,
+          padding: '6px 9px',
+          fontSize: 12.5,
+          color: 'var(--text)',
+          outline: 'none',
+          fontVariantNumeric: 'tabular-nums',
+          textAlign: 'right',
+        }}
+      />
+      <span style={{ fontSize: 12.5, color: 'var(--text-dim)' }}>GB</span>
+    </div>
+  )
+}
+
 interface SettingsViewProps {
   settings: Settings
   setSetting: SetSetting
@@ -192,6 +222,19 @@ export function SettingsView({
           <SettingsRow label="Threshold notifications" hint="Show a desktop alert the moment you cross the limit">
             <Toggle on={settings.notify} accent={accent} onToggle={() => setSetting('notify', !settings.notify)} />
           </SettingsRow>
+          <Divider />
+          <SectionHeading title="Storage limits" hint="Fill levels for the Caches and Docker headline gauges" />
+          <SettingsRow label="pnpm cache limit" hint="The Caches tab gauge fills toward this size">
+            <GbInput valueGB={settings.cacheThresholdGB} onChange={(v) => setSetting('cacheThresholdGB', v)} />
+          </SettingsRow>
+          {(settings.docker ?? true) && (
+            <>
+              <Divider />
+              <SettingsRow label="Docker limit" hint="The Docker tab gauge fills toward this size">
+                <GbInput valueGB={settings.dockerThresholdGB} onChange={(v) => setSetting('dockerThresholdGB', v)} />
+              </SettingsRow>
+            </>
+          )}
         </>
       )}
 
