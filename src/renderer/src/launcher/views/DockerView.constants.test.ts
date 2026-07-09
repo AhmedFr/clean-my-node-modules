@@ -2,8 +2,10 @@ import type { DockerInfo, DockerItem } from '@shared/docker.types'
 import { describe, expect, it } from 'vitest'
 import {
   type DisplayGroup,
+  dockerGroupActive,
   dockerItemDetail,
   groupDockerForDisplay,
+  projectRowExpanded,
   pruneEstimateBytes,
   prunesForGroup,
 } from './DockerView.constants'
@@ -189,5 +191,34 @@ describe('prunesForGroup', () => {
       items: [item({ id: 'i1', kind: 'image', name: 'x', removable: true })],
     }
     expect(prunesForGroup(g)).toEqual([])
+  })
+})
+
+describe('dockerGroupActive', () => {
+  it('is true when any item is in use', () => {
+    expect(
+      dockerGroupActive([
+        item({ id: 'a', kind: 'image', name: 'a', inUse: false }),
+        item({ id: 'b', kind: 'volume', name: 'b', inUse: true }),
+      ]),
+    ).toBe(true)
+  })
+  it('is false when no item is in use', () => {
+    expect(dockerGroupActive([item({ id: 'a', kind: 'image', name: 'a', inUse: false })])).toBe(false)
+  })
+  it('is false for an empty group', () => {
+    expect(dockerGroupActive([])).toBe(false)
+  })
+})
+
+describe('projectRowExpanded', () => {
+  it('a non-empty query expands every project regardless of the accordion id', () => {
+    expect(projectRowExpanded(true, null, 'project:x')).toBe(true)
+    expect(projectRowExpanded(true, 'project:y', 'project:x')).toBe(true)
+  })
+  it('with no query, only the accordion-selected id is expanded', () => {
+    expect(projectRowExpanded(false, 'project:x', 'project:x')).toBe(true)
+    expect(projectRowExpanded(false, 'project:y', 'project:x')).toBe(false)
+    expect(projectRowExpanded(false, null, 'project:x')).toBe(false)
   })
 })

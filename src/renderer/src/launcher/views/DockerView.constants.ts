@@ -128,3 +128,16 @@ export function pruneEstimateBytes(items: DockerItem[], target: DockerPruneTarge
       return 0
   }
 }
+
+/** True when any resource in the group is in use by a container. Drives the green active
+ *  dot on a collapsed project row. */
+export function dockerGroupActive(items: DockerItem[]): boolean {
+  return items.some((i) => i.inUse)
+}
+
+/** Whether a project row renders expanded. A non-empty search expands every project (their
+ *  items are already query-filtered, so results are never hidden behind a collapsed row);
+ *  with no query, only the accordion-selected id is open. */
+export function projectRowExpanded(hasQuery: boolean, expandedId: string | null, groupId: string): boolean {
+  return hasQuery || expandedId === groupId
+}
