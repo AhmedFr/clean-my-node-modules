@@ -1,18 +1,30 @@
-import type { SeverityCounts } from '@renderer/lib/severity'
 import { GB } from '@renderer/lib/format'
+import type { SeverityCounts } from '@renderer/lib/severity'
 import { describe, expect, it } from 'vitest'
 import { type TabSummaryInput, tabSummary } from './tabSummary'
 
 const sev = (o: Partial<SeverityCounts> = {}): SeverityCounts => ({
-  critical: 0, high: 0, moderate: 0, low: 0, vulnerable: 0, outdated: 0, ...o,
+  critical: 0,
+  high: 0,
+  moderate: 0,
+  low: 0,
+  vulnerable: 0,
+  outdated: 0,
+  ...o,
 })
 const base: TabSummaryInput = {
   tab: 'projects',
   projectsUsed: 0,
-  cachesUsed: 0, cachesAvailable: true,
-  dockerUsed: 0, dockerAvailable: true,
-  thresholdGB: 5, cacheThresholdGB: 10, dockerThresholdGB: 20,
-  severity: sev(), packagesComputing: false, packagesHasData: true,
+  cachesUsed: 0,
+  cachesAvailable: true,
+  dockerUsed: 0,
+  dockerAvailable: true,
+  thresholdGB: 5,
+  cacheThresholdGB: 10,
+  dockerThresholdGB: 20,
+  severity: sev(),
+  packagesComputing: false,
+  packagesHasData: true,
 }
 
 describe('tabSummary', () => {
