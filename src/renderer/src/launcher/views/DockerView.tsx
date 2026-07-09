@@ -395,11 +395,7 @@ function DockerItemRow({
           <RowAction
             icon={UIIcon.trash}
             label={
-              busy
-                ? 'Removing…'
-                : canRemove
-                  ? `Remove ${item.name} permanently — not sent to the Trash`
-                  : disabledReason
+              busy ? 'Removing…' : canRemove ? `Remove ${item.name} permanently, not sent to the Trash` : disabledReason
             }
             danger
             disabled={!canRemove || busy}
