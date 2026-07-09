@@ -208,6 +208,7 @@ function DockerItemRow({
   accent,
   busy,
   onRemove,
+  onHover,
 }: {
   item: DockerItem
   density: Density
@@ -216,6 +217,7 @@ function DockerItemRow({
   accent: string
   busy: boolean
   onRemove?: (item: DockerItem) => void
+  onHover: (el: HTMLDivElement) => void
 }): ReactNode {
   const [hover, setHover] = useState(false)
   const roomy = density === 'roomy'
@@ -231,17 +233,19 @@ function DockerItemRow({
 
   return (
     <div
-      onMouseEnter={() => setHover(true)}
+      onMouseEnter={(e) => {
+        setHover(true)
+        onHover(e.currentTarget)
+      }}
       onMouseLeave={() => setHover(false)}
       style={{
+        position: 'relative',
+        zIndex: 1,
         display: 'flex',
         alignItems: 'center',
         gap: roomy ? 13 : 11,
         padding: roomy ? '11px 14px' : '7px 14px',
         borderRadius: 10,
-        background: hover ? 'var(--surface-2)' : 'transparent',
-        boxShadow: hover ? 'inset 0 0 0 1px var(--hairline)' : 'none',
-        transition: 'background .12s ease, box-shadow .12s ease',
       }}
     >
       <span
@@ -352,6 +356,9 @@ export function DockerView({
   sizeStyle,
   maxBytes,
 }: DockerViewProps): ReactNode {
+  // Shared sliding highlight behind the hovered row, matching the node_modules list (.cc-hl).
+  const [hl, setHl] = useState({ top: 0, height: 0, on: false })
+
   if (loading && !info) {
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 }}>
@@ -373,7 +380,20 @@ export function DockerView({
 
   return (
     <div className="cc-list">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div
+        style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 14 }}
+        onMouseLeave={() => setHl((h) => ({ ...h, on: false }))}
+      >
+        <div
+          className="cc-hl"
+          style={{
+            top: hl.top,
+            height: hl.height,
+            opacity: hl.on ? 1 : 0,
+            background: 'var(--surface-2)',
+            boxShadow: 'inset 0 0 0 1px var(--hairline)',
+          }}
+        />
         {groups.length === 0 ? (
           <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 }}>
             {query ? `No Docker resources match “${query}”.` : 'No Docker resources found.'}
@@ -412,6 +432,7 @@ export function DockerView({
                     accent={accent}
                     busy={busyId === item.id}
                     onRemove={onRemove}
+                    onHover={(el) => setHl({ top: el.offsetTop, height: el.offsetHeight, on: true })}
                   />
                 ))}
               </div>
