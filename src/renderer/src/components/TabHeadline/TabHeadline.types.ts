@@ -21,5 +21,7 @@ export interface TabHeadlineProps {
   // packages
   severity: SeverityCounts
   packagesTotal: number
+  packagesCheckEnabled: boolean
   packagesComputing: boolean
+  packagesDataReady: boolean
 }

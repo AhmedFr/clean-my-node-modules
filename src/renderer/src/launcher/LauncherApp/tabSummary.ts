@@ -13,8 +13,9 @@ export interface TabSummaryInput {
   cacheThresholdGB: number
   dockerThresholdGB: number
   severity: SeverityCounts
+  packagesCheckEnabled: boolean
   packagesComputing: boolean
-  packagesHasData: boolean
+  packagesDataReady: boolean
 }
 
 /** "{pct}% of your {n} GB {qualifier}limit" under the cap, or
@@ -39,7 +40,9 @@ export function tabSummary(input: TabSummaryInput): string | null {
     case 'docker':
       return input.dockerAvailable ? sizeLimitSummary(input.dockerUsed, input.dockerThresholdGB, 'Docker ') : null
     case 'packages': {
-      if (input.packagesComputing && !input.packagesHasData) return null
+      if (!input.packagesCheckEnabled) return null
+      if (input.packagesComputing) return null
+      if (!input.packagesDataReady) return null
       const { vulnerable, outdated } = input.severity
       if (vulnerable === 0) return outdated > 0 ? `all clear · ${outdated} outdated` : 'all clear'
       return `${vulnerable} vulnerable · ${outdated} outdated`

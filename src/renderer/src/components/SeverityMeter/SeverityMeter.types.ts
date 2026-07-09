@@ -12,6 +12,6 @@ export interface SeverityMeterProps {
   counts: SeverityCounts
   /** Total package count, for the tooltip. */
   total: number
-  /** Inventory still computing — show the ghost shimmer. */
+  /** Inventory still computing, show the ghost shimmer. */
   computing?: boolean
 }

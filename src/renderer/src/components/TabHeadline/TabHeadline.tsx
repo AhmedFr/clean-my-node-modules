@@ -10,7 +10,12 @@ import type { TabHeadlineProps } from './TabHeadline.types'
 export function TabHeadline(props: TabHeadlineProps): ReactNode {
   const { tab, accent } = props
   if (tab === 'packages') {
-    return <SeverityMeter counts={props.severity} total={props.packagesTotal} computing={props.packagesComputing} />
+    if (!props.packagesCheckEnabled) return null
+    if (props.packagesComputing) {
+      return <SeverityMeter counts={props.severity} total={props.packagesTotal} computing />
+    }
+    if (!props.packagesDataReady) return null
+    return <SeverityMeter counts={props.severity} total={props.packagesTotal} />
   }
   if (tab === 'caches') {
     if (!props.cachesAvailable) return null

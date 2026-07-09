@@ -169,7 +169,7 @@ export function LauncherApp(): ReactNode {
   )
   const dockerTotal = useMemo(() => (docker.info?.totals ?? []).reduce((s, t) => s + t.sizeBytes, 0), [docker.info])
   const severity = useMemo(() => severityCounts(inventory?.packages ?? []), [inventory])
-  const packagesHasData = (inventory?.packages.length ?? 0) > 0
+  const packagesDataReady = !!inventory && !inventory.enrichmentError
   const cachesAvailable = !!store?.available
   const dockerAvailable = !!docker.info?.available
   const ratio = totalUsed / threshold
@@ -627,8 +627,9 @@ export function LauncherApp(): ReactNode {
     cacheThresholdGB: settings.cacheThresholdGB,
     dockerThresholdGB: settings.dockerThresholdGB,
     severity,
+    packagesCheckEnabled: settings.checkUpdates,
     packagesComputing: pkgComputing,
-    packagesHasData,
+    packagesDataReady,
   })
   const summaryOver =
     tab === 'projects'
@@ -703,7 +704,9 @@ export function LauncherApp(): ReactNode {
                 dockerThresholdGB={settings.dockerThresholdGB}
                 severity={severity}
                 packagesTotal={inventory?.packages.length ?? 0}
+                packagesCheckEnabled={settings.checkUpdates}
                 packagesComputing={pkgComputing}
+                packagesDataReady={packagesDataReady}
               />
               {totalUsed > 0 && (
                 <button className="cc-iconbtn" title="Copy your scan as an image" onClick={() => copyCard('header')}>

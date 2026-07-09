@@ -23,8 +23,9 @@ const base: TabSummaryInput = {
   cacheThresholdGB: 10,
   dockerThresholdGB: 20,
   severity: sev(),
+  packagesCheckEnabled: true,
   packagesComputing: false,
-  packagesHasData: true,
+  packagesDataReady: true,
 }
 
 describe('tabSummary', () => {
@@ -43,12 +44,15 @@ describe('tabSummary', () => {
     expect(tabSummary({ ...base, tab: 'docker', dockerAvailable: false })).toBeNull()
   })
 
-  it('packages: vulnerable + outdated, all-clear, and null while computing with no data', () => {
+  it('packages: vulnerable + outdated, all-clear, and null when unchecked/offline/computing', () => {
     expect(tabSummary({ ...base, tab: 'packages', severity: sev({ vulnerable: 7, outdated: 28 }) })).toBe(
       '7 vulnerable · 28 outdated',
     )
     expect(tabSummary({ ...base, tab: 'packages', severity: sev({ outdated: 3 }) })).toBe('all clear · 3 outdated')
     expect(tabSummary({ ...base, tab: 'packages', severity: sev() })).toBe('all clear')
-    expect(tabSummary({ ...base, tab: 'packages', packagesComputing: true, packagesHasData: false })).toBeNull()
+    // checks off, offline/no data, and computing all suppress the summary
+    expect(tabSummary({ ...base, tab: 'packages', packagesCheckEnabled: false })).toBeNull()
+    expect(tabSummary({ ...base, tab: 'packages', packagesDataReady: false })).toBeNull()
+    expect(tabSummary({ ...base, tab: 'packages', packagesComputing: true })).toBeNull()
   })
 })
