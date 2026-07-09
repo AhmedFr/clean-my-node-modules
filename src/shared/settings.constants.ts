@@ -5,6 +5,8 @@ export const DEFAULT_SETTINGS: Settings = {
   sizeStyle: 'plain',
   density: 'roomy',
   thresholdGB: 5,
+  cacheThresholdGB: 10,
+  dockerThresholdGB: 20,
   scanInterval: 'daily',
   notify: true,
   onboarded: false,

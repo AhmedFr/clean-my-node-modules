@@ -7,6 +7,10 @@ export interface Settings {
   sizeStyle: SizeStyle
   density: Density
   thresholdGB: number
+  /** pnpm cache (store) size limit, GB — headline gauge on the Caches tab. */
+  cacheThresholdGB: number
+  /** Docker total size limit, GB — headline gauge on the Docker tab. */
+  dockerThresholdGB: number
   scanInterval: ScanInterval
   notify: boolean
   onboarded: boolean

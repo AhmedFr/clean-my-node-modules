@@ -41,6 +41,8 @@ export function coerceSetting(
     case 'docker':
       return typeof value === 'boolean' ? { key, value } : null
     case 'thresholdGB':
+    case 'cacheThresholdGB':
+    case 'dockerThresholdGB':
       return typeof value === 'number' && Number.isFinite(value)
         ? { key, value: Math.min(MAX_THRESHOLD_GB, Math.max(MIN_THRESHOLD_GB, value)) }
         : null
