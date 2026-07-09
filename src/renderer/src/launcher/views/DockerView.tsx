@@ -1,3 +1,4 @@
+import { Accordion } from '@renderer/components/Accordion'
 import { FrameworkIcon } from '@renderer/components/FrameworkIcon'
 import { RowAction } from '@renderer/components/Row'
 import { SizeViz } from '@renderer/components/SizeViz'
@@ -10,9 +11,11 @@ import type { Density, SizeStyle } from '@shared/settings.types'
 import { Fragment, type ReactNode, useState } from 'react'
 import {
   type DisplayGroup,
+  dockerGroupActive,
   dockerItemDetail,
   groupDockerForDisplay,
   PRUNE_TARGET_LABEL,
+  projectRowExpanded,
   prunesForGroup,
 } from './DockerView.constants'
 import type { DockerViewProps } from './DockerView.types'
@@ -87,7 +90,7 @@ function GroupHeader({
   busyId,
   onPrune,
 }: {
-  group: DisplayGroup
+  group: Exclude<DisplayGroup, { kind: 'project' }>
   busyId?: string | null
   onPrune?: (target: DockerPruneTarget) => void
 }): ReactNode {
@@ -104,25 +107,21 @@ function GroupHeader({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-        {group.kind === 'project' ? (
-          <DockerProjectIcon project={group.project} size={22} />
-        ) : (
-          <span
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: 6,
-              flex: '0 0 auto',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'var(--surface-2)',
-              color: 'var(--text-3)',
-            }}
-          >
-            {GROUP_ICON[group.kind]({ size: 13 })}
-          </span>
-        )}
+        <span
+          style={{
+            width: 22,
+            height: 22,
+            borderRadius: 6,
+            flex: '0 0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'var(--surface-2)',
+            color: 'var(--text-3)',
+          }}
+        >
+          {GROUP_ICON[group.kind]({ size: 13 })}
+        </span>
         <div style={{ minWidth: 0 }}>
           <div
             style={{
@@ -136,10 +135,7 @@ function GroupHeader({
           >
             {group.label}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>
-            {formatSizeStr(totalBytes)}
-            {group.kind === 'project' ? ` · ${group.items.length} item${group.items.length === 1 ? '' : 's'}` : ''}
-          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>{formatSizeStr(totalBytes)}</div>
         </div>
       </div>
       {onPrune && targets.length > 0 && (
@@ -152,7 +148,7 @@ function GroupHeader({
                 type="button"
                 onClick={() => onPrune(target)}
                 disabled={busy}
-                title={`Prune ${PRUNE_TARGET_LABEL[target].toLowerCase()}. Permanent — not sent to the Trash.`}
+                title={`Prune ${PRUNE_TARGET_LABEL[target].toLowerCase()}. Permanent, not sent to the Trash.`}
                 style={{
                   border: '1px solid var(--surface-4)',
                   cursor: busy ? 'default' : 'pointer',
@@ -192,6 +188,81 @@ function InUseDot(): ReactNode {
         flexShrink: 0,
       }}
     />
+  )
+}
+
+/** Collapsed, clickable header for a compose-project group: logo/icon, name, item count,
+ *  total size, a green active dot when any resource is in use, and a chevron that rotates
+ *  when expanded. The whole row toggles expansion and drives the shared .cc-hl highlight. */
+function DockerProjectRow({
+  project,
+  itemCount,
+  totalBytes,
+  active,
+  expanded,
+  onToggle,
+  onHover,
+}: {
+  project: DockerProject
+  itemCount: number
+  totalBytes: number
+  active: boolean
+  expanded: boolean
+  onToggle: () => void
+  onHover: (el: HTMLDivElement) => void
+}): ReactNode {
+  return (
+    <div
+      role="option"
+      aria-selected={expanded}
+      onClick={onToggle}
+      onMouseEnter={(e) => onHover(e.currentTarget)}
+      style={{
+        position: 'relative',
+        zIndex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '8px 12px',
+        borderRadius: 10,
+        cursor: 'pointer',
+      }}
+    >
+      <DockerProjectIcon project={project} size={22} />
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div
+          style={{
+            fontSize: 12.5,
+            fontWeight: 650,
+            color: 'var(--text-2)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {project.name}
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>
+          {itemCount} item{itemCount === 1 ? '' : 's'}
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 'none' }}>
+        <span style={{ fontSize: 12.5, fontWeight: 650, color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>
+          {formatSizeStr(totalBytes)}
+        </span>
+        {active && <InUseDot />}
+        <span
+          style={{
+            display: 'flex',
+            color: expanded ? 'var(--text-2)' : 'var(--text-faint)',
+            transition: 'transform 0.15s ease',
+            transform: expanded ? 'rotate(90deg)' : 'none',
+          }}
+        >
+          {UIIcon.chevronRight({ size: 14 })}
+        </span>
+      </div>
+    </div>
   )
 }
 
@@ -358,6 +429,7 @@ export function DockerView({
 }: DockerViewProps): ReactNode {
   // Shared sliding highlight behind the hovered row, matching the node_modules list (.cc-hl).
   const [hl, setHl] = useState({ top: 0, height: 0, on: false })
+  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null)
 
   if (loading && !info) {
     return (
@@ -377,6 +449,7 @@ export function DockerView({
 
   const groups = groupDockerForDisplay(info, { sortBy, typeFilter, query })
   const firstOtherIndex = groups.findIndex((g) => g.kind !== 'project')
+  const hasQuery = query.trim().length > 0
 
   return (
     <div className="cc-list">
@@ -399,45 +472,83 @@ export function DockerView({
             {query ? `No Docker resources match “${query}”.` : 'No Docker resources found.'}
           </div>
         ) : (
-          groups.map((g, idx) => (
-            <Fragment key={g.id}>
-              {idx === firstOtherIndex && firstOtherIndex > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    padding: '2px 12px',
-                    color: 'var(--text-faint)',
-                    fontSize: 10.5,
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '.05em',
-                  }}
+          groups.map((g, idx) => {
+            if (g.kind === 'project') {
+              const expanded = projectRowExpanded(hasQuery, expandedProjectId, g.id)
+              return (
+                <Accordion
+                  key={g.id}
+                  open={expanded}
+                  header={
+                    <DockerProjectRow
+                      project={g.project}
+                      itemCount={g.items.length}
+                      totalBytes={g.items.reduce((s, i) => s + i.sizeBytes, 0)}
+                      active={dockerGroupActive(g.items)}
+                      expanded={expanded}
+                      onToggle={() => setExpandedProjectId((cur) => (cur === g.id ? null : g.id))}
+                      onHover={(el) => setHl({ top: el.offsetTop, height: el.offsetHeight, on: true })}
+                    />
+                  }
                 >
-                  <span style={{ flex: 1, height: 1, background: 'var(--hairline)' }} />
-                  Not linked to a project
-                  <span style={{ flex: 1, height: 1, background: 'var(--hairline)' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+                    {g.items.map((item: DockerItem) => (
+                      <DockerItemRow
+                        key={item.id}
+                        item={item}
+                        density={density}
+                        sizeStyle={sizeStyle}
+                        maxBytes={maxBytes}
+                        accent={accent}
+                        busy={busyId === item.id}
+                        onRemove={onRemove}
+                        onHover={(el) => setHl({ top: el.offsetTop, height: el.offsetHeight, on: true })}
+                      />
+                    ))}
+                  </div>
+                </Accordion>
+              )
+            }
+            return (
+              <Fragment key={g.id}>
+                {idx === firstOtherIndex && firstOtherIndex > 0 && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: '2px 12px',
+                      color: 'var(--text-faint)',
+                      fontSize: 10.5,
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '.05em',
+                    }}
+                  >
+                    <span style={{ flex: 1, height: 1, background: 'var(--hairline)' }} />
+                    Not linked to a project
+                    <span style={{ flex: 1, height: 1, background: 'var(--hairline)' }} />
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <GroupHeader group={g} busyId={busyId} onPrune={onPrune} />
+                  {g.items.map((item: DockerItem) => (
+                    <DockerItemRow
+                      key={item.id}
+                      item={item}
+                      density={density}
+                      sizeStyle={sizeStyle}
+                      maxBytes={maxBytes}
+                      accent={accent}
+                      busy={busyId === item.id}
+                      onRemove={onRemove}
+                      onHover={(el) => setHl({ top: el.offsetTop, height: el.offsetHeight, on: true })}
+                    />
+                  ))}
                 </div>
-              )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <GroupHeader group={g} busyId={busyId} onPrune={onPrune} />
-                {g.items.map((item: DockerItem) => (
-                  <DockerItemRow
-                    key={item.id}
-                    item={item}
-                    density={density}
-                    sizeStyle={sizeStyle}
-                    maxBytes={maxBytes}
-                    accent={accent}
-                    busy={busyId === item.id}
-                    onRemove={onRemove}
-                    onHover={(el) => setHl({ top: el.offsetTop, height: el.offsetHeight, on: true })}
-                  />
-                ))}
-              </div>
-            </Fragment>
-          ))
+              </Fragment>
+            )
+          })
         )}
       </div>
     </div>
