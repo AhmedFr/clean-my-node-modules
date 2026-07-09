@@ -72,10 +72,10 @@ export function groupDockerForDisplay(
   ]
 }
 
-/** Detail line for a Docker row: relative created date (or "unknown date") plus in-use badge. */
+/** Detail line for a Docker row: relative created date (or "unknown date"). In-use state is
+ * shown as a green dot next to the name instead (see `DockerItemRow`), not as text here. */
 export function dockerItemDetail(item: DockerItem, now = Date.now()): string {
-  const created = item.createdAt > 0 ? relativeTime(item.createdAt, now) : 'unknown date'
-  return `${created} · ${item.inUse ? 'in use' : 'unused'}`
+  return item.createdAt > 0 ? relativeTime(item.createdAt, now) : 'unknown date'
 }
 
 /** Display label for each bulk-prune target, used on the per-category prune buttons and confirm footer. */

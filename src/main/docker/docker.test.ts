@@ -99,7 +99,7 @@ describe('getDockerInfo', () => {
       if (args[0] === 'system' && args[1] === 'df') return { stdout: df, stderr: '' }
       if (args[0] === 'ps') return { stdout: 'ctr1\n', stderr: '' }
       if (args[0] === 'container' && args[1] === 'inspect') return { stdout: containerInspect, stderr: '' }
-      if (args[0] === 'volume' && args[1] === 'inspect') return { stdout: '[]', stderr: '' }
+      if (args[0] === 'volume' && args[1] === 'ls') return { stdout: '', stderr: '' }
       return { stdout: '', stderr: '' }
     })
     const info = await getDockerInfo(true)
@@ -146,7 +146,7 @@ describe('getDockerInfo', () => {
       if (args[0] === 'system' && args[1] === 'df') return { stdout: df, stderr: '' }
       if (args[0] === 'ps') return { stdout: 'ctr1\n', stderr: '' }
       if (args[0] === 'container' && args[1] === 'inspect') throw new Error('container removed between ps and inspect')
-      if (args[0] === 'volume' && args[1] === 'inspect') return { stdout: '[]', stderr: '' }
+      if (args[0] === 'volume' && args[1] === 'ls') return { stdout: '', stderr: '' }
       return { stdout: '', stderr: '' }
     })
     const info = await getDockerInfo(true)
@@ -154,6 +154,57 @@ describe('getDockerInfo', () => {
     const image = info.items.find((i) => i.kind === 'image')
     expect(image?.repository).toBeTruthy()
     expect(info.projects).toEqual([])
+  })
+
+  it('associates a volume to its project via `docker volume ls` label output (regression: replaces fragile `volume inspect <names>`)', async () => {
+    const df = JSON.stringify({
+      Images: [],
+      Volumes: [
+        { Name: 'supabase_db_lets-get-a-job', Links: '0', Size: '10MB' },
+        { Name: 'some_anon_volume', Links: '0', Size: '1MB' },
+      ],
+      Containers: [],
+      BuildCache: [],
+    })
+    __setExecForTests(async (_bin, args) => {
+      if (args[0] === 'version') return { stdout: '27.0.0', stderr: '' }
+      if (args[0] === 'system' && args[1] === 'df') return { stdout: df, stderr: '' }
+      if (args[0] === 'ps') return { stdout: '', stderr: '' }
+      if (args[0] === 'volume' && args[1] === 'ls') {
+        return {
+          stdout: 'supabase_db_lets-get-a-job::lets-get-a-job\nsome_anon_volume::\n',
+          stderr: '',
+        }
+      }
+      return { stdout: '', stderr: '' }
+    })
+    const info = await getDockerInfo(true)
+    expect(info.available).toBe(true)
+    expect(info.items.find((i) => i.name === 'supabase_db_lets-get-a-job')?.project).toBe('lets-get-a-job')
+    expect(info.items.find((i) => i.name === 'some_anon_volume')?.project).toBeUndefined()
+  })
+
+  it('leaves volumes unassociated (fail-soft) when `docker volume ls` throws, without a single stale volume name killing the whole batch', async () => {
+    const df = JSON.stringify({
+      Images: [{ ID: 'sha256:img1', Repository: 'node', Tag: '20', CreatedAt: '', Size: '400MB', Containers: '0' }],
+      Volumes: [{ Name: 'pgdata', Links: '0', Size: '10MB' }],
+      Containers: [],
+      BuildCache: [],
+    })
+    __setExecForTests(async (_bin, args) => {
+      if (args[0] === 'version') return { stdout: '27.0.0', stderr: '' }
+      if (args[0] === 'system' && args[1] === 'df') return { stdout: df, stderr: '' }
+      if (args[0] === 'ps') return { stdout: '', stderr: '' }
+      if (args[0] === 'volume' && args[1] === 'ls') throw new Error('exit status 1')
+      return { stdout: '', stderr: '' }
+    })
+    const info = await getDockerInfo(true)
+    expect(info.available).toBe(true)
+    const volume = info.items.find((i) => i.kind === 'volume')
+    expect(volume?.project).toBeUndefined()
+    // image association still ran — one command failing doesn't stop the rest.
+    const image = info.items.find((i) => i.kind === 'image')
+    expect(image?.repository).toBe('node')
   })
 })
 

@@ -13,7 +13,7 @@ import { app } from 'electron'
 import { detectKind } from '../scanner/detect-kind'
 import { findProjectIcon } from '../scanner/find-project-icon'
 import { associateProjects } from './docker-associate'
-import { parseContainerInspect, parseVolumeInspect } from './docker-inspect'
+import { parseContainerInspect, parseVolumeLabels } from './docker-inspect'
 import { buildDockerItems, parseDf, parseSize } from './docker-parse'
 import { dockerExecEnv, findDocker } from './find-docker'
 
@@ -120,15 +120,16 @@ async function readDockerInfo(opts: DockerOpts): Promise<DockerInfo> {
     }
   }
 
-  const volNames = items.filter((i) => i.kind === 'volume').map((i) => i.id)
+  // `volume ls` (not `volume inspect <names>`): a single call over all existing volumes,
+  // so a stale/anonymous volume name from `system df -v` can never 404 and kill the batch.
   let volProjects = new Map<string, string>()
-  if (volNames.length) {
-    try {
-      volProjects = parseVolumeInspect(await run(bin, ['volume', 'inspect', ...volNames]))
-    } catch (err) {
-      volProjects = new Map<string, string>()
-      console.error('docker: volume inspect failed', err)
-    }
+  try {
+    volProjects = parseVolumeLabels(
+      await run(bin, ['volume', 'ls', '--format', '{{.Name}}::{{.Label "com.docker.compose.project"}}']),
+    )
+  } catch (err) {
+    volProjects = new Map<string, string>()
+    console.error('docker: volume ls failed', err)
   }
 
   const assoc = associateProjects(items, containers, volProjects)

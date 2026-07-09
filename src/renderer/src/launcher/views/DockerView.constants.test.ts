@@ -76,7 +76,7 @@ describe('groupDockerForDisplay', () => {
 describe('dockerItemDetail', () => {
   const NOW = Date.UTC(2026, 0, 10)
 
-  it('shows a relative created date and the in-use badge', () => {
+  it('shows a relative created date (in-use is shown as a dot, not text)', () => {
     const item: DockerItem = {
       id: 'x',
       kind: 'image',
@@ -86,10 +86,10 @@ describe('dockerItemDetail', () => {
       inUse: true,
       removable: false,
     }
-    expect(dockerItemDetail(item, NOW)).toBe('yesterday · in use')
+    expect(dockerItemDetail(item, NOW)).toBe('yesterday')
   })
 
-  it('shows "unknown date" when createdAt is 0, and the unused badge', () => {
+  it('shows "unknown date" when createdAt is 0', () => {
     const item: DockerItem = {
       id: 'x',
       kind: 'image',
@@ -99,7 +99,7 @@ describe('dockerItemDetail', () => {
       inUse: false,
       removable: true,
     }
-    expect(dockerItemDetail(item, NOW)).toBe('unknown date · unused')
+    expect(dockerItemDetail(item, NOW)).toBe('unknown date')
   })
 })
 

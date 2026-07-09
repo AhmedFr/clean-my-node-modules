@@ -36,19 +36,20 @@ export function parseContainerInspect(json: string): InspectedContainer[] {
   })
 }
 
-export function parseVolumeInspect(json: string): Map<string, string> {
+/** Parses `docker volume ls --format '{{.Name}}::{{.Label "com.docker.compose.project"}}'`
+ * output into a name→project map. One `volume ls` call lists only volumes that currently
+ * exist, so (unlike `docker volume inspect <names>`) it can never 404 on a stale/removed
+ * name and fail the whole batch. Lines without the label print `name::` (empty after the
+ * separator) and are skipped, along with blank and malformed (no `::`) lines. */
+export function parseVolumeLabels(output: string): Map<string, string> {
   const out = new Map<string, string>()
-  let arr: unknown
-  try {
-    arr = JSON.parse(json)
-  } catch {
-    return out
-  }
-  if (!Array.isArray(arr)) return out
-  for (const v of arr as Record<string, unknown>[]) {
-    const labels = (v.Labels ?? {}) as Record<string, string> | null
-    const project = labels?.[P]
-    if (v.Name && project) out.set(String(v.Name), project)
+  for (const line of output.split('\n')) {
+    if (!line.trim()) continue
+    const sep = line.indexOf('::')
+    if (sep === -1) continue
+    const name = line.slice(0, sep)
+    const project = line.slice(sep + 2)
+    if (name && project) out.set(name, project)
   }
   return out
 }

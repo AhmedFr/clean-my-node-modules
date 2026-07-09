@@ -174,6 +174,27 @@ function GroupHeader({
   )
 }
 
+/** Same visual as `LiveDot` (the node_modules "running" indicator): an 8px green dot with a
+ * soft glow. Not the `LiveDot` component itself — that takes a `LiveInfo` (command/port) a
+ * Docker item doesn't have — just its exact style, with Docker-appropriate copy. */
+function InUseDot(): ReactNode {
+  return (
+    <span
+      role="img"
+      title="In use by a container"
+      aria-label="In use by a container"
+      style={{
+        width: 8,
+        height: 8,
+        borderRadius: '50%',
+        background: '#35c759',
+        boxShadow: '0 0 0 3px rgba(53,199,89,0.18)',
+        flexShrink: 0,
+      }}
+    />
+  )
+}
+
 /** One Docker resource row. Mirrors `Row.tsx` (the node_modules row) so both lists read as
  * the same list primitive: kind icon, name + colored `TypeBadge`, detail line, `SizeViz`
  * for size, and a hover-revealed trash `RowAction` in place of a persistent Remove button.
@@ -218,6 +239,9 @@ function DockerItemRow({
         gap: roomy ? 13 : 11,
         padding: roomy ? '11px 14px' : '7px 14px',
         borderRadius: 10,
+        background: hover ? 'var(--surface-2)' : 'transparent',
+        boxShadow: hover ? 'inset 0 0 0 1px var(--hairline)' : 'none',
+        transition: 'background .12s ease, box-shadow .12s ease',
       }}
     >
       <span
@@ -261,6 +285,7 @@ function DockerItemRow({
           >
             {item.name}
           </span>
+          {item.inUse && <InUseDot />}
           <TypeBadge kind={item.kind} />
         </span>
         <span
