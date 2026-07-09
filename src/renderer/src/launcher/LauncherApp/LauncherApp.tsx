@@ -443,7 +443,10 @@ export function LauncherApp(): ReactNode {
       ref={rootRef}
       className="cc-window"
       style={{
-        boxShadow: `inset 0 0 0 1px var(--surface-1)${
+        // 1px inner frame on the top and sides only. The bottom edge is omitted
+        // on purpose: a full inset border drew a stray white line across the base
+        // of the window (below the footer), where nothing masks it.
+        boxShadow: `inset 0 1px 0 var(--surface-1), inset 1px 0 0 var(--surface-1), inset -1px 0 0 var(--surface-1)${
           ratio > 0.85 ? `, 0 0 60px -10px ${mixColor(status, 'rgba(0,0,0,0)', 0.45)}` : ''
         }`,
       }}
