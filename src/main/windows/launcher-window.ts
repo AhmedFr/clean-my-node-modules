@@ -45,7 +45,10 @@ export class LauncherWindow {
       fullscreenable: false,
       hasShadow: true,
       roundedCorners: true,
-      vibrancy: 'under-window',
+      // 'hud' (same material as the tray panel) instead of 'under-window': the
+      // under-window material rendered a faint light seam across the window's
+      // bottom edge (the "white line" bug). hud has no such seam.
+      vibrancy: 'hud',
       visualEffectState: 'active',
       webPreferences: {
         preload: join(__dirname, '../preload/index.mjs'),
