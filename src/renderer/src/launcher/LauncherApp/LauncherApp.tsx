@@ -1,5 +1,4 @@
 import { AppIcon } from '@renderer/components/AppIcon'
-import { Gauge } from '@renderer/components/Gauge'
 import { Kbd } from '@renderer/components/Kbd'
 import { RescanHint } from '@renderer/components/RescanHint'
 import { ResultView } from '@renderer/components/ResultView'
@@ -7,6 +6,7 @@ import { Row } from '@renderer/components/Row'
 import type { SegmentedOption } from '@renderer/components/Segmented'
 import { Segmented } from '@renderer/components/Segmented'
 import { Spinner } from '@renderer/components/Spinner'
+import { TabHeadline } from '@renderer/components/TabHeadline'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { UnlockPrompt } from '@renderer/components/UnlockPrompt'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
@@ -21,6 +21,7 @@ import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
 import { mixColor, statusColor } from '@renderer/lib/colors'
 import { formatSizeStr, GB } from '@renderer/lib/format'
+import { severityCounts } from '@renderer/lib/severity'
 import type { DockerItem, DockerPruneTarget } from '@shared/docker.types'
 import type { PackageEntry } from '@shared/package.types'
 import type { Project } from '@shared/project.types'
@@ -37,6 +38,7 @@ import { ScanningView } from '../views/ScanningView'
 import { SettingsView } from '../views/SettingsView'
 import type { DockerConfirmState, LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
 import { SortTab } from './SortTab'
+import { tabSummary } from './tabSummary'
 
 const NEXT_SCAN_LABEL: Record<string, string> = {
   '6h': '6 hours',
@@ -154,6 +156,11 @@ export function LauncherApp(): ReactNode {
     () => Math.max(1, ...(docker.info?.items.map((i) => i.sizeBytes) ?? [])),
     [docker.info],
   )
+  const dockerTotal = useMemo(() => (docker.info?.totals ?? []).reduce((s, t) => s + t.sizeBytes, 0), [docker.info])
+  const severity = useMemo(() => severityCounts(inventory?.packages ?? []), [inventory])
+  const packagesHasData = (inventory?.packages.length ?? 0) > 0
+  const cachesAvailable = !!store?.available
+  const dockerAvailable = !!docker.info?.available
   const ratio = totalUsed / threshold
   const status = statusColor(ratio, accent)
 
@@ -598,7 +605,31 @@ export function LauncherApp(): ReactNode {
   }, [sel, view, tab, filtered])
 
   const isEmpty = projects.length === 0
-  const overBy = totalUsed - threshold
+  const summaryText = tabSummary({
+    tab,
+    projectsUsed: totalUsed,
+    cachesUsed: storeBytes,
+    cachesAvailable,
+    dockerUsed: dockerTotal,
+    dockerAvailable,
+    thresholdGB: settings.thresholdGB,
+    cacheThresholdGB: settings.cacheThresholdGB,
+    dockerThresholdGB: settings.dockerThresholdGB,
+    severity,
+    packagesComputing: pkgComputing,
+    packagesHasData,
+  })
+  const summaryOver =
+    tab === 'projects'
+      ? totalUsed > threshold
+      : tab === 'caches'
+        ? cachesAvailable && storeBytes > settings.cacheThresholdGB * GB
+        : tab === 'docker'
+          ? dockerAvailable && dockerTotal > settings.dockerThresholdGB * GB
+          : severity.vulnerable > 0
+  // The disk spinner only makes sense on the size tabs that background-calculate.
+  const showCalcSpinner = calculating && (tab === 'projects' || tab === 'caches')
+  const showSummary = !!summaryText && !(tab === 'projects' && isEmpty)
 
   return (
     <div
@@ -645,12 +676,23 @@ export function LauncherApp(): ReactNode {
                         : 'Search caches…'
                 }
               />
-              <Gauge
-                used={totalUsed}
-                threshold={threshold}
+              <TabHeadline
+                tab={tab}
                 accent={accent}
+                projectsUsed={totalUsed}
                 linkedBytes={linkedTotal}
-                calculating={calculating}
+                projectsCalculating={calculating}
+                thresholdGB={settings.thresholdGB}
+                cachesUsed={storeBytes}
+                cachesAvailable={cachesAvailable}
+                cachesCalculating={storeLoading}
+                cacheThresholdGB={settings.cacheThresholdGB}
+                dockerUsed={dockerTotal}
+                dockerAvailable={dockerAvailable}
+                dockerThresholdGB={settings.dockerThresholdGB}
+                severity={severity}
+                packagesTotal={inventory?.packages.length ?? 0}
+                packagesComputing={pkgComputing}
               />
               {totalUsed > 0 && (
                 <button className="cc-iconbtn" title="Copy your scan as an image" onClick={() => copyCard('header')}>
@@ -989,8 +1031,7 @@ export function LauncherApp(): ReactNode {
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                 <AppIcon accent={accent} size={20} />
                 {view === 'list' &&
-                  !isEmpty &&
-                  (calculating ? (
+                  (showCalcSpinner ? (
                     <span
                       title={
                         scanning
@@ -1018,17 +1059,17 @@ export function LauncherApp(): ReactNode {
                       </span>
                     </span>
                   ) : (
-                    <span
-                      style={{
-                        fontSize: 12.5,
-                        color: ratio > 1 ? mixColor('#fff', accent, 0.5) : 'var(--text-muted)',
-                        fontWeight: 550,
-                      }}
-                    >
-                      {ratio > 1
-                        ? `${formatSizeStr(overBy)} over your ${settings.thresholdGB} GB limit`
-                        : `${(ratio * 100).toFixed(0)}% of your ${settings.thresholdGB} GB limit`}
-                    </span>
+                    showSummary && (
+                      <span
+                        style={{
+                          fontSize: 12.5,
+                          color: summaryOver ? mixColor('#fff', accent, 0.5) : 'var(--text-muted)',
+                          fontWeight: 550,
+                        }}
+                      >
+                        {summaryText}
+                      </span>
+                    )
                   ))}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
