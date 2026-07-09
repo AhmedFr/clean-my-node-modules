@@ -52,6 +52,8 @@ const VISIBLE_ROWS = 7
 const ROW_GAP = 4
 /** Vertical padding of the .cc-list container, in px (matches global.css). */
 const LIST_PADDING = 6
+/** Re-scan Docker when its tab opens and the data is older than this. */
+const DOCKER_STALE_MS = 5 * 60 * 1000
 
 export function LauncherApp(): ReactNode {
   const [settings, setSetting, settingsLoaded] = useSettings()
@@ -132,6 +134,15 @@ export function LauncherApp(): ReactNode {
       setSel(0)
     }
   }, [dockerEnabled, tab])
+
+  // Docker refreshes on its own cadence, decoupled from the disk rescan: when the
+  // Docker tab opens with missing or stale (>5 min) data, kick a background scan.
+  // Guarded on `docker.loading` and freshened `checkedAt` so it can't loop.
+  useEffect(() => {
+    if (view !== 'list' || tab !== 'docker' || !dockerEnabled || docker.loading) return
+    const stale = !docker.info || Date.now() - docker.info.checkedAt > DOCKER_STALE_MS
+    if (stale) void docker.refresh()
+  }, [view, tab, dockerEnabled, docker.info, docker.loading, docker.refresh])
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
