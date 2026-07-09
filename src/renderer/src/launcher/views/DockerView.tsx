@@ -1,10 +1,12 @@
-import { CacheRow } from '@renderer/components/CacheRow'
 import { FrameworkIcon } from '@renderer/components/FrameworkIcon'
+import { RowAction } from '@renderer/components/Row'
+import { SizeViz } from '@renderer/components/SizeViz'
 import { TypeBadge } from '@renderer/components/TypeBadge'
 import type { IconRenderer } from '@renderer/components/UIIcon'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { formatSizeStr } from '@renderer/lib/format'
 import type { DockerItem, DockerItemKind, DockerProject, DockerPruneTarget } from '@shared/docker.types'
+import type { Density, SizeStyle } from '@shared/settings.types'
 import { Fragment, type ReactNode, useState } from 'react'
 import {
   type DisplayGroup,
@@ -172,6 +174,143 @@ function GroupHeader({
   )
 }
 
+/** One Docker resource row. Mirrors `Row.tsx` (the node_modules row) so both lists read as
+ * the same list primitive: kind icon, name + colored `TypeBadge`, detail line, `SizeViz`
+ * for size, and a hover-revealed trash `RowAction` in place of a persistent Remove button.
+ * Non-removable items (build cache, or anything the caller has no `onRemove` for) get a
+ * disabled trash with an explanatory title, and `onRemove` is never invoked for them. */
+function DockerItemRow({
+  item,
+  density,
+  sizeStyle,
+  maxBytes,
+  accent,
+  busy,
+  onRemove,
+}: {
+  item: DockerItem
+  density: Density
+  sizeStyle: SizeStyle
+  maxBytes: number
+  accent: string
+  busy: boolean
+  onRemove?: (item: DockerItem) => void
+}): ReactNode {
+  const [hover, setHover] = useState(false)
+  const roomy = density === 'roomy'
+  const canRemove = item.removable && item.kind !== 'buildcache' && !!onRemove
+  const showActions = hover
+
+  const disabledReason =
+    item.kind === 'buildcache'
+      ? 'Build cache is removed via Prune, not individually'
+      : item.inUse
+        ? "Currently in use, can't remove"
+        : "Can't be removed individually"
+
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: roomy ? 13 : 11,
+        padding: roomy ? '11px 14px' : '7px 14px',
+        borderRadius: 10,
+      }}
+    >
+      <span
+        style={{
+          width: roomy ? 34 : 28,
+          height: roomy ? 34 : 28,
+          borderRadius: roomy ? 9 : 8,
+          flex: '0 0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--surface-2)',
+          color: 'var(--text-3)',
+        }}
+      >
+        {KIND_ICON[item.kind]({ size: roomy ? 16 : 14 })}
+      </span>
+      <div
+        style={{
+          minWidth: 0,
+          flex: 1,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: roomy ? 'column' : 'row',
+          alignItems: roomy ? 'flex-start' : 'baseline',
+          gap: roomy ? 2 : 9,
+        }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, maxWidth: '100%', flexShrink: 0 }}>
+          <span
+            style={{
+              fontWeight: 600,
+              fontSize: roomy ? 14.5 : 13.5,
+              color: 'var(--text-strong)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+              minWidth: 0,
+            }}
+          >
+            {item.name}
+          </span>
+          <TypeBadge kind={item.kind} />
+        </span>
+        <span
+          style={{
+            fontSize: 12,
+            color: 'var(--text-dim)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            minWidth: 0,
+            maxWidth: '100%',
+            flex: roomy ? undefined : 1,
+            alignSelf: roomy ? 'stretch' : undefined,
+          }}
+        >
+          {dockerItemDetail(item)}
+        </span>
+      </div>
+      <div style={{ display: showActions && sizeStyle !== 'plain' ? 'none' : 'flex', justifyContent: 'flex-end' }}>
+        <SizeViz
+          style={sizeStyle}
+          bytes={item.sizeBytes}
+          apparentBytes={item.sizeBytes}
+          maxBytes={maxBytes}
+          stale={0}
+          accent={accent}
+          density={density}
+        />
+      </div>
+      {showActions && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <RowAction
+            icon={UIIcon.trash}
+            label={
+              busy
+                ? 'Removing…'
+                : canRemove
+                  ? `Remove ${item.name} permanently — not sent to the Trash`
+                  : disabledReason
+            }
+            danger
+            disabled={!canRemove || busy}
+            onClick={canRemove ? () => onRemove?.(item) : () => {}}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** The launcher's "Docker" tab: resources grouped by compose project first, then an "Other"
  * section (image repositories, build cache, unaffiliated resources) for anything unlinked. */
 export function DockerView({
@@ -183,6 +322,10 @@ export function DockerView({
   busyId,
   onRemove,
   onPrune,
+  accent,
+  density,
+  sizeStyle,
+  maxBytes,
 }: DockerViewProps): ReactNode {
   if (loading && !info) {
     return (
@@ -234,24 +377,18 @@ export function DockerView({
               )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <GroupHeader group={g} busyId={busyId} onPrune={onPrune} />
-                {g.items.map((item: DockerItem) => {
-                  const canRemove = item.removable && item.kind !== 'buildcache' && !!onRemove
-                  return (
-                    <CacheRow
-                      key={item.id}
-                      icon={KIND_ICON[item.kind]}
-                      name={item.name}
-                      badge={<TypeBadge kind={item.kind} />}
-                      detail={dockerItemDetail(item)}
-                      size={item.sizeBytes}
-                      busy={busyId === item.id}
-                      actionLabel={canRemove ? 'Remove' : undefined}
-                      title={canRemove ? `Remove ${item.name} permanently — not sent to the Trash` : undefined}
-                      busyLabel="Removing…"
-                      onAction={canRemove ? () => onRemove?.(item) : undefined}
-                    />
-                  )
-                })}
+                {g.items.map((item: DockerItem) => (
+                  <DockerItemRow
+                    key={item.id}
+                    item={item}
+                    density={density}
+                    sizeStyle={sizeStyle}
+                    maxBytes={maxBytes}
+                    accent={accent}
+                    busy={busyId === item.id}
+                    onRemove={onRemove}
+                  />
+                ))}
               </div>
             </Fragment>
           ))

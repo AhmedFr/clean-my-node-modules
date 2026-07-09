@@ -27,7 +27,7 @@ import type { Project } from '@shared/project.types'
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { CachesView } from '../views/CachesView'
 import { DockerView } from '../views/DockerView'
-import type { DockerSortKey, DockerTypeFilter } from '../views/DockerView.constants'
+import type { DockerSortKey } from '../views/DockerView.constants'
 import { PRUNE_TARGET_LABEL, pruneEstimateBytes } from '../views/DockerView.constants'
 import { confirmSatisfied, needsTypedConfirm, requiredConfirmText } from '../views/docker-confirm'
 import { EmptyView } from '../views/EmptyView'
@@ -62,7 +62,6 @@ export function LauncherApp(): ReactNode {
   const [query, setQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortKey>('used')
   const [dockerSortBy, setDockerSortBy] = useState<DockerSortKey>('size')
-  const [dockerTypeFilter, setDockerTypeFilter] = useState<DockerTypeFilter>('all')
   const [sel, setSel] = useState(0)
   const [view, setView] = useState<LauncherView>('list')
   const [tab, setTab] = useState<LauncherTab>('projects')
@@ -151,6 +150,10 @@ export function LauncherApp(): ReactNode {
   )
   const needsRescan = useMemo(() => projects.some((p) => p.uniqueSize === undefined), [projects])
   const maxBytes = useMemo(() => Math.max(1, ...projects.map((p) => p.uniqueSize ?? p.size)), [projects])
+  const dockerMaxBytes = useMemo(
+    () => Math.max(1, ...(docker.info?.items.map((i) => i.sizeBytes) ?? [])),
+    [docker.info],
+  )
   const ratio = totalUsed / threshold
   const status = statusColor(ratio, accent)
 
@@ -755,32 +758,6 @@ export function LauncherApp(): ReactNode {
                       active={dockerSortBy === 'recent'}
                       onClick={() => setDockerSortBy('recent')}
                     />
-                    <span style={{ fontSize: 11, color: 'var(--text-faint)', margin: '0 4px 0 8px' }}>Show</span>
-                    <SortTab
-                      label="All"
-                      active={dockerTypeFilter === 'all'}
-                      onClick={() => setDockerTypeFilter('all')}
-                    />
-                    <SortTab
-                      label="Images"
-                      active={dockerTypeFilter === 'image'}
-                      onClick={() => setDockerTypeFilter('image')}
-                    />
-                    <SortTab
-                      label="Volumes"
-                      active={dockerTypeFilter === 'volume'}
-                      onClick={() => setDockerTypeFilter('volume')}
-                    />
-                    <SortTab
-                      label="Containers"
-                      active={dockerTypeFilter === 'container'}
-                      onClick={() => setDockerTypeFilter('container')}
-                    />
-                    <SortTab
-                      label="Cache"
-                      active={dockerTypeFilter === 'buildcache'}
-                      onClick={() => setDockerTypeFilter('buildcache')}
-                    />
                   </div>
                 )}
               </div>
@@ -815,11 +792,14 @@ export function LauncherApp(): ReactNode {
                   loading={docker.loading}
                   query={query}
                   sortBy={dockerSortBy}
-                  typeFilter={dockerTypeFilter}
                   onRefresh={() => void docker.refresh()}
                   busyId={docker.busyId}
                   onRemove={requestDockerRemove}
                   onPrune={requestDockerPrune}
+                  accent={accent}
+                  density={settings.density}
+                  sizeStyle={settings.sizeStyle}
+                  maxBytes={dockerMaxBytes}
                 />
               ) : isEmpty ? (
                 <EmptyView

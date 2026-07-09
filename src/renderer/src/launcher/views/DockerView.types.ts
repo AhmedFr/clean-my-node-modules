@@ -1,4 +1,5 @@
 import type { DockerInfo, DockerItem, DockerPruneTarget } from '@shared/docker.types'
+import type { Density, SizeStyle } from '@shared/settings.types'
 import type { DockerSortKey, DockerTypeFilter } from './DockerView.constants'
 
 export interface DockerViewProps {
@@ -8,7 +9,7 @@ export interface DockerViewProps {
   query: string
   /** Group/row sort order. Defaults to 'size' until the toolbar (Task 5) supplies it. */
   sortBy?: DockerSortKey
-  /** Item-kind filter. Defaults to 'all' until the toolbar (Task 5) supplies it. */
+  /** Item-kind filter. No UI control for this anymore (chips were removed); defaults to 'all'. */
   typeFilter?: DockerTypeFilter
   onRefresh: () => void
   /** Index of the keyboard-selected row. Unused for now (docker rows aren't keyboard-navigable yet). */
@@ -20,4 +21,10 @@ export interface DockerViewProps {
   onRemove?: (item: DockerItem) => void
   /** Requests a bulk prune for a category; caller owns the confirm gate. */
   onPrune?: (target: DockerPruneTarget) => void
+  /** Row density/size-display prefs, mirrored from settings so Docker rows match the node_modules list. */
+  density: Density
+  sizeStyle: SizeStyle
+  accent: string
+  /** Largest single item's sizeBytes across the whole Docker inventory (min 1), for SizeViz's bar scale. */
+  maxBytes: number
 }
