@@ -95,27 +95,51 @@ async function readDockerInfo(opts: DockerOpts): Promise<DockerInfo> {
   }
   const { items, totals } = buildDockerItems(parseDf(df))
 
-  // Enrich with project association (fail-soft: any inspect failure → everything in "Other").
-  let enriched = items
-  let projects: DockerProject[] = []
+  // Enrich with project association. Each Docker call below is fail-soft on its own:
+  // one inspect failing (e.g. a container removed between `ps` and `inspect`) must not
+  // stop `associateProjects` from running, since it also derives each image's
+  // `repository` (used for repository grouping) independent of any container/volume data.
+  let ids: string[] = []
   try {
-    const ids = (await run(bin, ['ps', '-aq', '--no-trunc']))
+    ids = (await run(bin, ['ps', '-aq', '--no-trunc']))
       .split('\n')
       .map((s) => s.trim())
       .filter(Boolean)
-    const containers = ids.length ? parseContainerInspect(await run(bin, ['container', 'inspect', ...ids])) : []
-    const volNames = items.filter((i) => i.kind === 'volume').map((i) => i.id)
-    const volProjects = volNames.length
-      ? parseVolumeInspect(await run(bin, ['volume', 'inspect', ...volNames]))
-      : new Map<string, string>()
-    const assoc = associateProjects(items, containers, volProjects)
-    const projectsWithLogos = await withLogos(assoc.projects)
-    enriched = assoc.items
-    projects = projectsWithLogos
-  } catch {
-    // leave items unassociated
+  } catch (err) {
+    ids = []
+    console.error('docker: ps failed', err)
   }
-  return { available: true, checkedAt: now, totals, items: enriched, projects }
+
+  let containers: ReturnType<typeof parseContainerInspect> = []
+  if (ids.length) {
+    try {
+      containers = parseContainerInspect(await run(bin, ['container', 'inspect', ...ids]))
+    } catch (err) {
+      containers = []
+      console.error('docker: container inspect failed', err)
+    }
+  }
+
+  const volNames = items.filter((i) => i.kind === 'volume').map((i) => i.id)
+  let volProjects = new Map<string, string>()
+  if (volNames.length) {
+    try {
+      volProjects = parseVolumeInspect(await run(bin, ['volume', 'inspect', ...volNames]))
+    } catch (err) {
+      volProjects = new Map<string, string>()
+      console.error('docker: volume inspect failed', err)
+    }
+  }
+
+  const assoc = associateProjects(items, containers, volProjects)
+  let projects: DockerProject[] = assoc.projects
+  try {
+    projects = await withLogos(assoc.projects)
+  } catch (err) {
+    projects = assoc.projects
+    console.error('docker: withLogos failed', err)
+  }
+  return { available: true, checkedAt: now, totals, items: assoc.items, projects }
 }
 
 /** Attach a project logo (framework kind + favicon) from each project's working_dir.

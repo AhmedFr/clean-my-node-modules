@@ -133,6 +133,28 @@ describe('getDockerInfo', () => {
     expect(info.items.every((i) => i.project === undefined)).toBe(true)
     expect(info.projects).toEqual([])
   })
+
+  it('still runs repository association when container inspect throws (regression: one inspect failure must not drop ALL grouping)', async () => {
+    const df = JSON.stringify({
+      Images: [{ ID: 'sha256:img1', Repository: 'node', Tag: '20', CreatedAt: '', Size: '400MB', Containers: '1' }],
+      Volumes: [{ Name: 'pgdata', Links: '0', Size: '10MB' }],
+      Containers: [],
+      BuildCache: [],
+    })
+    __setExecForTests(async (_bin, args) => {
+      if (args[0] === 'version') return { stdout: '27.0.0', stderr: '' }
+      if (args[0] === 'system' && args[1] === 'df') return { stdout: df, stderr: '' }
+      if (args[0] === 'ps') return { stdout: 'ctr1\n', stderr: '' }
+      if (args[0] === 'container' && args[1] === 'inspect') throw new Error('container removed between ps and inspect')
+      if (args[0] === 'volume' && args[1] === 'inspect') return { stdout: '[]', stderr: '' }
+      return { stdout: '', stderr: '' }
+    })
+    const info = await getDockerInfo(true)
+    expect(info.available).toBe(true)
+    const image = info.items.find((i) => i.kind === 'image')
+    expect(image?.repository).toBeTruthy()
+    expect(info.projects).toEqual([])
+  })
 })
 
 it('removeDockerItem maps kind→command and reports freed bytes from df delta', async () => {
