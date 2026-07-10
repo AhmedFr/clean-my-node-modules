@@ -65,7 +65,8 @@ function makeCtx(pro: boolean, extraProjects: Project[] = []) {
     analytics,
     panel: { hide: vi.fn(), browserWindow: null },
     launcher: { open: vi.fn(), hide: vi.fn(), browserWindow: null },
-    runScan: vi.fn(),
+    runScan: vi.fn(async () => ({ cancelled: false })),
+    cancelScan: vi.fn(),
   }
   handlers.clear()
   sent.length = 0
@@ -207,5 +208,11 @@ describe('license enforcement in IPC handlers', () => {
     })
     expect(res).toEqual({ ok: true })
     expect(analytics.capture).toHaveBeenCalledWith('share_card_copied', { total_gb: 247.3, source: 'header' })
+  })
+
+  it('cancelScan handler calls ctx.cancelScan', async () => {
+    const { ctx } = makeCtx(true)
+    await invoke(IPC.cancelScan)
+    expect(ctx.cancelScan).toHaveBeenCalledOnce()
   })
 })

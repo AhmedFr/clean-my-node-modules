@@ -20,7 +20,9 @@ export interface CleanApi {
   computePackages(force?: boolean): Promise<PackageInventory>
   /** Opens an https URL in the user's default browser. */
   openExternal(url: string): Promise<void>
-  scan(): Promise<void>
+  scan(): Promise<{ cancelled: boolean }>
+  /** Aborts the in-flight scan; the pending scan() resolves { cancelled: true }. */
+  cancelScan(): Promise<void>
   deleteNodeModules(id: string): Promise<DeleteResult>
   /** Deletes node_modules for several projects, running the liveness check once for the batch. */
   deleteManyNodeModules(ids: string[]): Promise<DeleteManyResult>

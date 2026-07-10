@@ -11,10 +11,11 @@ export function parseDuKb(stdout: string): number {
   return Number.isFinite(kb) ? kb * 1024 : 0
 }
 
-/** Folder size in bytes via `du -sk` (fast, native). */
-export async function folderSize(path: string): Promise<number> {
+/** Folder size in bytes via `du -sk` (fast, native). Aborts with the signal. */
+export async function folderSize(path: string, signal?: AbortSignal): Promise<number> {
   const { stdout } = await execFileAsync('du', ['-sk', path], {
     maxBuffer: 1024 * 1024,
+    signal,
   })
   return parseDuKb(stdout)
 }
@@ -34,13 +35,16 @@ export interface NodeModulesSize {
  * the structural `.pnpm` boundary — not link counts — is the reliable signal for what
  * is shared with the store and therefore not reclaimed by deleting this folder alone.
  */
-export async function measureNodeModules(nmPath: string): Promise<NodeModulesSize> {
-  const [apparent, shared] = await Promise.all([folderSize(nmPath), pnpmStoreBackedSize(join(nmPath, '.pnpm'))])
+export async function measureNodeModules(nmPath: string, signal?: AbortSignal): Promise<NodeModulesSize> {
+  const [apparent, shared] = await Promise.all([
+    folderSize(nmPath, signal),
+    pnpmStoreBackedSize(join(nmPath, '.pnpm'), signal),
+  ])
   return { apparent, unique: Math.max(0, apparent - shared) }
 }
 
 /** Size of the `.pnpm` subtree, or 0 when this folder is not pnpm-managed. */
-async function pnpmStoreBackedSize(pnpmDir: string): Promise<number> {
+async function pnpmStoreBackedSize(pnpmDir: string, signal?: AbortSignal): Promise<number> {
   try {
     if (!(await stat(pnpmDir)).isDirectory()) return 0
   } catch (err) {
@@ -50,5 +54,5 @@ async function pnpmStoreBackedSize(pnpmDir: string): Promise<number> {
     if (code === 'ENOENT' || code === 'ENOTDIR') return 0
     throw err
   }
-  return folderSize(pnpmDir)
+  return folderSize(pnpmDir, signal)
 }

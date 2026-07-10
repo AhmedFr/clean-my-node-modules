@@ -97,3 +97,9 @@ describe('measureNodeModules', () => {
     })
   })
 })
+
+describe('folderSize abort', () => {
+  it('rejects when the signal is already aborted (du is not left running)', async () => {
+    await expect(folderSize('/tmp', AbortSignal.abort())).rejects.toThrow()
+  })
+})

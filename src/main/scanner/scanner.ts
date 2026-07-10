@@ -12,22 +12,34 @@ import { MAX_SCAN_DEPTH, PROGRESS_THROTTLE_MS, SIZE_CONCURRENCY, SKIPPED_DIR_NAM
 
 export type ProgressCallback = (progress: ScanProgress) => void
 
+export interface ScanOutcome {
+  cancelled: boolean
+  projects: Project[]
+}
+
 /** Walks scan roots for node_modules folders and builds Project entries. */
 export class Scanner {
-  private current: Promise<Project[]> | null = null
+  private current: Promise<ScanOutcome> | null = null
+  private controller: AbortController | null = null
 
   get isScanning(): boolean {
     return this.current !== null
   }
 
+  /** Aborts the in-flight scan (no-op when idle). */
+  cancel(): void {
+    this.controller?.abort()
+  }
+
   /** Concurrent callers share the in-flight scan instead of starting a second. */
-  scan(roots: string[], onProgress?: ProgressCallback): Promise<Project[]> {
+  scan(roots: string[], onProgress?: ProgressCallback): Promise<ScanOutcome> {
     if (this.current) return this.current
-    this.current = this.run(roots, onProgress)
+    this.controller = new AbortController()
+    this.current = this.run(roots, this.controller.signal, onProgress)
     return this.current
   }
 
-  private async run(roots: string[], onProgress?: ProgressCallback): Promise<Project[]> {
+  private async run(roots: string[], signal: AbortSignal, onProgress?: ProgressCallback): Promise<ScanOutcome> {
     try {
       const found: string[] = []
       let checked = 0
@@ -40,6 +52,7 @@ export class Scanner {
       }
 
       const walk = async (dir: string, depth: number): Promise<void> => {
+        if (signal.aborted) return
         checked++
         emit(dir)
         const entries = await readdir(dir, { withFileTypes: true }).catch(() => null)
@@ -61,17 +74,30 @@ export class Scanner {
       }
 
       for (const root of roots) await walk(root, 0)
+      if (signal.aborted) {
+        emit('', true)
+        return { cancelled: true, projects: [] }
+      }
 
       // Shared across projects so monorepo siblings resolve their repo root once.
       const repoRootCache = new Map<string, string | null>()
       const projects = await mapLimit(found, SIZE_CONCURRENCY, (nm) => {
+        if (signal.aborted) return Promise.resolve(null)
         emit(dirname(nm))
-        return buildProject(nm, repoRootCache)
+        return buildProject(nm, repoRootCache, signal)
       })
+      if (signal.aborted) {
+        emit('', true)
+        return { cancelled: true, projects: [] }
+      }
       emit('', true)
-      return projects.filter((p): p is Project => p !== null).sort((a, b) => a.lastUsed - b.lastUsed)
+      return {
+        cancelled: false,
+        projects: projects.filter((p): p is Project => p !== null).sort((a, b) => a.lastUsed - b.lastUsed),
+      }
     } finally {
       this.current = null
+      this.controller = null
     }
   }
 }
@@ -79,11 +105,12 @@ export class Scanner {
 async function buildProject(
   nodeModulesPath: string,
   repoRootCache: Map<string, string | null>,
+  signal?: AbortSignal,
 ): Promise<Project | null> {
   const projectDir = dirname(nodeModulesPath)
   try {
     const [sizes, lastUsed, kind, iconDataUrl, name] = await Promise.all([
-      measureNodeModules(nodeModulesPath),
+      measureNodeModules(nodeModulesPath, signal),
       lastUsedTime(projectDir),
       detectKind(projectDir),
       findProjectIcon(projectDir),

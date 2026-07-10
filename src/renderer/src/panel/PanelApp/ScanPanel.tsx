@@ -6,19 +6,24 @@ import { type ReactNode, useEffect, useRef, useState } from 'react'
 interface ScanPanelProps {
   accent: string
   onDone: () => void
+  onCancel: () => void
 }
 
 /** Compact scanning view inside the dropdown; drives a real disk scan. */
-export function ScanPanel({ accent, onDone }: ScanPanelProps): ReactNode {
+export function ScanPanel({ accent, onDone, onCancel }: ScanPanelProps): ReactNode {
   const progress = useScanProgress()
   const [count, setCount] = useState(0)
+  const [cancelling, setCancelling] = useState(false)
   const started = useRef(false)
 
   useEffect(() => {
     if (started.current) return
     started.current = true
-    void window.clean.scan().then(() => setTimeout(onDone, 350))
-  }, [onDone])
+    void window.clean.scan().then((res) => {
+      if (res.cancelled) onCancel()
+      else setTimeout(onDone, 350)
+    })
+  }, [onDone, onCancel])
 
   useEffect(() => {
     if (progress) setCount(progress.foldersChecked)
@@ -59,6 +64,17 @@ export function ScanPanel({ accent, onDone }: ScanPanelProps): ReactNode {
           }}
         />
       </div>
+      <button
+        className="cc-btn ghost"
+        disabled={cancelling}
+        style={{ marginTop: 2, opacity: cancelling ? 0.6 : 1 }}
+        onClick={() => {
+          setCancelling(true)
+          void window.clean.cancelScan()
+        }}
+      >
+        {cancelling ? 'Cancelling…' : 'Cancel'}
+      </button>
     </div>
   )
 }

@@ -7,6 +7,7 @@ export const ANALYTICS_EVENTS = [
   'app_launched',
   'onboarding_completed',
   'scan_completed',
+  'scan_cancelled',
   'paywall_shown',
   'buy_clicked',
   'license_activated',

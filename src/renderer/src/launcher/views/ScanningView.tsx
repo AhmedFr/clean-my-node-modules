@@ -6,20 +6,25 @@ import { type ReactNode, useEffect, useRef, useState } from 'react'
 interface ScanningViewProps {
   accent: string
   onDone: () => void
+  onCancel: () => void
 }
 
 /** Full-window scanning view; drives a real disk scan with live progress. */
-export function ScanningView({ accent, onDone }: ScanningViewProps): ReactNode {
+export function ScanningView({ accent, onDone, onCancel }: ScanningViewProps): ReactNode {
   const progress = useScanProgress()
   const [count, setCount] = useState(0)
   const [line, setLine] = useState('')
+  const [cancelling, setCancelling] = useState(false)
   const started = useRef(false)
 
   useEffect(() => {
     if (started.current) return
     started.current = true
-    void window.clean.scan().then(() => setTimeout(onDone, 380))
-  }, [onDone])
+    void window.clean.scan().then((res) => {
+      if (res.cancelled) onCancel()
+      else setTimeout(onDone, 380)
+    })
+  }, [onDone, onCancel])
 
   useEffect(() => {
     if (!progress) return
@@ -76,6 +81,17 @@ export function ScanningView({ accent, onDone }: ScanningViewProps): ReactNode {
       >
         {line || '…'}
       </div>
+      <button
+        className="cc-btn ghost"
+        disabled={cancelling}
+        style={{ marginTop: 4, opacity: cancelling ? 0.6 : 1 }}
+        onClick={() => {
+          setCancelling(true)
+          void window.clean.cancelScan()
+        }}
+      >
+        {cancelling ? 'Cancelling…' : 'Cancel'}
+      </button>
     </div>
   )
 }

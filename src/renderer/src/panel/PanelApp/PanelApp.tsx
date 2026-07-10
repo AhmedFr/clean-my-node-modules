@@ -137,6 +137,7 @@ export function PanelApp(): ReactNode {
         void window.clean.openLauncher('settings')
       } else if (e.key === 'Escape') {
         if (unlock) setUnlock(null)
+        else if (view === 'scan') void window.clean.cancelScan()
         else if (view !== 'main') setView('main')
         else void window.clean.closeWindow()
       }
@@ -157,7 +158,7 @@ export function PanelApp(): ReactNode {
 
   return (
     <div ref={rootRef} className="mb-panel">
-      {view === 'scan' && <ScanPanel accent={accent} onDone={() => setView('main')} />}
+      {view === 'scan' && <ScanPanel accent={accent} onDone={() => setView('main')} onCancel={() => setView('main')} />}
 
       {view === 'main' && (
         <>
