@@ -7,6 +7,9 @@ export const OWNER = {
   email: "contact@tidydisk.app",
   siret: "90884903700027",
   country: "France",
+  // Auto-entreprise under the French VAT-exemption regime. This is a legally
+  // fixed French citation, so it stays in French in every locale (like SIRET).
+  vatNote: "TVA non applicable, art. 293 B du CGI",
 } as const;
 
 /** ISO date the legal pages were last reviewed; shown as "Last updated". */

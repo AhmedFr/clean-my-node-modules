@@ -98,6 +98,7 @@ export const en: LegalContent = {
       address: "Address",
       email: "Email",
       siret: "SIRET",
+      vat: "VAT",
     },
     sections: [
       {

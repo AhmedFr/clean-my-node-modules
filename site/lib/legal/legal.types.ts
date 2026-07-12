@@ -25,6 +25,7 @@ export interface ImprintLabels {
   address: string;
   email: string;
   siret: string;
+  vat: string;
 }
 
 export interface LegalContent {

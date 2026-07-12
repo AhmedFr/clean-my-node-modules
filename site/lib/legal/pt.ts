@@ -99,6 +99,7 @@ export const pt: LegalContent = {
       address: "Endereço",
       email: "E-mail",
       siret: "SIRET",
+      vat: "IVA",
     },
     sections: [
       {

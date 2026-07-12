@@ -51,6 +51,10 @@ export function LegalPage({ locale }: { locale: Locale }) {
             <dt className={LABEL}>{labels.siret}</dt>
             <dd className="font-mono">{OWNER.siret}</dd>
           </div>
+          <div className={ROW}>
+            <dt className={LABEL}>{labels.vat}</dt>
+            <dd>{OWNER.vatNote}</dd>
+          </div>
         </dl>
       </LegalArticle>
       <Footer dict={dict} locale={locale} path="/legal" />
