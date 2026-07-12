@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { Wrap } from "@/components/Wrap";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { CookiePreferences } from "@/components/CookiePreferences";
 import { REPO_URL } from "@/lib/links";
 import { localePath, type Dictionary, type Locale } from "@/lib/i18n";
 
@@ -23,7 +24,7 @@ export function Footer({ dict, locale, path }: FooterProps) {
   return (
     <footer className="border-t border-line pb-10 pt-14">
       <Wrap>
-        <div className="grid grid-cols-[1.6fr_1fr_1fr] gap-[30px] max900:grid-cols-2 max560:grid-cols-1">
+        <div className="grid grid-cols-[1.6fr_1fr_1fr_1fr] gap-[30px] max900:grid-cols-2 max560:grid-cols-1">
           <div>
             <Link
               className="mb-[14px] flex items-center gap-[10px] font-display text-[18px] font-extrabold tracking-[-0.01em]"
@@ -64,6 +65,16 @@ export function Footer({ dict, locale, path }: FooterProps) {
             <a className={FOOT_LINK} href={`${REPO_URL}/releases`} target="_blank" rel="noopener">
               {links.releases}
             </a>
+          </div>
+          <div>
+            <h5 className={COL_HEAD}>{footer.legalHead}</h5>
+            <Link className={FOOT_LINK} href={localePath(locale, "/privacy")}>
+              {links.privacy}
+            </Link>
+            <Link className={FOOT_LINK} href={localePath(locale, "/legal")}>
+              {links.legal}
+            </Link>
+            <CookiePreferences className={`${FOOT_LINK} cursor-pointer text-left`} label={links.cookies} />
           </div>
         </div>
         <div className="mt-[46px] flex flex-wrap items-center justify-between gap-3 border-t border-line pt-[26px] text-[13.5px] text-ink-4">

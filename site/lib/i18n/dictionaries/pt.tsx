@@ -321,6 +321,7 @@ export const pt: Dictionary = {
       "O app de barra de menu que impede a bagunça de dev de consumir seu Mac.",
     productHead: "Produto",
     openSourceHead: "Código aberto",
+    legalHead: "Legal",
     links: {
       feature: "Recursos",
       how: "Como funciona",
@@ -329,6 +330,9 @@ export const pt: Dictionary = {
       repo: "Repositório no GitHub",
       issues: "Issues",
       releases: "Releases",
+      privacy: "Política de Privacidade",
+      legal: "Aviso Legal",
+      cookies: "Preferências de cookies",
     },
     copyright: "© 2026 TidyDisk · Licença MIT",
     platform: "macOS 13+ · Apple Silicon e Intel",

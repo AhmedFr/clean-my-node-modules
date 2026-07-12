@@ -2,10 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
-import { CONSENT_COPY, CONSENT_KEY, GA_ID } from "./CookieConsent.constants";
+import { isLocale, DEFAULT_LOCALE, localePath, type Locale } from "@/lib/i18n";
+import {
+  CONSENT_COPY,
+  CONSENT_EVENT,
+  CONSENT_KEY,
+  GA_ID,
+} from "./CookieConsent.constants";
 import type { ConsentChoice } from "./CookieConsent.types";
+import { clearGaCookies } from "./clear-ga-cookies";
 
 // The banner lives in the root layout, which has no `locale` param (locale
 // pages nest below it). Read it back from the first path segment, mirroring
@@ -29,8 +36,22 @@ export function CookieConsent() {
     setReady(true);
   }, []);
 
+  // Withdrawal path (GDPR Art. 7(3)): the footer "Cookie preferences" control
+  // dispatches CONSENT_EVENT, which clears the stored choice and reopens the
+  // banner so the visitor can change or revoke their consent.
+  useEffect(() => {
+    function reopen() {
+      window.localStorage.removeItem(CONSENT_KEY);
+      setChoice(null);
+    }
+    window.addEventListener(CONSENT_EVENT, reopen);
+    return () => window.removeEventListener(CONSENT_EVENT, reopen);
+  }, []);
+
   function decide(next: Exclude<ConsentChoice, null>) {
     window.localStorage.setItem(CONSENT_KEY, next);
+    // Withdrawing (or refusing after a prior accept): drop any GA cookies.
+    if (next === "declined") clearGaCookies();
     setChoice(next);
   }
 
@@ -40,13 +61,20 @@ export function CookieConsent() {
   if (choice === "accepted") return <GoogleAnalytics gaId={GA_ID} />;
   if (choice === "declined") return null;
 
-  const copy = CONSENT_COPY[localeFromPathname(pathname)];
+  const locale = localeFromPathname(pathname);
+  const copy = CONSENT_COPY[locale];
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[200] flex justify-center p-4 max560:p-3">
       <div className="flex w-full max-w-[720px] items-center gap-4 rounded-[14px] border border-line-2 bg-panel/95 px-5 py-4 shadow-[0_14px_44px_-12px_rgba(0,0,0,0.7)] backdrop-blur max560:flex-col max560:items-stretch max560:gap-3">
         <p className="flex-1 text-[13.5px] leading-relaxed text-ink-2">
-          {copy.message}
+          {copy.message}{" "}
+          <Link
+            href={localePath(locale, "/privacy")}
+            className="whitespace-nowrap text-accent underline underline-offset-2 hover:text-ink"
+          >
+            {copy.privacyLink}
+          </Link>
         </p>
         <div className="flex shrink-0 items-center gap-[10px] max560:justify-end">
           <button

@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getPublishedPosts } from "@/lib/blog";
 import { SITE_URL } from "@/lib/site-url";
 import { LOCALES, localePath, languageAlternates } from "@/lib/i18n";
+import { LEGAL_UPDATED } from "@/lib/legal/legal.constants";
 
 // Revalidates hourly so newly-published posts join without a deploy.
 export const revalidate = 3600;
@@ -26,6 +27,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),
+    {
+      path: "/privacy",
+      lastModified: new Date(`${LEGAL_UPDATED}T00:00:00Z`),
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    },
+    {
+      path: "/legal",
+      lastModified: new Date(`${LEGAL_UPDATED}T00:00:00Z`),
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    },
   ];
 
   // One entry per (path, locale), each carrying the full hreflang alternates

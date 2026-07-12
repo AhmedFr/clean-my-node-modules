@@ -8,6 +8,8 @@ export interface ConsentCopy {
   message: string;
   accept: string;
   decline: string;
+  /** Label for the link to the privacy policy shown in the banner. */
+  privacyLink: string;
 }
 
 export type ConsentCopyMap = Record<Locale, ConsentCopy>;
