@@ -164,8 +164,11 @@ export function LauncherApp(): ReactNode {
   )
   const needsRescan = useMemo(() => projects.some((p) => p.uniqueSize === undefined), [projects])
   const maxBytes = useMemo(() => Math.max(1, ...projects.map((p) => p.uniqueSize ?? p.size)), [projects])
+  // Bar scale for the Docker rows' SizeViz. Excludes build-cache items: they no longer render
+  // in the Docker tab (they live in the Caches tab), so counting them here would scale every
+  // visible row against an off-screen max and silently compress the bars.
   const dockerMaxBytes = useMemo(
-    () => Math.max(1, ...(docker.info?.items.map((i) => i.sizeBytes) ?? [])),
+    () => Math.max(1, ...(docker.info?.items.filter((i) => i.kind !== 'buildcache').map((i) => i.sizeBytes) ?? [])),
     [docker.info],
   )
   const dockerTotal = useMemo(() => (docker.info?.totals ?? []).reduce((s, t) => s + t.sizeBytes, 0), [docker.info])
@@ -293,6 +296,14 @@ export function LauncherApp(): ReactNode {
     setDockerTyped('')
   }, [])
 
+  // Disabling Docker mid-confirm must not leave a pending remove/prune dialog wired to a
+  // now-hidden feature. The tab reset above misses a build-cache prune requested from the
+  // Caches tab (tab !== 'docker'), so clear any pending Docker confirm whenever Docker is
+  // turned off, regardless of the active tab.
+  useEffect(() => {
+    if (!dockerEnabled) closeDockerConfirm()
+  }, [dockerEnabled, closeDockerConfirm])
+
   // Free users hit the paywall before any confirm state is set — the destructive IPC
   // is also gated pro-only in main, but the UI never even offers the affordance here.
   const requestDockerRemove = useCallback(
@@ -334,7 +345,7 @@ export function LauncherApp(): ReactNode {
         } else {
           flashToast({
             icon: UIIcon.alert,
-            text: `Couldn't remove ${item.name} — it may now be in use.`,
+            text: `Couldn't remove ${item.name}. It may now be in use.`,
             tone: 'neutral',
           })
         }
@@ -356,7 +367,7 @@ export function LauncherApp(): ReactNode {
         } else {
           flashToast({
             icon: UIIcon.alert,
-            text: "Couldn't prune — nothing was removed.",
+            text: "Couldn't prune. Nothing was removed.",
             tone: 'neutral',
           })
         }
@@ -1038,7 +1049,7 @@ export function LauncherApp(): ReactNode {
                       dockerConfirm.kind === 'remove' ? dockerConfirm.item.sizeBytes : dockerConfirm.estimatedBytes,
                     )}
                   </b>
-                  . <span style={{ color: 'var(--text-dim)' }}>Permanent — not sent to the Trash.</span>
+                  . <span style={{ color: 'var(--text-dim)' }}>Permanent, not sent to the Trash.</span>
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

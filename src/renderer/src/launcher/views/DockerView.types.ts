@@ -25,6 +25,7 @@ export interface DockerViewProps {
   density: Density
   sizeStyle: SizeStyle
   accent: string
-  /** Largest single item's sizeBytes across the whole Docker inventory (min 1), for SizeViz's bar scale. */
+  /** Largest sizeBytes among the items the Docker tab actually renders (build cache excluded,
+   *  min 1), for SizeViz's bar scale. */
   maxBytes: number
 }

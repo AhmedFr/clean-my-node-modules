@@ -272,8 +272,10 @@ function DockerProjectRow({
 /** One Docker resource row. Mirrors `Row.tsx` (the node_modules row) so both lists read as
  * the same list primitive: kind icon, name + colored `TypeBadge`, detail line, `SizeViz`
  * for size, and a hover-revealed trash `RowAction` in place of a persistent Remove button.
- * Non-removable items (build cache, or anything the caller has no `onRemove` for) get a
- * disabled trash with an explanatory title, and `onRemove` is never invoked for them. */
+ * Non-removable items (anything the caller has no `onRemove` for) get a disabled trash with
+ * an explanatory title, and `onRemove` is never invoked for them. Build-cache items no longer
+ * reach this component (`groupDockerForDisplay` drops them; they live in the Caches tab), but
+ * the `buildcache` guards below are kept as cheap defense-in-depth on a permanent-delete path. */
 function DockerItemRow({
   item,
   density,
