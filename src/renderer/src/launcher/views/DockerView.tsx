@@ -14,7 +14,7 @@ import {
   dockerGroupActive,
   dockerItemDetail,
   groupDockerForDisplay,
-  PRUNE_TARGET_LABEL,
+  PRUNE_BUTTON_LABEL,
   projectRowExpanded,
   prunesForGroup,
 } from './DockerView.constants'
@@ -28,9 +28,8 @@ const KIND_ICON: Record<DockerItemKind, IconRenderer> = {
 }
 
 /** Generic header glyph for the non-project ("Other") groups. */
-const GROUP_ICON: Record<'repository' | 'buildcache' | 'unaffiliated', IconRenderer> = {
+const GROUP_ICON: Record<'repository' | 'unaffiliated', IconRenderer> = {
   repository: UIIcon.box,
-  buildcache: UIIcon.hdd,
   unaffiliated: UIIcon.hdd,
 }
 
@@ -148,19 +147,23 @@ function GroupHeader({
                 type="button"
                 onClick={() => onPrune(target)}
                 disabled={busy}
-                title={`Prune ${PRUNE_TARGET_LABEL[target].toLowerCase()}. Permanent, not sent to the Trash.`}
+                title={`${PRUNE_BUTTON_LABEL[target]}. Permanent, not sent to the Trash.`}
                 style={{
-                  border: '1px solid var(--surface-4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  border: '1px solid rgba(255,99,99,0.4)',
                   cursor: busy ? 'default' : 'pointer',
                   padding: '3px 9px',
                   borderRadius: 7,
-                  background: 'var(--surface-1)',
-                  color: busy ? 'var(--text-dim)' : 'var(--text-2)',
+                  background: 'rgba(255,99,99,0.10)',
+                  color: busy ? 'var(--text-dim)' : 'rgba(255,99,99,0.95)',
                   fontSize: 11,
                   fontWeight: 600,
                 }}
               >
-                {busy ? 'Pruning…' : PRUNE_TARGET_LABEL[target]}
+                {UIIcon.trash({ size: 11 })}
+                {busy ? 'Deleting…' : PRUNE_BUTTON_LABEL[target]}
               </button>
             )
           })}
