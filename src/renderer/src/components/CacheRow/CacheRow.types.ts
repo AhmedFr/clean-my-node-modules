@@ -24,6 +24,10 @@ export interface CacheRowProps {
   title?: string
   /** Label shown on the action button while `busy` is true; defaults to "Pruning…". */
   busyLabel?: string
+  /** Optional leading glyph inside the action button (e.g. a trash icon for a delete action). */
+  actionIcon?: IconRenderer
+  /** Style the action button as destructive (red), matching the node_modules RowAction. */
+  danger?: boolean
   /** Fired when the action button is pressed. */
   onAction?: () => void
   /** Fired when the row itself is clicked (selects it). */
