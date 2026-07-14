@@ -1,6 +1,6 @@
+import type { IconRenderer } from '@renderer/components/UIIcon'
 import { describe, expect, it } from 'vitest'
 import { CACHE_PLACEHOLDERS, type LiveCache, visibleCaches } from './CachesView.constants'
-import type { IconRenderer } from '@renderer/components/UIIcon'
 
 describe('CACHE_PLACEHOLDERS', () => {
   it('lists the planned package-manager caches in order with unique ids', () => {

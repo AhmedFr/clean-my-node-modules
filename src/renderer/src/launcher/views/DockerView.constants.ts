@@ -61,10 +61,7 @@ export function groupDockerForDisplay(
     ? [{ kind: 'unaffiliated', id: 'unaffiliated', label: 'Not linked to a project', items: rest }]
     : []
 
-  return [
-    ...sortGroups(projectGroups, opts.sortBy),
-    ...sortGroups([...repoGroups, ...unaffiliatedGroup], opts.sortBy),
-  ]
+  return [...sortGroups(projectGroups, opts.sortBy), ...sortGroups([...repoGroups, ...unaffiliatedGroup], opts.sortBy)]
 }
 
 /** Detail line for a Docker row: relative created date (or "unknown date"). In-use state is
