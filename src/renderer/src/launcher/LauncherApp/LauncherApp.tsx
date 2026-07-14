@@ -27,9 +27,10 @@ import type { PackageEntry } from '@shared/package.types'
 import type { Project } from '@shared/project.types'
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { CachesView } from '../views/CachesView'
+import type { LiveCache } from '../views/CachesView.constants'
 import { DockerView } from '../views/DockerView'
 import type { DockerSortKey } from '../views/DockerView.constants'
-import { PRUNE_TARGET_LABEL, pruneEstimateBytes } from '../views/DockerView.constants'
+import { dockerBuildCacheBytes, PRUNE_TARGET_LABEL, pruneEstimateBytes } from '../views/DockerView.constants'
 import { confirmSatisfied, needsTypedConfirm, requiredConfirmText } from '../views/docker-confirm'
 import { EmptyView } from '../views/EmptyView'
 import { Onboarding } from '../views/Onboarding'
@@ -139,7 +140,7 @@ export function LauncherApp(): ReactNode {
   // Docker tab opens with missing or stale (>5 min) data, kick a background scan.
   // Guarded on `docker.loading` and freshened `checkedAt` so it can't loop.
   useEffect(() => {
-    if (view !== 'list' || tab !== 'docker' || !dockerEnabled || docker.loading) return
+    if (view !== 'list' || (tab !== 'docker' && tab !== 'caches') || !dockerEnabled || docker.loading) return
     const stale = !docker.info || Date.now() - docker.info.checkedAt > DOCKER_STALE_MS
     if (stale) void docker.refresh()
   }, [view, tab, dockerEnabled, docker.info, docker.loading, docker.refresh])
@@ -172,6 +173,10 @@ export function LauncherApp(): ReactNode {
   const packagesDataReady = !!inventory && !inventory.enrichmentError
   const cachesAvailable = !!store?.available
   const dockerAvailable = !!docker.info?.available
+  const buildCacheBytes = useMemo(
+    () => (dockerAvailable ? dockerBuildCacheBytes(docker.info?.items ?? []) : 0),
+    [dockerAvailable, docker.info],
+  )
   const ratio = totalUsed / threshold
   const status = statusColor(ratio, accent)
 
@@ -420,6 +425,42 @@ export function LauncherApp(): ReactNode {
     }
   }, [prune, flashToast, license.pro])
 
+  const liveCaches = useMemo<LiveCache[]>(() => {
+    const list: LiveCache[] = [
+      {
+        id: 'pnpm',
+        icon: UIIcon.hdd,
+        name: 'pnpm store',
+        detail: pruning
+          ? 'Pruning unreferenced packages…'
+          : store?.available
+            ? (store?.displayPath ?? '')
+            : (store?.reason ?? 'pnpm store not found'),
+        size: store?.available ? store?.sizeBytes : undefined,
+        disabled: !store?.available,
+        busy: pruning,
+        actionLabel: store?.canPrune ? 'Prune' : undefined,
+        onAction: handlePrune,
+      },
+    ]
+    if (dockerEnabled && dockerAvailable && buildCacheBytes > 0) {
+      list.push({
+        id: 'docker-buildcache',
+        icon: UIIcon.hdd,
+        name: 'Docker build cache',
+        detail: 'Docker layer build cache',
+        size: buildCacheBytes,
+        busy: docker.busyId === 'prune:buildCache',
+        actionLabel: 'Delete',
+        busyLabel: 'Deleting…',
+        danger: true,
+        title: 'Delete all Docker build cache. Permanent, not sent to the Trash.',
+        onAction: () => requestDockerPrune('buildCache'),
+      })
+    }
+    return list
+  }, [store, pruning, handlePrune, dockerEnabled, dockerAvailable, buildCacheBytes, docker.busyId, requestDockerPrune])
+
   // keyboard
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
@@ -502,7 +543,7 @@ export function LauncherApp(): ReactNode {
       }
       if (view !== 'list') return
       if (tab === 'caches') {
-        const cacheCount = store?.available ? 1 : 0
+        const cacheCount = liveCaches.length
         if (e.key === 'ArrowDown') {
           e.preventDefault()
           setSel((s) => Math.min(cacheCount - 1, s + 1))
@@ -511,7 +552,8 @@ export function LauncherApp(): ReactNode {
           setSel((s) => Math.max(0, s - 1))
         } else if (e.key === 'Enter') {
           e.preventDefault()
-          if (store?.available && !pruning) void handlePrune()
+          const c = liveCaches[sel]
+          if (c && !c.disabled && !c.busy) c.onAction?.()
         }
         return
       }
@@ -570,9 +612,7 @@ export function LauncherApp(): ReactNode {
     commitDelete,
     doOpen,
     rescan,
-    store,
-    pruning,
-    handlePrune,
+    liveCaches,
     pkgFiltered,
     openNpm,
     refreshPackages,
@@ -834,14 +874,7 @@ export function LauncherApp(): ReactNode {
                   onRefresh={() => void refreshPackages()}
                 />
               ) : tab === 'caches' ? (
-                <CachesView
-                  store={store}
-                  pruning={pruning}
-                  selectedIndex={sel}
-                  query={query}
-                  onSelectIndex={setSel}
-                  onPrune={handlePrune}
-                />
+                <CachesView caches={liveCaches} selectedIndex={sel} query={query} onSelectIndex={setSel} />
               ) : tab === 'docker' && dockerEnabled ? (
                 <DockerView
                   info={docker.info}
