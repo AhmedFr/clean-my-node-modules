@@ -42,7 +42,8 @@ export function groupDockerForDisplay(
       projectGroups.push({ kind: 'project', id: `project:${p.name}`, label: p.name, project: p, items: of })
   }
 
-  // "Other": unaffiliated items → repository groups (images) + buildcache + unaffiliated (rest)
+  // "Other": unaffiliated items → repository groups (images) + unaffiliated (rest). Build-cache
+  // items are dropped here entirely — they live in the Caches tab now, not the Docker list.
   const other = items.filter((i) => !i.project)
   const repoGroups: DisplayGroup[] = []
   const repos = new Map<string, DockerItem[]>()

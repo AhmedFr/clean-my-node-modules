@@ -58,7 +58,7 @@ describe('groupDockerForDisplay', () => {
   it('sorts groups by total size when sortBy=size', () => {
     const g = groupDockerForDisplay(info(items), { sortBy: 'size', typeFilter: 'all', query: '' })
     const other = g.filter((x) => x.kind !== 'project')
-    // redis repo (500) sorts before buildcache (300) before orphan volume (5)
+    // redis repo (500) sorts before the orphan volume (5); build cache is excluded entirely
     expect(other[0].kind === 'repository').toBe(true)
   })
 
