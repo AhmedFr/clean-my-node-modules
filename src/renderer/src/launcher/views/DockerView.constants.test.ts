@@ -2,9 +2,11 @@ import type { DockerInfo, DockerItem } from '@shared/docker.types'
 import { describe, expect, it } from 'vitest'
 import {
   type DisplayGroup,
+  dockerBuildCacheBytes,
   dockerGroupActive,
   dockerItemDetail,
   groupDockerForDisplay,
+  PRUNE_BUTTON_LABEL,
   projectRowExpanded,
   pruneEstimateBytes,
   prunesForGroup,
@@ -37,15 +39,20 @@ describe('groupDockerForDisplay', () => {
     item({ id: 'v9', kind: 'volume', name: 'orphan', sizeBytes: 5 }),
   ]
 
-  it('puts project groups first, then repository/buildcache/unaffiliated under "Other"', () => {
+  it('puts project groups first, then repository/unaffiliated under "Other"', () => {
     const g = groupDockerForDisplay(info(items), { sortBy: 'size', typeFilter: 'all', query: '' })
     expect(g[0]).toMatchObject({ kind: 'project', project: { name: 'myapp' } })
     const kinds = g.map((x) => x.kind)
     expect(kinds).toContain('repository') // redis
-    expect(kinds).toContain('buildcache')
     expect(kinds).toContain('unaffiliated') // orphan volume
     // project group before any "Other" group
     expect(kinds.indexOf('project')).toBeLessThan(kinds.indexOf('repository'))
+  })
+
+  it('never groups build-cache items (they moved to the Caches tab)', () => {
+    const g = groupDockerForDisplay(info(items), { sortBy: 'size', typeFilter: 'all', query: '' })
+    expect(g.some((x) => x.kind === ('buildcache' as unknown))).toBe(false)
+    expect(g.every((x) => x.items.every((i) => i.kind !== 'buildcache'))).toBe(true)
   })
 
   it('sorts groups by total size when sortBy=size', () => {
@@ -177,11 +184,6 @@ describe('prunesForGroup', () => {
     expect(prunesForGroup(g)).toEqual(['unusedVolumes', 'stoppedContainers'])
   })
 
-  it('buildcache group offers buildCache', () => {
-    const g = group({ kind: 'buildcache', items: [item({ id: 'b1', kind: 'buildcache', name: 'b1' })] })
-    expect(prunesForGroup(g)).toEqual(['buildCache'])
-  })
-
   it('project group offers no prune targets', () => {
     const g = {
       kind: 'project' as const,
@@ -220,5 +222,34 @@ describe('projectRowExpanded', () => {
     expect(projectRowExpanded(false, 'project:x', 'project:x')).toBe(true)
     expect(projectRowExpanded(false, 'project:y', 'project:x')).toBe(false)
     expect(projectRowExpanded(false, null, 'project:x')).toBe(false)
+  })
+})
+
+describe('PRUNE_BUTTON_LABEL', () => {
+  it('leads every label with the word "Delete" so the button reads as destructive', () => {
+    for (const label of Object.values(PRUNE_BUTTON_LABEL)) {
+      expect(label.startsWith('Delete ')).toBe(true)
+    }
+  })
+
+  it('has no em dashes', () => {
+    for (const label of Object.values(PRUNE_BUTTON_LABEL)) {
+      expect(label.includes('—')).toBe(false)
+    }
+  })
+})
+
+describe('dockerBuildCacheBytes', () => {
+  it('sums only build-cache items', () => {
+    const items: DockerItem[] = [
+      { id: 'b1', kind: 'buildcache', name: 'b1', sizeBytes: 100, createdAt: 0, inUse: false, removable: false },
+      { id: 'b2', kind: 'buildcache', name: 'b2', sizeBytes: 250, createdAt: 0, inUse: false, removable: false },
+      { id: 'i1', kind: 'image', name: 'redis', sizeBytes: 999, createdAt: 0, inUse: false, removable: true },
+    ]
+    expect(dockerBuildCacheBytes(items)).toBe(350)
+  })
+
+  it('is 0 when there are no build-cache items', () => {
+    expect(dockerBuildCacheBytes([])).toBe(0)
   })
 })

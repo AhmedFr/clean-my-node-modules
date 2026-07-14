@@ -7,7 +7,6 @@ export type DockerTypeFilter = 'all' | DockerItemKind
 export type DisplayGroup =
   | { kind: 'project'; id: string; label: string; project: DockerProject; items: DockerItem[] }
   | { kind: 'repository'; id: string; label: string; items: DockerItem[] }
-  | { kind: 'buildcache'; id: string; label: string; items: DockerItem[] }
   | { kind: 'unaffiliated'; id: string; label: string; items: DockerItem[] }
 
 const bytes = (items: DockerItem[]): number => items.reduce((s, i) => s + i.sizeBytes, 0)
@@ -56,11 +55,6 @@ export function groupDockerForDisplay(
   for (const [repo, of] of repos)
     repoGroups.push({ kind: 'repository', id: `repo:${repo}`, label: repo, items: of.sort(bySizeDesc) })
 
-  const cache = other.filter((i) => i.kind === 'buildcache').sort(bySizeDesc)
-  const buildcacheGroup: DisplayGroup[] = cache.length
-    ? [{ kind: 'buildcache', id: 'buildcache', label: 'Build cache', items: cache }]
-    : []
-
   const rest = other.filter((i) => i.kind !== 'buildcache' && !(i.kind === 'image' && i.repository)).sort(bySizeDesc)
   const unaffiliatedGroup: DisplayGroup[] = rest.length
     ? [{ kind: 'unaffiliated', id: 'unaffiliated', label: 'Not linked to a project', items: rest }]
@@ -68,7 +62,7 @@ export function groupDockerForDisplay(
 
   return [
     ...sortGroups(projectGroups, opts.sortBy),
-    ...sortGroups([...repoGroups, ...buildcacheGroup, ...unaffiliatedGroup], opts.sortBy),
+    ...sortGroups([...repoGroups, ...unaffiliatedGroup], opts.sortBy),
   ]
 }
 
@@ -85,6 +79,17 @@ export const PRUNE_TARGET_LABEL: Record<DockerPruneTarget, string> = {
   stoppedContainers: 'Stopped containers',
   buildCache: 'Build cache',
   unusedVolumes: 'Unused volumes',
+}
+
+/** Button labels for the bulk-prune actions. Unlike `PRUNE_TARGET_LABEL` (the noun used in
+ *  the confirm footer + toast), these lead with a delete verb so the button reads as the
+ *  destructive action it is. */
+export const PRUNE_BUTTON_LABEL: Record<DockerPruneTarget, string> = {
+  danglingImages: 'Delete dangling images',
+  unusedImages: 'Delete unused images',
+  stoppedContainers: 'Delete stopped containers',
+  buildCache: 'Delete build cache',
+  unusedVolumes: 'Delete unused volumes',
 }
 
 /** Prune commands are global (`docker <x> prune -f` spans every project), so bulk-prune
@@ -104,7 +109,6 @@ export function prunesForGroup(group: DisplayGroup): DockerPruneTarget[] {
     }
     return targets
   }
-  if (group.kind === 'buildcache') return ['buildCache']
   return []
 }
 
@@ -127,6 +131,13 @@ export function pruneEstimateBytes(items: DockerItem[], target: DockerPruneTarge
     default:
       return 0
   }
+}
+
+/** Total bytes of Docker build-cache items. Surfaced as a single row in the Caches tab —
+ *  build cache is a global cache, not a per-project resource, so it lives with the other
+ *  package-manager caches rather than in the project-grouped Docker list. */
+export function dockerBuildCacheBytes(items: DockerItem[]): number {
+  return items.filter((i) => i.kind === 'buildcache').reduce((s, i) => s + i.sizeBytes, 0)
 }
 
 /** True when any resource in the group is in use by a container. Drives the green active
