@@ -1138,7 +1138,7 @@ export function LauncherApp(): ReactNode {
                     </span>
                   </div>
                 )}
-                {view === 'list' && tab === 'caches' && store?.available && (
+                {view === 'list' && tab === 'caches' && liveCaches.length > 0 && (
                   <div className="cc-hints">
                     <span>
                       {UIIcon.arrowUp({ size: 12 })}
@@ -1148,7 +1148,7 @@ export function LauncherApp(): ReactNode {
                       <Kbd>
                         <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
                       </Kbd>{' '}
-                      prune
+                      {(liveCaches[sel]?.actionLabel ?? 'prune').toLowerCase()}
                     </span>
                   </div>
                 )}
