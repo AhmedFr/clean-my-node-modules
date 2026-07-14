@@ -1,6 +1,6 @@
 import type { IconRenderer } from '@renderer/components/UIIcon'
 import { describe, expect, it } from 'vitest'
-import { CACHE_PLACEHOLDERS, type LiveCache, visibleCaches } from './CachesView.constants'
+import { CACHE_PLACEHOLDERS, type LiveCache, selectedActionableCache, visibleCaches } from './CachesView.constants'
 
 describe('CACHE_PLACEHOLDERS', () => {
   it('lists the planned package-manager caches in order with unique ids', () => {
@@ -36,5 +36,38 @@ describe('visibleCaches', () => {
 
   it('returns nothing when no cache matches', () => {
     expect(visibleCaches(caches, 'zzz')).toEqual([])
+  })
+})
+
+describe('selectedActionableCache', () => {
+  const stubIcon: IconRenderer = () => null
+  const mk = (name: string, extra: Partial<LiveCache> = {}): LiveCache => ({
+    id: name,
+    icon: stubIcon,
+    name,
+    detail: '',
+    ...extra,
+  })
+
+  it('returns the selected cache when it is visible and actionable', () => {
+    const caches = [mk('pnpm store'), mk('Docker build cache')]
+    expect(selectedActionableCache(caches, '', 1)).toBe(caches[1])
+  })
+
+  it('returns null when the selected cache is filtered out of view by the query', () => {
+    const caches = [mk('pnpm store'), mk('Docker build cache')]
+    // sel=1 points at "Docker build cache", but the query only matches the pnpm row —
+    // so Enter must NOT fire the hidden Docker delete.
+    expect(selectedActionableCache(caches, 'pnpm', 1)).toBeNull()
+  })
+
+  it('returns null when the selected cache is disabled or busy', () => {
+    const caches = [mk('pnpm store', { disabled: true }), mk('Docker build cache', { busy: true })]
+    expect(selectedActionableCache(caches, '', 0)).toBeNull()
+    expect(selectedActionableCache(caches, '', 1)).toBeNull()
+  })
+
+  it('returns null when the selection is out of range', () => {
+    expect(selectedActionableCache([mk('pnpm store')], '', 5)).toBeNull()
   })
 })

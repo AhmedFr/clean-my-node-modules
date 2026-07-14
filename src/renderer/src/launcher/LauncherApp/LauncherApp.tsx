@@ -27,7 +27,7 @@ import type { PackageEntry } from '@shared/package.types'
 import type { Project } from '@shared/project.types'
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { CachesView } from '../views/CachesView'
-import type { LiveCache } from '../views/CachesView.constants'
+import { type LiveCache, selectedActionableCache } from '../views/CachesView.constants'
 import { DockerView } from '../views/DockerView'
 import type { DockerSortKey } from '../views/DockerView.constants'
 import { dockerBuildCacheBytes, PRUNE_TARGET_LABEL, pruneEstimateBytes } from '../views/DockerView.constants'
@@ -552,8 +552,9 @@ export function LauncherApp(): ReactNode {
           setSel((s) => Math.max(0, s - 1))
         } else if (e.key === 'Enter') {
           e.preventDefault()
-          const c = liveCaches[sel]
-          if (c && !c.disabled && !c.busy) c.onAction?.()
+          // Guard on visibility: `sel` indexes the full list, but a query may have filtered
+          // the selected row off screen — Enter must never fire a row the user can't see.
+          selectedActionableCache(liveCaches, query, sel)?.onAction?.()
         }
         return
       }
@@ -1138,7 +1139,7 @@ export function LauncherApp(): ReactNode {
                     </span>
                   </div>
                 )}
-                {view === 'list' && tab === 'caches' && liveCaches.length > 0 && (
+                {view === 'list' && tab === 'caches' && liveCaches.some((c) => !c.disabled) && (
                   <div className="cc-hints">
                     <span>
                       {UIIcon.arrowUp({ size: 12 })}

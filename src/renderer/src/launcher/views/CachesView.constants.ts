@@ -7,11 +7,11 @@ export interface CachePlaceholder {
   detail: string
 }
 
-/** npm/yarn/bun caches — shown disabled ("soon") until issue #2 M2 builds them. */
+/** npm/yarn/bun caches, shown disabled ("soon") until issue #2 M2 builds them. */
 export const CACHE_PLACEHOLDERS: CachePlaceholder[] = [
-  { id: 'npm', name: 'npm cache', detail: 'Global npm cache — coming soon' },
-  { id: 'yarn', name: 'yarn cache', detail: 'Global yarn cache — coming soon' },
-  { id: 'bun', name: 'bun cache', detail: 'Global bun cache — coming soon' },
+  { id: 'npm', name: 'npm cache', detail: 'Global npm cache (coming soon)' },
+  { id: 'yarn', name: 'yarn cache', detail: 'Global yarn cache (coming soon)' },
+  { id: 'bun', name: 'bun cache', detail: 'Global bun cache (coming soon)' },
 ]
 
 /** One live (present, actionable) cache shown at the top of the Caches tab, above the
@@ -40,4 +40,15 @@ export function visibleCaches(caches: LiveCache[], query: string): { cache: Live
   return caches
     .map((cache, index) => ({ cache, index }))
     .filter(({ cache }) => !q || cache.name.toLowerCase().includes(q))
+}
+
+/** The live cache that the Enter key should act on for the current selection and query.
+ *  `sel` indexes the full list, but only `visibleCaches` are on screen — so Enter returns
+ *  the selected cache ONLY when it is still visible (not filtered out by the query) and
+ *  actionable (not disabled or busy). Returns null otherwise, so Enter never fires the
+ *  action of a row the query has hidden from view. */
+export function selectedActionableCache(caches: LiveCache[], query: string, sel: number): LiveCache | null {
+  const c = caches[sel]
+  if (!c || c.disabled || c.busy) return null
+  return visibleCaches(caches, query).some((v) => v.index === sel) ? c : null
 }
