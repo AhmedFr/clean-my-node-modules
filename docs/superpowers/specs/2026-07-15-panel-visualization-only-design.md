@@ -146,11 +146,20 @@ Therefore:
 
 The popover opens on every menu bar click and must never block.
 
-- **Docker + store:** render last-known numbers instantly, refresh in the background when
-  data is missing or >5 min stale, reusing the Docker tab's existing `DOCKER_STALE_MS`
-  rule (`LauncherApp.tsx:139-146`). `getDockerInfo` already caches to disk and dedupes
-  in-flight calls; `getPnpmStore` is a `du` that can take seconds, so its result must
-  never gate first paint.
+- **Docker:** render last-known numbers instantly; refresh in the background when data is
+  missing or >5 min stale, reusing the Docker tab's existing `DOCKER_STALE_MS` rule
+  (`LauncherApp.tsx:142-146`). `getDockerInfo` caches to disk and dedupes in-flight calls,
+  so this is cheap.
+- **Store:** cached mount fetch only (`getPnpmStore()` returns the cached size instantly);
+  force-refresh **only when a panel scan completes**, mirroring `LauncherApp.tsx:112-117`
+  ("the pnpm store can change during a scan (new installs), so re-size it once a scan
+  finishes"). **Corrected during planning:** an earlier draft of this section put the store
+  on the same >5 min staleness rule as Docker. That was wrong — `getPnpmStoreInfo` has no
+  TTL (it caches until forced, exactly like `getDockerInfo`), so a staleness rule would
+  force a multi-second `du` on the store every time the popover opened past the TTL. The
+  launcher never does this: it refreshes the store on scan-completion only, and its stale
+  rule at `:142-146` refreshes Docker alone even on the Caches tab. The panel now matches
+  that precedent, which is both cheaper and consistent.
 - **Packages:** read `getPackages()` (cached-or-null) only. **Never** call
   `computePackages()` from the panel. An uncomputed inventory shows the D6 placeholder;
   clicking through to the Packages tab computes it there, as it does today.
