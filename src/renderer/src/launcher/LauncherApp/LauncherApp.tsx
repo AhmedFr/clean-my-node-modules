@@ -23,6 +23,7 @@ import { mixColor, statusColor } from '@renderer/lib/colors'
 import { formatSizeStr, GB } from '@renderer/lib/format'
 import { severityCounts } from '@renderer/lib/severity'
 import type { DockerItem, DockerPruneTarget } from '@shared/docker.types'
+import type { LauncherNavTarget } from '@shared/launcher-nav.types'
 import type { PackageEntry } from '@shared/package.types'
 import type { Project } from '@shared/project.types'
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -38,6 +39,7 @@ import { PackagesView } from '../views/PackagesView'
 import { ScanningView } from '../views/ScanningView'
 import { SettingsView } from '../views/SettingsView'
 import type { DockerConfirmState, LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
+import { launcherNavState } from './launcherNav'
 import { SortTab } from './SortTab'
 import { tabSummary } from './tabSummary'
 
@@ -119,14 +121,16 @@ export function LauncherApp(): ReactNode {
   // The menu-bar settings entry opens the launcher straight to Settings: pull any
   // target queued for this (possibly fresh) window on mount, and listen for live
   // navigation when the already-open window is reopened onto Settings.
-  useEffect(() => {
-    void window.clean.consumeLauncherNav().then((nav) => {
-      if (nav === 'settings') setView('settings')
-    })
-    return window.clean.onLauncherNavigate((nav) => {
-      if (nav === 'settings') setView('settings')
-    })
+  const applyNav = useCallback((nav: LauncherNavTarget | null): void => {
+    if (!nav) return
+    const next = launcherNavState(nav)
+    setView(next.view)
+    if (next.tab) setTab(next.tab)
   }, [])
+  useEffect(() => {
+    void window.clean.consumeLauncherNav().then(applyNav)
+    return window.clean.onLauncherNavigate(applyNav)
+  }, [applyNav])
   // If the user disables Docker while on that tab, fall back to Projects so the
   // hidden tab can't stay selected via keyboard or stale state.
   useEffect(() => {
