@@ -22,6 +22,7 @@ import { useToast } from '@renderer/hooks/useToast'
 import { mixColor, statusColor } from '@renderer/lib/colors'
 import { formatSizeStr, GB } from '@renderer/lib/format'
 import { severityCounts } from '@renderer/lib/severity'
+import { DOCKER_STALE_MS } from '@renderer/lib/staleness'
 import type { DockerItem, DockerPruneTarget } from '@shared/docker.types'
 import type { LauncherNavTarget } from '@shared/launcher-nav.types'
 import type { PackageEntry } from '@shared/package.types'
@@ -55,8 +56,6 @@ const VISIBLE_ROWS = 7
 const ROW_GAP = 4
 /** Vertical padding of the .cc-list container, in px (matches global.css). */
 const LIST_PADDING = 6
-/** Re-scan Docker when its tab opens and the data is older than this. */
-const DOCKER_STALE_MS = 5 * 60 * 1000
 
 export function LauncherApp(): ReactNode {
   const [settings, setSetting, settingsLoaded] = useSettings()
