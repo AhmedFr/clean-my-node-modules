@@ -117,6 +117,19 @@ export const fr: Dictionary = {
         "Pastilles dernière version npm et alerte de sécurité. Développez une ligne pour la sévérité par version",
       ],
     },
+    {
+      tagline: "Au-delà de node_modules",
+      heading: "Votre espace Docker, regroupé par projet.",
+      body: "Docker accumule discrètement des gigaoctets dans les images, volumes, conteneurs et le cache de build. Ouvrez l'onglet Docker pour le voir regroupé par le projet auquel appartient chaque ressource, avec les vrais logos, tailles et badges d'utilisation. Récupérez les images orphelines, les conteneurs arrêtés et les volumes inutilisés en un clic, avec les mêmes confirmations sécurisées que le reste de TidyDisk.",
+      bullets: [
+        "Images, volumes, conteneurs et cache de build, chacun avec sa taille réelle",
+        <>
+          Ressources <b>regroupées par projet</b> à partir des labels Compose
+          et des liens d'utilisation
+        </>,
+        "Confirmations sûres et typées avant toute suppression définitive",
+      ],
+    },
   ],
 
   grid: {

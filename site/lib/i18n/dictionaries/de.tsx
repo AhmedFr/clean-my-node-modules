@@ -115,6 +115,19 @@ export const de: Dictionary = {
         "Pills für die neueste npm-Version und Sicherheitswarnungen. Zeile aufklappen für den Schweregrad je Version",
       ],
     },
+    {
+      tagline: "Mehr als node_modules",
+      heading: "Dein Docker-Speicher, gruppiert nach Projekt.",
+      body: "Docker sammelt still Gigabyte in Images, Volumes, Containern und Build-Cache an. Öffne den Docker-Tab, um alles gruppiert nach dem Projekt zu sehen, zu dem jede Ressource gehört, mit echten Logos, Größen und Nutzungs-Badges. Gib verwaiste Images, gestoppte Container und ungenutzte Volumes mit einem Klick frei, mit denselben sicheren Bestätigungen wie im Rest von TidyDisk.",
+      bullets: [
+        "Images, Volumes, Container und Build-Cache, jeweils mit ihrer echten Größe",
+        <>
+          Ressourcen <b>nach Projekt gruppiert</b>, anhand von Compose-Labels
+          und Verwendungs-Links
+        </>,
+        "Sichere, typisierte Bestätigungen, bevor etwas dauerhaft gelöscht wird",
+      ],
+    },
   ],
 
   grid: {

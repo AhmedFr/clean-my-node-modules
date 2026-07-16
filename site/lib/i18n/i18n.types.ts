@@ -203,8 +203,8 @@ export interface Dictionary {
   nav: NavCopy;
   hero: HeroCopy;
   band: BandCopy;
-  /** Exactly four feature rows, in display order. */
-  features: [FeatureCopy, FeatureCopy, FeatureCopy, FeatureCopy];
+  /** Exactly five feature rows, in display order (row 5 is Docker). */
+  features: [FeatureCopy, FeatureCopy, FeatureCopy, FeatureCopy, FeatureCopy];
   grid: GridCopy;
   why: WhyCopy;
   how: HowCopy;

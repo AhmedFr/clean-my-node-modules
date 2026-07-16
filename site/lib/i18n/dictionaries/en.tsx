@@ -114,6 +114,19 @@ export const en: Dictionary = {
         "Latest-on-npm and security-advisory pills. Expand a row for per-version severity",
       ],
     },
+    {
+      tagline: "Beyond node_modules",
+      heading: "Your Docker disk, grouped by project.",
+      body: "Docker quietly hoards gigabytes in images, volumes, containers and build cache. Open the Docker tab to see it grouped by the project each resource belongs to, with real logos, sizes and in-use badges. Reclaim dangling images, stopped containers and unused volumes in a click, with the same safe confirmations as the rest of TidyDisk.",
+      bullets: [
+        "Images, volumes, containers and build cache, each with its real size",
+        <>
+          Resources <b>grouped by project</b> from Compose labels and used-by
+          links
+        </>,
+        "Safe, typed confirmations before anything is permanently removed",
+      ],
+    },
   ],
 
   grid: {

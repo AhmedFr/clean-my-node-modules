@@ -115,6 +115,19 @@ export const pt: Dictionary = {
         "Selos de mais recente no npm e alerta de segurança. Expanda uma linha para severidade por versão",
       ],
     },
+    {
+      tagline: "Além do node_modules",
+      heading: "Seu espaço em Docker, agrupado por projeto.",
+      body: "O Docker acumula gigabytes silenciosamente em imagens, volumes, containers e cache de build. Abra a aba Docker para ver tudo agrupado pelo projeto ao qual cada recurso pertence, com logotipos reais, tamanhos e selos de uso. Recupere imagens órfãs, containers parados e volumes não usados em um clique, com as mesmas confirmações seguras do resto do TidyDisk.",
+      bullets: [
+        "Imagens, volumes, containers e cache de build, cada um com seu tamanho real",
+        <>
+          Recursos <b>agrupados por projeto</b> a partir dos labels do Compose
+          e dos vínculos de uso
+        </>,
+        "Confirmações seguras e tipadas antes de qualquer remoção permanente",
+      ],
+    },
   ],
 
   grid: {

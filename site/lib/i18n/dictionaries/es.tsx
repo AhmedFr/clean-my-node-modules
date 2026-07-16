@@ -114,6 +114,19 @@ export const es: Dictionary = {
         "Etiquetas de última versión en npm y avisos de seguridad. Despliega una fila para ver la gravedad por versión",
       ],
     },
+    {
+      tagline: "Más allá de node_modules",
+      heading: "Tu espacio en Docker, agrupado por proyecto.",
+      body: "Docker acumula gigabytes en silencio en imágenes, volúmenes, contenedores y caché de compilación. Abre la pestaña Docker para verlo agrupado por el proyecto al que pertenece cada recurso, con logotipos reales, tamaños e insignias de uso. Recupera imágenes huérfanas, contenedores detenidos y volúmenes sin usar con un clic, con las mismas confirmaciones seguras que el resto de TidyDisk.",
+      bullets: [
+        "Imágenes, volúmenes, contenedores y caché de compilación, cada uno con su tamaño real",
+        <>
+          Recursos <b>agrupados por proyecto</b> a partir de las etiquetas de
+          Compose y los enlaces de uso
+        </>,
+        "Confirmaciones seguras y tipadas antes de eliminar algo de forma permanente",
+      ],
+    },
   ],
 
   grid: {
