@@ -124,25 +124,26 @@ export function PanelApp(): ReactNode {
 
       {view === 'main' && (
         <>
-          {settingsLoaded && !settings.onboarded ? (
-            <PanelEmpty accent={accent} onOpenSetup={() => void window.clean.openLauncher()} />
-          ) : (
-            <>
-              <TrackedSummary
-                heroBytes={areas.heroBytes}
-                combinedLimitGB={areas.combinedLimitGB}
-                trackMaxGB={areas.trackMaxGB}
-                areaCount={areas.areaCount}
-                accent={accent}
-              />
-              <Separator />
-              <div style={{ padding: '4px 0 5px' }}>
-                {areas.rows.map((row) => (
-                  <AreaBar key={row.id} row={row} accent={accent} onOpen={() => openArea(row.nav)} />
-                ))}
-              </div>
-            </>
-          )}
+          {settingsLoaded &&
+            (!settings.onboarded ? (
+              <PanelEmpty accent={accent} onOpenSetup={() => void window.clean.openLauncher()} />
+            ) : (
+              <>
+                <TrackedSummary
+                  heroBytes={areas.heroBytes}
+                  combinedLimitGB={areas.combinedLimitGB}
+                  trackMaxGB={areas.trackMaxGB}
+                  areaCount={areas.areaCount}
+                  accent={accent}
+                />
+                <Separator />
+                <div style={{ padding: '4px 0 5px' }}>
+                  {areas.rows.map((row) => (
+                    <AreaBar key={row.id} row={row} accent={accent} onOpen={() => openArea(row.nav)} />
+                  ))}
+                </div>
+              </>
+            ))}
           <Separator />
           <div style={{ paddingBottom: 5 }}>
             <MItem

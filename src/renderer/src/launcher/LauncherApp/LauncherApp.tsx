@@ -117,9 +117,9 @@ export function LauncherApp(): ReactNode {
     wasScanning.current = scanning
   }, [scanning, refresh])
 
-  // The menu-bar settings entry opens the launcher straight to Settings: pull any
-  // target queued for this (possibly fresh) window on mount, and listen for live
-  // navigation when the already-open window is reopened onto Settings.
+  // A menu-bar click can open the launcher on any target (Settings, or a specific
+  // tab): pull any target queued for this (possibly fresh) window on mount, and
+  // listen for live navigation when an already-open window is re-targeted.
   const applyNav = useCallback((nav: LauncherNavTarget | null): void => {
     if (!nav) return
     const next = launcherNavState(nav)
