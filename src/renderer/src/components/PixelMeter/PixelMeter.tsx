@@ -8,7 +8,7 @@ export function PixelMeter({ usedGB, thresholdGB, trackMaxGB, accent, cells = 32
   const limitCellIdx = Math.min(cells - 1, Math.max(0, Math.floor(limitPos * cells)))
 
   return (
-    <div style={{ position: 'relative', paddingTop: 4 }}>
+    <div style={{ position: 'relative', paddingTop: 4, width: '100%' }}>
       <div style={{ display: 'flex', gap: 2 }}>
         {Array.from({ length: cells }).map((_, i) => {
           const p = ((i + 0.5) / cells) * trackMaxGB
