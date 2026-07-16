@@ -167,12 +167,18 @@ export interface FooterLinksCopy {
   repo: string;
   issues: string;
   releases: string;
+  privacy: string;
+  legal: string;
+  /** Reopens the cookie consent banner (consent withdrawal). */
+  cookies: string;
 }
 
 export interface FooterCopy {
   tagline: string;
   productHead: string;
   openSourceHead: string;
+  /** Heading for the legal column (privacy, legal notice, cookies). */
+  legalHead: string;
   links: FooterLinksCopy;
   copyright: string;
   platform: string;

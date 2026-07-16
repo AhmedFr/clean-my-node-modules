@@ -4,7 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { SvgSprite } from "@/components/SvgSprite";
 import { RevealClient } from "@/components/RevealClient";
-import { Analytics } from "@vercel/analytics/next";
+import { CookieConsent } from "@/components/CookieConsent";
 import { SITE_URL } from "@/lib/site-url";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -58,9 +58,6 @@ const generalSans = localFont({
   display: "swap",
 });
 
-const FAVICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23e23d3d'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.8' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M12 4.6 19 8.5v7L12 19.4 5 15.5v-7z'/%3E%3Cpath d='M5 8.5 12 12.4l7-3.9M12 12.4v7'/%3E%3C/g%3E%3C/svg%3E";
-
 const TITLE =
   "TidyDisk: see what is eating your dev disk, reclaim it in one click";
 const DESCRIPTION =
@@ -70,7 +67,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: TITLE,
   description: DESCRIPTION,
-  icons: { icon: FAVICON },
   openGraph: {
     type: "website",
     url: "/",
@@ -107,7 +103,7 @@ export default function RootLayout({
         <SvgSprite />
         {children}
         <RevealClient />
-        <Analytics />
+        <CookieConsent />
       </body>
     </html>
   );

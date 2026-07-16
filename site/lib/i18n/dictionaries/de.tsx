@@ -324,6 +324,7 @@ export const de: Dictionary = {
       "Die Menüleisten-App, die verhindert, dass Dev-Müll deinen Mac auffrisst.",
     productHead: "Produkt",
     openSourceHead: "Open Source",
+    legalHead: "Rechtliches",
     links: {
       feature: "Funktionen",
       how: "So funktioniert's",
@@ -332,6 +333,9 @@ export const de: Dictionary = {
       repo: "GitHub-Repository",
       issues: "Issues",
       releases: "Releases",
+      privacy: "Datenschutzerklärung",
+      legal: "Impressum",
+      cookies: "Cookie-Einstellungen",
     },
     copyright: "© 2026 TidyDisk · MIT-Lizenz",
     platform: "macOS 13+ · Apple Silicon & Intel",
