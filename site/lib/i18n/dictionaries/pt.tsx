@@ -9,7 +9,7 @@ export const pt: Dictionary = {
     title:
       "TidyDisk: veja o que está consumindo o disco do seu ambiente de dev, recupere-o em um clique",
     description:
-      "O TidyDisk mostra o que seus projetos de dev custam no disco: node_modules, pnpm store e pacotes instalados. Grátis para escanear, limpeza por 19 euros.",
+      "O TidyDisk vive na barra de menu do macOS e mostra o que seus projetos de dev realmente custam: cada pasta node_modules, seu pnpm store e os caches dos gerenciadores de pacotes, imagens e volumes Docker, e cada pacote instalado. Grátis para escanear. Limpeza em um clique com licença vitalícia por 19 euros. Com segurança, para a Lixeira, nunca rm -rf.",
     blogTitle: "Blog do TidyDisk: mantendo discos de dev limpos",
     blogDescription:
       "Guias práticos sobre limpeza de node_modules, uso de disco por gerenciadores de pacotes e como recuperar espaço em um Mac de desenvolvedor. Da equipe do TidyDisk.",
@@ -38,10 +38,11 @@ export const pt: Dictionary = {
     ),
     body: (
       <>
-        O trabalho de dev consome seu Mac silenciosamente: projetos antigos,
-        dependências pesadas, experimentos esquecidos. O TidyDisk observa a
-        partir da barra de menu e devolve o espaço em um clique. Com
-        segurança, para a Lixeira, nunca <code>rm -rf</code>.
+        O trabalho de dev consome seu Mac silenciosamente:{" "}
+        <code>node_modules</code> pesados, imagens Docker, caches de build,
+        experimentos esquecidos. O TidyDisk observa a partir da barra de
+        menu e devolve o espaço em um clique. Com segurança, para a
+        Lixeira, nunca <code>rm -rf</code>.
       </>
     ),
     downloadCta: "Baixar para macOS",
@@ -53,7 +54,9 @@ export const pt: Dictionary = {
     statement: (
       <>
         <code>node_modules</code> é o objeto mais pesado do universo
-        conhecido. <em>Nós ajudamos você a apagá-lo.</em>
+        conhecido. Mas ele não está sozinho: imagens Docker, caches de
+        build e projetos mortos também se acumulam.{" "}
+        <em>TidyDisk limpa tudo isso.</em>
       </>
     ),
   },
@@ -163,8 +166,8 @@ export const pt: Dictionary = {
     comingSoonPill: "Em breve",
     comingSoonText: (
       <>
-        Caches de npm, yarn e bun, além de artefatos de build por projeto
-        como <code>.next</code> e <code>dist</code>.
+        A seguir: caches de npm, yarn e bun, além de artefatos de build
+        por projeto como <code>.next</code> e <code>dist</code>.
       </>
     ),
   },

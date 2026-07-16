@@ -9,7 +9,7 @@ export const fr: Dictionary = {
     title:
       "TidyDisk : voyez ce qui dévore le disque de vos projets, récupérez-le en un clic",
     description:
-      "TidyDisk révèle ce que vos projets de dev coûtent : node_modules, store pnpm, packages installés. Scan gratuit, nettoyage en un clic, à vie pour 19 euros.",
+      "TidyDisk vit dans la barre de menu macOS et révèle ce que vos projets de dev coûtent vraiment : chaque dossier node_modules, votre store pnpm et les caches des gestionnaires de paquets, les images et volumes Docker, et chaque package installé. Scan gratuit. Nettoyage en un clic avec une licence à vie à 19 euros. En toute sécurité, vers la Corbeille, jamais rm -rf.",
     blogTitle: "Le blog TidyDisk : garder un disque de dev propre",
     blogDescription:
       "Guides pratiques sur le nettoyage de node_modules, l'usage disque des gestionnaires de paquets, et la récupération d'espace sur un Mac de développeur.",
@@ -37,10 +37,11 @@ export const fr: Dictionary = {
     ),
     body: (
       <>
-        Le travail de dev grignote votre Mac en silence : vieux projets,
-        dépendances lourdes, expériences oubliées. TidyDisk veille depuis la
-        barre de menu et vous rend l’espace en un clic. En toute sécurité,
-        vers la Corbeille, jamais <code>rm -rf</code>.
+        Le travail de dev grignote votre Mac en silence :{" "}
+        <code>node_modules</code> lourds, images Docker, caches de build,
+        expériences oubliées. TidyDisk veille depuis la barre de menu et vous
+        rend l'espace en un clic. En toute sécurité, vers la Corbeille,
+        jamais <code>rm -rf</code>.
       </>
     ),
     downloadCta: "Télécharger pour macOS",
@@ -51,8 +52,10 @@ export const fr: Dictionary = {
   band: {
     statement: (
       <>
-        <code>node_modules</code> est l’objet le plus lourd de l’univers
-        connu. <em>On vous aide à le supprimer.</em>
+        <code>node_modules</code> est l'objet le plus lourd de l'univers
+        connu. Mais il n'est pas seul : images Docker, caches de build et
+        projets morts s'accumulent aussi.{" "}
+        <em>TidyDisk nettoie tout ça.</em>
       </>
     ),
   },
@@ -165,8 +168,8 @@ export const fr: Dictionary = {
     comingSoonPill: "Bientôt disponible",
     comingSoonText: (
       <>
-        Les caches npm, yarn &amp; bun, plus les sorties de build par projet
-        comme <code>.next</code> et <code>dist</code>.
+        À venir : les caches npm, yarn &amp; bun, plus les sorties de build
+        par projet comme <code>.next</code> et <code>dist</code>.
       </>
     ),
   },

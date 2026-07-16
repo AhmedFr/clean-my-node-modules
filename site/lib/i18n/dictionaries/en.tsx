@@ -9,7 +9,7 @@ export const en: Dictionary = {
     title:
       "TidyDisk: see what is eating your dev disk, reclaim it in one click",
     description:
-      "TidyDisk lives in your macOS menu bar and shows what your dev projects really cost: every node_modules folder, your pnpm store, and every installed package. Free to scan. One-click cleanup with a 19 euro lifetime license. Safely, to the Trash, never rm -rf.",
+      "TidyDisk lives in your macOS menu bar and shows what your dev projects really cost: every node_modules folder, your pnpm store and package-manager caches, Docker images and volumes, and every installed package. Free to scan. One-click cleanup with a 19 euro lifetime license. Safely, to the Trash, never rm -rf.",
     blogTitle: "TidyDisk blog: keeping dev disks clean",
     blogDescription:
       "Practical guides on node_modules cleanup, package manager disk usage, and reclaiming space on a developer Mac. From the makers of TidyDisk.",
@@ -38,10 +38,10 @@ export const en: Dictionary = {
     ),
     body: (
       <>
-        Dev work quietly eats your Mac: old projects, heavy dependencies,
-        forgotten experiments. TidyDisk watches from the menu bar and gives
-        the space back in one click. Safely, to the Trash, never{" "}
-        <code>rm -rf</code>.
+        Dev work quietly eats your Mac: heavy <code>node_modules</code>, Docker
+        images, build caches, forgotten experiments. TidyDisk watches from the
+        menu bar and gives the space back in one click. Safely, to the Trash,
+        never <code>rm -rf</code>.
       </>
     ),
     downloadCta: "Download for macOS",
@@ -52,8 +52,9 @@ export const en: Dictionary = {
   band: {
     statement: (
       <>
-        <code>node_modules</code> is the heaviest object in the known
-        universe. <em>We help you delete it.</em>
+        <code>node_modules</code> is the heaviest object in the known universe.
+        But it is not alone: Docker images, build caches and dead projects pile
+        up too. <em>TidyDisk clears all of it.</em>
       </>
     ),
   },
@@ -164,8 +165,8 @@ export const en: Dictionary = {
     comingSoonPill: "Coming soon",
     comingSoonText: (
       <>
-        npm, yarn &amp; bun caches, plus per-project build outputs like{" "}
-        <code>.next</code> and <code>dist</code>.
+        Next up: npm, yarn &amp; bun caches, plus per-project build outputs
+        like <code>.next</code> and <code>dist</code>.
       </>
     ),
   },

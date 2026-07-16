@@ -7,7 +7,7 @@ export const es: Dictionary = {
     title:
       "TidyDisk: descubre qué ocupa el disco de tu Mac de desarrollo y recupéralo con un clic",
     description:
-      "TidyDisk vive en la barra de menús de macOS y te muestra el coste real de tus proyectos: cada carpeta node_modules, tu almacén de pnpm y todos los paquetes instalados. Escaneo gratis. Limpieza con un clic con licencia de por vida por 19 euros. De forma segura, a la Papelera, nunca con rm -rf.",
+      "TidyDisk vive en la barra de menús de macOS y te muestra el coste real de tus proyectos: cada carpeta node_modules, tu almacén de pnpm y las cachés de los gestores de paquetes, las imágenes y volúmenes de Docker, y todos los paquetes instalados. Escaneo gratis. Limpieza con un clic con licencia de por vida por 19 euros. De forma segura, a la Papelera, nunca con rm -rf.",
     blogTitle: "Blog de TidyDisk: mantén limpio el disco de desarrollo",
     blogDescription:
       "Guías prácticas sobre limpieza de node_modules, uso de disco de gestores de paquetes y cómo recuperar espacio en un Mac de desarrollador. De los creadores de TidyDisk.",
@@ -36,11 +36,11 @@ export const es: Dictionary = {
     ),
     body: (
       <>
-        El trabajo de desarrollo devora tu Mac en silencio: proyectos
-        antiguos, dependencias pesadas, experimentos olvidados. TidyDisk
-        vigila desde la barra de menús y te devuelve el espacio con un
-        clic. De forma segura, a la Papelera, nunca con{" "}
-        <code>rm -rf</code>.
+        El trabajo de desarrollo devora tu Mac en silencio:{" "}
+        <code>node_modules</code> pesados, imágenes Docker, cachés de
+        compilación, experimentos olvidados. TidyDisk vigila desde la
+        barra de menús y te devuelve el espacio con un clic. De forma
+        segura, a la Papelera, nunca con <code>rm -rf</code>.
       </>
     ),
     downloadCta: "Descargar para macOS",
@@ -52,7 +52,9 @@ export const es: Dictionary = {
     statement: (
       <>
         <code>node_modules</code> es el objeto más pesado del universo
-        conocido. <em>Te ayudamos a borrarlo.</em>
+        conocido. Pero no está solo: imágenes Docker, cachés de
+        compilación y proyectos muertos también se acumulan.{" "}
+        <em>TidyDisk lo limpia todo.</em>
       </>
     ),
   },
@@ -163,8 +165,8 @@ export const es: Dictionary = {
     comingSoonPill: "Próximamente",
     comingSoonText: (
       <>
-        Cachés de npm, yarn y bun, además de artefactos de compilación
-        por proyecto como <code>.next</code> y <code>dist</code>.
+        Lo próximo: cachés de npm, yarn y bun, además de artefactos de
+        compilación por proyecto como <code>.next</code> y <code>dist</code>.
       </>
     ),
   },
