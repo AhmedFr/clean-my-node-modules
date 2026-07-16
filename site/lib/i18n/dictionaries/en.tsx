@@ -59,6 +59,35 @@ export const en: Dictionary = {
     ),
   },
 
+  areas: {
+    kicker: "One tool, every kind of dev junk",
+    heading: (
+      <>
+        Four places your disk quietly{" "}
+        <span className="text-accent">fills up.</span>
+      </>
+    ),
+    lead: "TidyDisk watches all of them and gives the space back, safely.",
+    cards: [
+      {
+        title: "Projects",
+        copy: "Heavy, stale node_modules ranked by the real bytes you would free.",
+      },
+      {
+        title: "Caches",
+        copy: "Your pnpm store and Docker build cache, pruned in one safe click.",
+      },
+      {
+        title: "Packages",
+        copy: "A machine-wide dependency inventory: version drift, duplicates, and security advisories.",
+      },
+      {
+        title: "Docker",
+        copy: "Images, volumes, containers and build cache, grouped by the project they belong to.",
+      },
+    ],
+  },
+
   features: [
     {
       tagline: "Always watching",

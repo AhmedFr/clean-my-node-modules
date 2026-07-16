@@ -60,6 +60,35 @@ export const fr: Dictionary = {
     ),
   },
 
+  areas: {
+    kicker: "Un seul outil, tout le bazar du dev",
+    heading: (
+      <>
+        Quatre endroits où votre disque se remplit{" "}
+        <span className="text-accent">en silence.</span>
+      </>
+    ),
+    lead: "TidyDisk surveille les quatre et vous rend l'espace, en toute sécurité.",
+    cards: [
+      {
+        title: "Projects",
+        copy: "De lourds node_modules obsolètes, classés par les octets réels que vous libéreriez.",
+      },
+      {
+        title: "Caches",
+        copy: "Votre store pnpm et le cache de build Docker, purgés en un clic sans risque.",
+      },
+      {
+        title: "Packages",
+        copy: "Un inventaire des dépendances à l'échelle de la machine : dérive de versions, doublons et alertes de sécurité.",
+      },
+      {
+        title: "Docker",
+        copy: "Images, volumes, conteneurs et cache de build, regroupés par le projet auquel ils appartiennent.",
+      },
+    ],
+  },
+
   features: [
     {
       tagline: "Toujours en veille",
