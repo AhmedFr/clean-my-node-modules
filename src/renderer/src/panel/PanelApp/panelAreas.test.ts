@@ -124,7 +124,9 @@ describe('panelAreas rows', () => {
   it('every size row mirrors its tab headline number', () => {
     const r = base
     // Projects mirrors totalUsed, which INCLUDES the store (34.8 + 6.4).
-    expect(row(r, 'projects')).toMatchObject({ kind: 'size', usedBytes: 41.2 * GB, thresholdGB: 20 })
+    // Assert the same summation the code performs so the comparison stays exact;
+    // 41.2*GB is not bit-identical to 34.8*GB + 6.4*GB due to IEEE 754 precision.
+    expect(row(r, 'projects')).toMatchObject({ kind: 'size', usedBytes: 34.8 * GB + 6.4 * GB, thresholdGB: 20 })
     // Caches mirrors the Caches gauge: the store alone.
     expect(row(r, 'caches')).toMatchObject({ kind: 'size', usedBytes: 6.4 * GB, thresholdGB: 10 })
     expect(row(r, 'docker')).toMatchObject({ kind: 'size', usedBytes: 23.6 * GB, thresholdGB: 20 })
