@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { StatementBand } from "@/components/StatementBand";
+import { Areas } from "@/components/Areas";
 import { Features } from "@/components/Features";
 import { FeatureGrid } from "@/components/FeatureGrid";
 import { WhyLifecycle } from "@/components/WhyLifecycle";
@@ -49,6 +50,7 @@ export function HomePage({ locale }: { locale: Locale }) {
       <main id="top">
         <Hero dict={dict} />
         <StatementBand dict={dict} />
+        <Areas dict={dict} />
         <Features dict={dict} />
         <FeatureGrid dict={dict} />
         <WhyLifecycle dict={dict} />
