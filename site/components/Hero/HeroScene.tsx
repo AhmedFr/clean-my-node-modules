@@ -1,5 +1,5 @@
 import { Icon } from "@/components/Icon";
-import { AppPanel } from "@/components/AppPanel";
+import { HeroPanel } from "./HeroPanel";
 import {
   GlassPanel,
   PanelSep,
@@ -49,7 +49,7 @@ export function HeroScene() {
 
         {/* dropdown: recreation of the real menu-bar panel */}
         <GlassPanel className="absolute right-4 top-[42px] z-[6] w-[340px] max900:right-1/2 max900:w-[300px] max900:translate-x-1/2">
-          <AppPanel />
+          <HeroPanel />
         </GlassPanel>
 
         {/* floating Packages card: the whole-machine inventory */}
