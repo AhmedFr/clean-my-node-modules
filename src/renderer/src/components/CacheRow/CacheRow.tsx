@@ -6,12 +6,17 @@ import type { CacheRowProps } from './CacheRow.types'
 export function CacheRow({
   icon,
   name,
+  badge,
   detail,
   size,
   selected = false,
   disabled = false,
   busy = false,
   actionLabel,
+  title,
+  busyLabel,
+  actionIcon,
+  danger = false,
   onAction,
   onSelect,
 }: CacheRowProps): ReactNode {
@@ -46,7 +51,21 @@ export function CacheRow({
         {icon({ size: 15 })}
       </span>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>{name}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+          <span
+            style={{
+              fontSize: 13.5,
+              fontWeight: 600,
+              color: 'var(--text)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {name}
+          </span>
+          {badge}
+        </div>
         <div
           style={{
             fontSize: 11.5,
@@ -80,20 +99,24 @@ export function CacheRow({
             onAction?.()
           }}
           disabled={busy}
-          title="Remove packages no project references (pnpm store prune)"
+          title={title ?? 'Remove packages no project references (pnpm store prune)'}
           style={{
-            border: '1px solid var(--surface-4)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+            border: `1px solid ${danger ? 'rgba(255,99,99,0.4)' : 'var(--surface-4)'}`,
             cursor: busy ? 'default' : 'pointer',
             padding: '5px 11px',
             borderRadius: 8,
-            background: 'var(--surface-1)',
-            color: busy ? 'var(--text-dim)' : 'var(--text-2)',
+            background: danger ? 'rgba(255,99,99,0.10)' : 'var(--surface-1)',
+            color: busy ? 'var(--text-dim)' : danger ? 'rgba(255,99,99,0.95)' : 'var(--text-2)',
             fontSize: 12,
             fontWeight: 600,
             flex: 'none',
           }}
         >
-          {busy ? 'Pruning…' : actionLabel}
+          {actionIcon?.({ size: 12 })}
+          {busy ? (busyLabel ?? 'Pruning…') : actionLabel}
         </button>
       ) : disabled ? (
         <span

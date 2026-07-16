@@ -29,6 +29,18 @@ describe('coerceSetting', () => {
     expect(coerceSetting('thresholdGB', '5')).toBeNull()
   })
 
+  it('clamps cacheThresholdGB and dockerThresholdGB and rejects bad values', () => {
+    expect(coerceSetting('cacheThresholdGB', 10)).toEqual({ key: 'cacheThresholdGB', value: 10 })
+    expect(coerceSetting('cacheThresholdGB', 99999)).toEqual({ key: 'cacheThresholdGB', value: 1000 })
+    expect(coerceSetting('cacheThresholdGB', -3)).toEqual({ key: 'cacheThresholdGB', value: 0.1 })
+    expect(coerceSetting('cacheThresholdGB', Number.NaN)).toBeNull()
+    expect(coerceSetting('cacheThresholdGB', '10')).toBeNull()
+
+    expect(coerceSetting('dockerThresholdGB', 20)).toEqual({ key: 'dockerThresholdGB', value: 20 })
+    expect(coerceSetting('dockerThresholdGB', 99999)).toEqual({ key: 'dockerThresholdGB', value: 1000 })
+    expect(coerceSetting('dockerThresholdGB', 0)).toEqual({ key: 'dockerThresholdGB', value: 0.1 })
+  })
+
   it('validates notify as boolean', () => {
     expect(coerceSetting('notify', false)).toEqual({ key: 'notify', value: false })
     expect(coerceSetting('notify', 'true')).toBeNull()
@@ -68,6 +80,16 @@ describe('coerceSetting — pnpm overrides', () => {
 
   it('rejects a non-string override', () => {
     expect(coerceSetting('pnpmBinaryPath', 42)).toBeNull()
+  })
+
+  it('validates the docker settings keys', () => {
+    expect(coerceSetting('docker', true)).toEqual({ key: 'docker', value: true })
+    expect(coerceSetting('docker', 'yes')).toBeNull()
+    expect(coerceSetting('dockerBinaryPath', ' /usr/local/bin/docker ')).toEqual({
+      key: 'dockerBinaryPath',
+      value: '/usr/local/bin/docker',
+    })
+    expect(coerceSetting('dockerBinaryPath', 42)).toBeNull()
   })
 })
 

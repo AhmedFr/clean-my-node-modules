@@ -1,3 +1,4 @@
+import { Accordion } from '@renderer/components/Accordion'
 import { PackageDetails, PackageRow, PackageRowSkeleton } from '@renderer/components/PackageRow'
 import { Spinner } from '@renderer/components/Spinner'
 import { UIIcon } from '@renderer/components/UIIcon'
@@ -192,39 +193,29 @@ export function PackagesView({
           {items.map((entry, i) => {
             const open = entry.name === expandedName
             return (
-              <div
+              <Accordion
                 key={entry.name}
-                // When open, the item itself becomes one solid rounded card (header +
-                // details share a single surface) — an accordion, not an appended box.
-                style={
-                  open
-                    ? {
-                        position: 'relative',
-                        zIndex: 1,
-                        background: 'var(--surface-2)',
-                        borderRadius: 10,
-                        boxShadow: 'inset 0 0 0 1px var(--hairline)',
-                        overflow: 'hidden',
-                      }
-                    : undefined
+                open={open}
+                card
+                header={
+                  <PackageRow
+                    entry={entry}
+                    selected={i === selectedIndex}
+                    expanded={open}
+                    showUpdates={checkUpdates}
+                    rowRef={(el) => {
+                      if (el) rowEls.current[entry.name] = el
+                    }}
+                    onSelect={() => onSelectIndex(i)}
+                    onToggle={() => {
+                      onSelectIndex(i)
+                      onToggleExpand(entry.name)
+                    }}
+                  />
                 }
               >
-                <PackageRow
-                  entry={entry}
-                  selected={i === selectedIndex}
-                  expanded={open}
-                  showUpdates={checkUpdates}
-                  rowRef={(el) => {
-                    if (el) rowEls.current[entry.name] = el
-                  }}
-                  onSelect={() => onSelectIndex(i)}
-                  onToggle={() => {
-                    onSelectIndex(i)
-                    onToggleExpand(entry.name)
-                  }}
-                />
-                {open && <PackageDetails entry={entry} onOpen={() => onOpen(entry)} />}
-              </div>
+                <PackageDetails entry={entry} onOpen={() => onOpen(entry)} />
+              </Accordion>
             )
           })}
         </div>

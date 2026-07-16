@@ -1,14 +1,16 @@
 import { AppIcon } from '@renderer/components/AppIcon'
-import { Gauge } from '@renderer/components/Gauge'
 import { Kbd } from '@renderer/components/Kbd'
 import { RescanHint } from '@renderer/components/RescanHint'
 import { ResultView } from '@renderer/components/ResultView'
 import { Row } from '@renderer/components/Row'
+import type { SegmentedOption } from '@renderer/components/Segmented'
 import { Segmented } from '@renderer/components/Segmented'
 import { Spinner } from '@renderer/components/Spinner'
+import { TabHeadline } from '@renderer/components/TabHeadline'
 import { UIIcon } from '@renderer/components/UIIcon'
 import { UnlockPrompt } from '@renderer/components/UnlockPrompt'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
+import { useDocker } from '@renderer/hooks/useDocker'
 import { useLicense } from '@renderer/hooks/useLicense'
 import { useLiveProjects } from '@renderer/hooks/useLiveProjects'
 import { usePackagesTab } from '@renderer/hooks/usePackagesTab'
@@ -19,17 +21,28 @@ import { useSettings } from '@renderer/hooks/useSettings'
 import { useToast } from '@renderer/hooks/useToast'
 import { mixColor, statusColor } from '@renderer/lib/colors'
 import { formatSizeStr, GB } from '@renderer/lib/format'
+import { severityCounts } from '@renderer/lib/severity'
+import { DOCKER_STALE_MS } from '@renderer/lib/staleness'
+import type { DockerItem, DockerPruneTarget } from '@shared/docker.types'
+import type { LauncherNavTarget } from '@shared/launcher-nav.types'
 import type { PackageEntry } from '@shared/package.types'
 import type { Project } from '@shared/project.types'
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { CachesView } from '../views/CachesView'
+import { type LiveCache, selectedActionableCache } from '../views/CachesView.constants'
+import { DockerView } from '../views/DockerView'
+import type { DockerSortKey } from '../views/DockerView.constants'
+import { dockerBuildCacheBytes, PRUNE_TARGET_LABEL, pruneEstimateBytes } from '../views/DockerView.constants'
+import { confirmSatisfied, needsTypedConfirm, requiredConfirmText } from '../views/docker-confirm'
 import { EmptyView } from '../views/EmptyView'
 import { Onboarding } from '../views/Onboarding'
 import { PackagesView } from '../views/PackagesView'
 import { ScanningView } from '../views/ScanningView'
 import { SettingsView } from '../views/SettingsView'
-import type { LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
+import type { DockerConfirmState, LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
+import { launcherNavState } from './launcherNav'
 import { SortTab } from './SortTab'
+import { tabSummary } from './tabSummary'
 
 const NEXT_SCAN_LABEL: Record<string, string> = {
   '6h': '6 hours',
@@ -54,16 +67,30 @@ export function LauncherApp(): ReactNode {
 
   const [query, setQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortKey>('used')
+  const [dockerSortBy, setDockerSortBy] = useState<DockerSortKey>('size')
   const [sel, setSel] = useState(0)
   const [view, setView] = useState<LauncherView>('list')
   const [tab, setTab] = useState<LauncherTab>('projects')
   const [deleting, setDeleting] = useState<Set<string>>(() => new Set())
   const [confirm, setConfirm] = useState<Project | null>(null)
+  const [dockerConfirm, setDockerConfirm] = useState<DockerConfirmState | null>(null)
+  const [dockerTyped, setDockerTyped] = useState('')
   const [unlock, setUnlock] = useState<{ bytes?: number } | null>(null)
   const [reclaimed, setReclaimed] = useState(0)
   const [cardCopied, setCardCopied] = useState(false)
   const { toast, flashToast } = useToast<LauncherToast>()
   const { store, loading: storeLoading, pruning, prune, refresh } = usePnpmStore()
+  const dockerEnabled = settings.docker !== false
+  const tabOptions = useMemo<SegmentedOption<LauncherTab>[]>(
+    () => [
+      { value: 'projects', label: 'Projects' },
+      { value: 'caches', label: 'Caches' },
+      { value: 'packages', label: 'Packages' },
+      ...(dockerEnabled ? [{ value: 'docker', label: 'Docker' } as const] : []),
+    ],
+    [dockerEnabled],
+  )
+  const docker = useDocker()
   const pkgActive = view === 'list' && tab === 'packages'
   const {
     inventory,
@@ -90,17 +117,36 @@ export function LauncherApp(): ReactNode {
     wasScanning.current = scanning
   }, [scanning, refresh])
 
-  // The menu-bar settings entry opens the launcher straight to Settings: pull any
-  // target queued for this (possibly fresh) window on mount, and listen for live
-  // navigation when the already-open window is reopened onto Settings.
-  useEffect(() => {
-    void window.clean.consumeLauncherNav().then((nav) => {
-      if (nav === 'settings') setView('settings')
-    })
-    return window.clean.onLauncherNavigate((nav) => {
-      if (nav === 'settings') setView('settings')
-    })
+  // A menu-bar click can open the launcher on any target (Settings, or a specific
+  // tab): pull any target queued for this (possibly fresh) window on mount, and
+  // listen for live navigation when an already-open window is re-targeted.
+  const applyNav = useCallback((nav: LauncherNavTarget | null): void => {
+    if (!nav) return
+    const next = launcherNavState(nav)
+    setView(next.view)
+    if (next.tab) setTab(next.tab)
   }, [])
+  useEffect(() => {
+    void window.clean.consumeLauncherNav().then(applyNav)
+    return window.clean.onLauncherNavigate(applyNav)
+  }, [applyNav])
+  // If the user disables Docker while on that tab, fall back to Projects so the
+  // hidden tab can't stay selected via keyboard or stale state.
+  useEffect(() => {
+    if (!dockerEnabled && tab === 'docker') {
+      setTab('projects')
+      setSel(0)
+    }
+  }, [dockerEnabled, tab])
+
+  // Docker refreshes on its own cadence, decoupled from the disk rescan: when the
+  // Docker tab opens with missing or stale (>5 min) data, kick a background scan.
+  // Guarded on `docker.loading` and freshened `checkedAt` so it can't loop.
+  useEffect(() => {
+    if (view !== 'list' || (tab !== 'docker' && tab !== 'caches') || !dockerEnabled || docker.loading) return
+    const stale = !docker.info || Date.now() - docker.info.checkedAt > DOCKER_STALE_MS
+    if (stale) void docker.refresh()
+  }, [view, tab, dockerEnabled, docker.info, docker.loading, docker.refresh])
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -121,6 +167,22 @@ export function LauncherApp(): ReactNode {
   )
   const needsRescan = useMemo(() => projects.some((p) => p.uniqueSize === undefined), [projects])
   const maxBytes = useMemo(() => Math.max(1, ...projects.map((p) => p.uniqueSize ?? p.size)), [projects])
+  // Bar scale for the Docker rows' SizeViz. Excludes build-cache items: they no longer render
+  // in the Docker tab (they live in the Caches tab), so counting them here would scale every
+  // visible row against an off-screen max and silently compress the bars.
+  const dockerMaxBytes = useMemo(
+    () => Math.max(1, ...(docker.info?.items.filter((i) => i.kind !== 'buildcache').map((i) => i.sizeBytes) ?? [])),
+    [docker.info],
+  )
+  const dockerTotal = useMemo(() => (docker.info?.totals ?? []).reduce((s, t) => s + t.sizeBytes, 0), [docker.info])
+  const severity = useMemo(() => severityCounts(inventory?.packages ?? []), [inventory])
+  const packagesDataReady = !!inventory && !inventory.enrichmentError
+  const cachesAvailable = !!store?.available
+  const dockerAvailable = !!docker.info?.available
+  const buildCacheBytes = useMemo(
+    () => (dockerAvailable ? dockerBuildCacheBytes(docker.info?.items ?? []) : 0),
+    [dockerAvailable, docker.info],
+  )
   const ratio = totalUsed / threshold
   const status = statusColor(ratio, accent)
 
@@ -232,6 +294,111 @@ export function LauncherApp(): ReactNode {
     [flashToast, license.pro],
   )
 
+  const closeDockerConfirm = useCallback(() => {
+    setDockerConfirm(null)
+    setDockerTyped('')
+  }, [])
+
+  // Disabling Docker mid-confirm must not leave a pending remove/prune dialog wired to a
+  // now-hidden feature. The tab reset above misses a build-cache prune requested from the
+  // Caches tab (tab !== 'docker'), so clear any pending Docker confirm whenever Docker is
+  // turned off, regardless of the active tab.
+  useEffect(() => {
+    if (!dockerEnabled) closeDockerConfirm()
+  }, [dockerEnabled, closeDockerConfirm])
+
+  // Free users hit the paywall before any confirm state is set — the destructive IPC
+  // is also gated pro-only in main, but the UI never even offers the affordance here.
+  const requestDockerRemove = useCallback(
+    (item: DockerItem) => {
+      if (!license.pro) {
+        setUnlock({ bytes: item.sizeBytes })
+        window.clean.trackEvent('paywall_shown', { trigger: 'docker' })
+        return
+      }
+      setDockerTyped('')
+      setDockerConfirm({ kind: 'remove', item })
+    },
+    [license.pro],
+  )
+
+  const requestDockerPrune = useCallback(
+    (target: DockerPruneTarget) => {
+      if (!license.pro) {
+        setUnlock({})
+        window.clean.trackEvent('paywall_shown', { trigger: 'docker' })
+        return
+      }
+      setDockerTyped('')
+      setDockerConfirm({ kind: 'prune', target, estimatedBytes: pruneEstimateBytes(docker.info?.items ?? [], target) })
+    },
+    [license.pro, docker.info],
+  )
+
+  const commitDockerRemove = useCallback(
+    (item: DockerItem) => {
+      closeDockerConfirm()
+      void docker.remove(item.kind, item.id).then((r) => {
+        if (r.ok) {
+          flashToast({
+            icon: UIIcon.checkCircle,
+            text: `Reclaimed ${formatSizeStr(r.freedBytes || item.sizeBytes)} · ${item.name}`,
+            tone: 'good',
+          })
+        } else {
+          flashToast({
+            icon: UIIcon.alert,
+            text: `Couldn't remove ${item.name}. It may now be in use.`,
+            tone: 'neutral',
+          })
+        }
+      })
+    },
+    [docker, flashToast, closeDockerConfirm],
+  )
+
+  const commitDockerPrune = useCallback(
+    (target: DockerPruneTarget, estimatedBytes: number) => {
+      closeDockerConfirm()
+      void docker.prune(target).then((r) => {
+        if (r.ok) {
+          flashToast({
+            icon: UIIcon.checkCircle,
+            text: `Reclaimed ${formatSizeStr(r.freedBytes || estimatedBytes)} · ${PRUNE_TARGET_LABEL[target]}`,
+            tone: 'good',
+          })
+        } else {
+          flashToast({
+            icon: UIIcon.alert,
+            text: "Couldn't prune. Nothing was removed.",
+            tone: 'neutral',
+          })
+        }
+      })
+    },
+    [docker, flashToast, closeDockerConfirm],
+  )
+
+  // Derived confirm-gate state for the docker confirm footer: only volumes (per-item or the
+  // bulk unusedVolumes prune) need the extra typed confirmation before Remove/↵ can fire.
+  const dockerNeedsTyped = dockerConfirm
+    ? dockerConfirm.kind === 'remove'
+      ? needsTypedConfirm({ kind: dockerConfirm.item.kind })
+      : dockerConfirm.target === 'unusedVolumes'
+    : false
+  const dockerRequiredText = dockerConfirm
+    ? dockerConfirm.kind === 'remove'
+      ? requiredConfirmText({ kind: 'volume', name: dockerConfirm.item.name })
+      : requiredConfirmText({ kind: 'prune' })
+    : ''
+  const dockerConfirmBlocked = dockerNeedsTyped && !confirmSatisfied(dockerRequiredText, dockerTyped)
+
+  const commitDockerConfirm = useCallback(() => {
+    if (!dockerConfirm || dockerConfirmBlocked) return
+    if (dockerConfirm.kind === 'remove') commitDockerRemove(dockerConfirm.item)
+    else commitDockerPrune(dockerConfirm.target, dockerConfirm.estimatedBytes)
+  }, [dockerConfirm, dockerConfirmBlocked, commitDockerRemove, commitDockerPrune])
+
   const rescan = useCallback(() => setView('scanning'), [])
 
   const copyCard = useCallback(
@@ -272,6 +439,42 @@ export function LauncherApp(): ReactNode {
     }
   }, [prune, flashToast, license.pro])
 
+  const liveCaches = useMemo<LiveCache[]>(() => {
+    const list: LiveCache[] = [
+      {
+        id: 'pnpm',
+        icon: UIIcon.hdd,
+        name: 'pnpm store',
+        detail: pruning
+          ? 'Pruning unreferenced packages…'
+          : store?.available
+            ? (store?.displayPath ?? '')
+            : (store?.reason ?? 'pnpm store not found'),
+        size: store?.available ? store?.sizeBytes : undefined,
+        disabled: !store?.available,
+        busy: pruning,
+        actionLabel: store?.canPrune ? 'Prune' : undefined,
+        onAction: handlePrune,
+      },
+    ]
+    if (dockerEnabled && dockerAvailable && buildCacheBytes > 0) {
+      list.push({
+        id: 'docker-buildcache',
+        icon: UIIcon.hdd,
+        name: 'Docker build cache',
+        detail: 'Docker layer build cache',
+        size: buildCacheBytes,
+        busy: docker.busyId === 'prune:buildCache',
+        actionLabel: 'Delete',
+        busyLabel: 'Deleting…',
+        danger: true,
+        title: 'Delete all Docker build cache. Permanent, not sent to the Trash.',
+        onAction: () => requestDockerPrune('buildCache'),
+      })
+    }
+    return list
+  }, [store, pruning, handlePrune, dockerEnabled, dockerAvailable, buildCacheBytes, docker.busyId, requestDockerPrune])
+
   // keyboard
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
@@ -280,20 +483,26 @@ export function LauncherApp(): ReactNode {
         e.preventDefault()
         setView((v) => (v === 'settings' ? 'list' : 'settings'))
         setConfirm(null)
+        closeDockerConfirm()
         setUnlock(null)
         return
       }
       if (meta && (e.key === 'r' || e.key === 'R')) {
         e.preventDefault()
         if (tab === 'packages') void refreshPackages()
-        else rescan()
+        else if (tab === 'docker') {
+          closeDockerConfirm()
+          void docker.refresh()
+        } else rescan()
         return
       }
-      if (meta && (e.key === '1' || e.key === '2' || e.key === '3')) {
+      if (meta && ['1', '2', '3', '4'].includes(e.key)) {
+        if (e.key === '4' && !dockerEnabled) return
         e.preventDefault()
-        setTab(e.key === '1' ? 'projects' : e.key === '2' ? 'caches' : 'packages')
+        setTab(e.key === '1' ? 'projects' : e.key === '2' ? 'caches' : e.key === '3' ? 'packages' : 'docker')
         setSel(0)
         setConfirm(null)
+        closeDockerConfirm()
         setUnlock(null)
         collapsePkg()
         return
@@ -309,6 +518,10 @@ export function LauncherApp(): ReactNode {
         }
         if (confirm) {
           setConfirm(null)
+          return
+        }
+        if (dockerConfirm) {
+          closeDockerConfirm()
           return
         }
         if (view === 'list' && tab === 'packages' && expandedPkg) {
@@ -333,9 +546,18 @@ export function LauncherApp(): ReactNode {
         }
         return
       }
+      if (dockerConfirm) {
+        // A blocked confirm (typed volume name not yet matching) still swallows Enter —
+        // an accidental keypress must never fall through to a destructive action.
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          commitDockerConfirm()
+        }
+        return
+      }
       if (view !== 'list') return
       if (tab === 'caches') {
-        const cacheCount = store?.available ? 1 : 0
+        const cacheCount = liveCaches.length
         if (e.key === 'ArrowDown') {
           e.preventDefault()
           setSel((s) => Math.min(cacheCount - 1, s + 1))
@@ -344,8 +566,17 @@ export function LauncherApp(): ReactNode {
           setSel((s) => Math.max(0, s - 1))
         } else if (e.key === 'Enter') {
           e.preventDefault()
-          if (store?.available && !pruning) void handlePrune()
+          // Guard on visibility: `sel` indexes the full list, but a query may have filtered
+          // the selected row off screen — Enter must never fire a row the user can't see.
+          selectedActionableCache(liveCaches, query, sel)?.onAction?.()
         }
+        return
+      }
+      if (tab === 'docker') {
+        // Row-level remove/prune is mouse-driven (per-item and per-category buttons in
+        // DockerView); this just keeps Arrow/Enter/⌘⌫ from falling through to the
+        // projects-list logic below. The dockerConfirm branch above is what drives ↵/esc
+        // once a removal is pending.
         return
       }
       if (tab === 'packages') {
@@ -388,20 +619,23 @@ export function LauncherApp(): ReactNode {
     view,
     tab,
     confirm,
+    dockerConfirm,
+    closeDockerConfirm,
+    commitDockerConfirm,
     unlock,
     query,
     commitDelete,
     doOpen,
     rescan,
-    store,
-    pruning,
-    handlePrune,
+    liveCaches,
     pkgFiltered,
     openNpm,
     refreshPackages,
     expandedPkg,
     togglePkgExpand,
     collapsePkg,
+    docker,
+    dockerEnabled,
   ])
 
   // The window is hidden (not destroyed) on blur/esc, so it keeps its React
@@ -411,6 +645,7 @@ export function LauncherApp(): ReactNode {
       setView('list')
       setTab('projects')
       setConfirm(null)
+      closeDockerConfirm()
       setUnlock(null)
       setQuery('')
       setSel(0)
@@ -419,7 +654,7 @@ export function LauncherApp(): ReactNode {
     }
     window.addEventListener('focus', onFocus)
     return () => window.removeEventListener('focus', onFocus)
-  }, [collapsePkg])
+  }, [collapsePkg, closeDockerConfirm])
 
   // keep selected row in view (projects list only)
   useEffect(() => {
@@ -436,7 +671,32 @@ export function LauncherApp(): ReactNode {
   }, [sel, view, tab, filtered])
 
   const isEmpty = projects.length === 0
-  const overBy = totalUsed - threshold
+  const summaryText = tabSummary({
+    tab,
+    projectsUsed: totalUsed,
+    cachesUsed: storeBytes,
+    cachesAvailable,
+    dockerUsed: dockerTotal,
+    dockerAvailable,
+    thresholdGB: settings.thresholdGB,
+    cacheThresholdGB: settings.cacheThresholdGB,
+    dockerThresholdGB: settings.dockerThresholdGB,
+    severity,
+    packagesCheckEnabled: settings.checkUpdates,
+    packagesComputing: pkgComputing,
+    packagesDataReady,
+  })
+  const summaryOver =
+    tab === 'projects'
+      ? totalUsed > threshold
+      : tab === 'caches'
+        ? cachesAvailable && storeBytes > settings.cacheThresholdGB * GB
+        : tab === 'docker'
+          ? dockerAvailable && dockerTotal > settings.dockerThresholdGB * GB
+          : severity.vulnerable > 0
+  // The disk spinner only makes sense on the size tabs that background-calculate.
+  const showCalcSpinner = calculating && (tab === 'projects' || tab === 'caches')
+  const showSummary = !!summaryText && !(tab === 'projects' && isEmpty)
 
   return (
     <div
@@ -481,15 +741,30 @@ export function LauncherApp(): ReactNode {
                     ? 'Search node_modules by project or path…'
                     : tab === 'packages'
                       ? 'Search packages…'
-                      : 'Search caches…'
+                      : tab === 'docker'
+                        ? 'Search Docker…'
+                        : 'Search caches…'
                 }
               />
-              <Gauge
-                used={totalUsed}
-                threshold={threshold}
+              <TabHeadline
+                tab={tab}
                 accent={accent}
+                projectsUsed={totalUsed}
                 linkedBytes={linkedTotal}
-                calculating={calculating}
+                projectsCalculating={calculating}
+                thresholdGB={settings.thresholdGB}
+                cachesUsed={storeBytes}
+                cachesAvailable={cachesAvailable}
+                cachesCalculating={storeLoading}
+                cacheThresholdGB={settings.cacheThresholdGB}
+                dockerUsed={dockerTotal}
+                dockerAvailable={dockerAvailable}
+                dockerThresholdGB={settings.dockerThresholdGB}
+                severity={severity}
+                packagesTotal={inventory?.packages.length ?? 0}
+                packagesCheckEnabled={settings.checkUpdates}
+                packagesComputing={pkgComputing}
+                packagesDataReady={packagesDataReady}
               />
               {totalUsed > 0 && (
                 <button className="cc-iconbtn" title="Copy your scan as an image" onClick={() => copyCard('header')}>
@@ -564,14 +839,11 @@ export function LauncherApp(): ReactNode {
                     setTab(t)
                     setSel(0)
                     setConfirm(null)
+                    closeDockerConfirm()
                     setUnlock(null)
                     collapsePkg()
                   }}
-                  options={[
-                    { value: 'projects', label: 'Projects' },
-                    { value: 'caches', label: 'Caches' },
-                    { value: 'packages', label: 'Packages' },
-                  ]}
+                  options={tabOptions}
                 />
                 {tab === 'projects' && !isEmpty && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -588,6 +860,18 @@ export function LauncherApp(): ReactNode {
                     <SortTab label="Size" active={pkgSortBy === 'size'} onClick={() => setPkgSortBy('size')} />
                     <SortTab label="Name" active={pkgSortBy === 'name'} onClick={() => setPkgSortBy('name')} />
                     <SortTab label="Updates" active={pkgSortBy === 'updates'} onClick={() => setPkgSortBy('updates')} />
+                  </div>
+                )}
+                {tab === 'docker' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-faint)', marginRight: 4 }}>Sort</span>
+                    <SortTab label="Size" active={dockerSortBy === 'size'} onClick={() => setDockerSortBy('size')} />
+                    <SortTab label="Name" active={dockerSortBy === 'name'} onClick={() => setDockerSortBy('name')} />
+                    <SortTab
+                      label="Recent"
+                      active={dockerSortBy === 'recent'}
+                      onClick={() => setDockerSortBy('recent')}
+                    />
                   </div>
                 )}
               </div>
@@ -608,13 +892,21 @@ export function LauncherApp(): ReactNode {
                   onRefresh={() => void refreshPackages()}
                 />
               ) : tab === 'caches' ? (
-                <CachesView
-                  store={store}
-                  pruning={pruning}
-                  selectedIndex={sel}
+                <CachesView caches={liveCaches} selectedIndex={sel} query={query} onSelectIndex={setSel} />
+              ) : tab === 'docker' && dockerEnabled ? (
+                <DockerView
+                  info={docker.info}
+                  loading={docker.loading}
                   query={query}
-                  onSelectIndex={setSel}
-                  onPrune={handlePrune}
+                  sortBy={dockerSortBy}
+                  onRefresh={() => void docker.refresh()}
+                  busyId={docker.busyId}
+                  onRemove={requestDockerRemove}
+                  onPrune={requestDockerPrune}
+                  accent={accent}
+                  density={settings.density}
+                  sizeStyle={settings.sizeStyle}
+                  maxBytes={dockerMaxBytes}
                 />
               ) : isEmpty ? (
                 <EmptyView
@@ -738,13 +1030,73 @@ export function LauncherApp(): ReactNode {
                 </button>
               </div>
             </div>
+          ) : dockerConfirm ? (
+            <div className="cc-footer" style={{ background: mixColor('rgba(255,99,99,0)', accent, 0.1) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+                <span style={{ color: accent, display: 'flex' }}>{UIIcon.trash({ size: 16 })}</span>
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: 'var(--text)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {dockerConfirm.kind === 'prune' ? 'Prune' : 'Remove'}{' '}
+                  <b>
+                    {dockerConfirm.kind === 'remove'
+                      ? dockerConfirm.item.name
+                      : PRUNE_TARGET_LABEL[dockerConfirm.target]}
+                  </b>
+                  ? Frees ~
+                  <b style={{ color: '#fff' }}>
+                    {formatSizeStr(
+                      dockerConfirm.kind === 'remove' ? dockerConfirm.item.sizeBytes : dockerConfirm.estimatedBytes,
+                    )}
+                  </b>
+                  . <span style={{ color: 'var(--text-dim)' }}>Permanent, not sent to the Trash.</span>
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {dockerNeedsTyped && (
+                  <input
+                    autoFocus
+                    value={dockerTyped}
+                    onChange={(e) => setDockerTyped(e.target.value)}
+                    placeholder={`Type "${dockerRequiredText}"`}
+                    spellCheck={false}
+                    style={{
+                      fontSize: 12.5,
+                      padding: '5px 9px',
+                      borderRadius: 7,
+                      border: '1px solid var(--surface-4)',
+                      background: 'var(--surface-1)',
+                      color: 'var(--text)',
+                      width: 150,
+                      fontFamily: 'var(--ui-font)',
+                    }}
+                  />
+                )}
+                <button className="cc-btn ghost" onClick={closeDockerConfirm}>
+                  Cancel <Kbd wide>esc</Kbd>
+                </button>
+                <button
+                  className="cc-btn danger"
+                  style={{ background: accent, opacity: dockerConfirmBlocked ? 0.5 : 1 }}
+                  disabled={dockerConfirmBlocked}
+                  onClick={commitDockerConfirm}
+                >
+                  {dockerConfirm.kind === 'prune' ? 'Prune' : 'Remove'} <Kbd wide>↵</Kbd>
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="cc-footer">
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                 <AppIcon accent={accent} size={20} />
                 {view === 'list' &&
-                  !isEmpty &&
-                  (calculating ? (
+                  (showCalcSpinner ? (
                     <span
                       title={
                         scanning
@@ -772,17 +1124,17 @@ export function LauncherApp(): ReactNode {
                       </span>
                     </span>
                   ) : (
-                    <span
-                      style={{
-                        fontSize: 12.5,
-                        color: ratio > 1 ? mixColor('#fff', accent, 0.5) : 'var(--text-muted)',
-                        fontWeight: 550,
-                      }}
-                    >
-                      {ratio > 1
-                        ? `${formatSizeStr(overBy)} over your ${settings.thresholdGB} GB limit`
-                        : `${(ratio * 100).toFixed(0)}% of your ${settings.thresholdGB} GB limit`}
-                    </span>
+                    showSummary && (
+                      <span
+                        style={{
+                          fontSize: 12.5,
+                          color: summaryOver ? mixColor('#fff', accent, 0.5) : 'var(--text-muted)',
+                          fontWeight: 550,
+                        }}
+                      >
+                        {summaryText}
+                      </span>
+                    )
                   ))}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -804,7 +1156,7 @@ export function LauncherApp(): ReactNode {
                     </span>
                   </div>
                 )}
-                {view === 'list' && tab === 'caches' && store?.available && (
+                {view === 'list' && tab === 'caches' && liveCaches.some((c) => !c.disabled) && (
                   <div className="cc-hints">
                     <span>
                       {UIIcon.arrowUp({ size: 12 })}
@@ -814,7 +1166,7 @@ export function LauncherApp(): ReactNode {
                       <Kbd>
                         <span style={{ display: 'flex' }}>{UIIcon.enter({ size: 12 })}</span>
                       </Kbd>{' '}
-                      prune
+                      {(liveCaches[sel]?.actionLabel ?? 'prune').toLowerCase()}
                     </span>
                   </div>
                 )}

@@ -7,6 +7,10 @@ export interface Settings {
   sizeStyle: SizeStyle
   density: Density
   thresholdGB: number
+  /** pnpm cache (store) size limit, GB — headline gauge on the Caches tab. */
+  cacheThresholdGB: number
+  /** Docker total size limit, GB — headline gauge on the Docker tab. */
+  dockerThresholdGB: number
   scanInterval: ScanInterval
   notify: boolean
   onboarded: boolean
@@ -20,4 +24,8 @@ export interface Settings {
   /** Extra scan roots opted in by the user (absolute paths): toggled external
    *  volumes and arbitrary "Add folder…" paths. Home is implicit, never stored. */
   scanRoots: string[]
+  /** Show the Docker tab and allow Docker cleanup. */
+  docker?: boolean
+  /** Manual override: path to the docker executable. */
+  dockerBinaryPath?: string
 }

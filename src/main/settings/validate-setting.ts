@@ -38,13 +38,17 @@ export function coerceSetting(
     case 'onboarded':
       return typeof value === 'boolean' ? { key, value } : null
     case 'checkUpdates':
+    case 'docker':
       return typeof value === 'boolean' ? { key, value } : null
     case 'thresholdGB':
+    case 'cacheThresholdGB':
+    case 'dockerThresholdGB':
       return typeof value === 'number' && Number.isFinite(value)
         ? { key, value: Math.min(MAX_THRESHOLD_GB, Math.max(MIN_THRESHOLD_GB, value)) }
         : null
     case 'pnpmStorePath':
     case 'pnpmBinaryPath':
+    case 'dockerBinaryPath':
       return typeof value === 'string' ? { key, value: value.trim() } : null
     case 'scanRoots':
       return Array.isArray(value) && value.every((v) => typeof v === 'string' && isAbsolute(v))

@@ -59,6 +59,36 @@ function SectionHeading({ title, hint }: { title: string; hint: string }): React
   )
 }
 
+function GbInput({ valueGB, onChange }: { valueGB: number; onChange: (v: number) => void }): ReactNode {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <input
+        type="number"
+        min={1}
+        max={1000}
+        value={valueGB}
+        onChange={(e) => {
+          const v = Number(e.target.value)
+          if (Number.isFinite(v)) onChange(v)
+        }}
+        style={{
+          width: 74,
+          background: 'var(--surface-2)',
+          border: '1px solid var(--hairline)',
+          borderRadius: 7,
+          padding: '6px 9px',
+          fontSize: 12.5,
+          color: 'var(--text)',
+          outline: 'none',
+          fontVariantNumeric: 'tabular-nums',
+          textAlign: 'right',
+        }}
+      />
+      <span style={{ fontSize: 12.5, color: 'var(--text-dim)' }}>GB</span>
+    </div>
+  )
+}
+
 interface SettingsViewProps {
   settings: Settings
   setSetting: SetSetting
@@ -192,6 +222,19 @@ export function SettingsView({
           <SettingsRow label="Threshold notifications" hint="Show a desktop alert the moment you cross the limit">
             <Toggle on={settings.notify} accent={accent} onToggle={() => setSetting('notify', !settings.notify)} />
           </SettingsRow>
+          <Divider />
+          <SectionHeading title="Storage limits" hint="Fill levels for the Caches and Docker headline gauges" />
+          <SettingsRow label="pnpm cache limit" hint="The Caches tab gauge fills toward this size">
+            <GbInput valueGB={settings.cacheThresholdGB} onChange={(v) => setSetting('cacheThresholdGB', v)} />
+          </SettingsRow>
+          {(settings.docker ?? true) && (
+            <>
+              <Divider />
+              <SettingsRow label="Docker limit" hint="The Docker tab gauge fills toward this size">
+                <GbInput valueGB={settings.dockerThresholdGB} onChange={(v) => setSetting('dockerThresholdGB', v)} />
+              </SettingsRow>
+            </>
+          )}
         </>
       )}
 
@@ -213,6 +256,54 @@ export function SettingsView({
             hint="Override detection if the store or pnpm can't be found automatically"
           />
           <PnpmStoreSettings settings={settings} setSetting={setSetting} store={store} onRefresh={onRefreshStore} />
+          <Divider />
+          <SettingsRow
+            label="Docker cleanup"
+            hint="Show the Docker tab and reclaim image, volume, container and build-cache space"
+          >
+            <Toggle
+              on={settings.docker ?? true}
+              accent={accent}
+              onToggle={() => setSetting('docker', !(settings.docker ?? true))}
+            />
+          </SettingsRow>
+          {(settings.docker ?? true) && (
+            <>
+              <SectionHeading title="docker binary" hint="Override detection if docker can't be found automatically" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 4px 8px' }}>
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    fontSize: 12,
+                    color: settings.dockerBinaryPath ? 'var(--text-muted)' : 'var(--text-dim)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    fontFamily: 'ui-monospace, monospace',
+                  }}
+                  title={settings.dockerBinaryPath || 'Auto-detected. Choose to override'}
+                >
+                  {settings.dockerBinaryPath || 'Auto-detected. Choose to override'}
+                </div>
+                <button
+                  className="cc-btn ghost"
+                  onClick={() => {
+                    void window.clean.pickPath('file').then((p) => {
+                      if (p) void setSetting('dockerBinaryPath', p)
+                    })
+                  }}
+                >
+                  Choose…
+                </button>
+                {settings.dockerBinaryPath && (
+                  <button className="cc-btn ghost" onClick={() => void setSetting('dockerBinaryPath', '')}>
+                    Clear
+                  </button>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
 
