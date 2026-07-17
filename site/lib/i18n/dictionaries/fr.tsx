@@ -40,7 +40,7 @@ export const fr: Dictionary = {
         Le travail de dev grignote votre Mac en silence :{" "}
         <code>node_modules</code> lourds, images Docker, caches de build,
         expériences oubliées. TidyDisk veille depuis la barre de menu et vous
-        rend l'espace en un clic. En toute sécurité, vers la Corbeille,
+        rend l’espace en un clic. En toute sécurité, vers la Corbeille,
         jamais <code>rm -rf</code>.
       </>
     ),
@@ -52,9 +52,9 @@ export const fr: Dictionary = {
   band: {
     statement: (
       <>
-        <code>node_modules</code> est l'objet le plus lourd de l'univers
-        connu. Mais il n'est pas seul : images Docker, caches de build et
-        projets morts s'accumulent aussi.{" "}
+        <code>node_modules</code> est l’objet le plus lourd de l’univers
+        connu. Mais il n’est pas seul : images Docker, caches de build et
+        projets morts s’accumulent aussi.{" "}
         <em>TidyDisk nettoie tout ça.</em>
       </>
     ),
@@ -68,7 +68,7 @@ export const fr: Dictionary = {
         <span className="text-accent">en silence.</span>
       </>
     ),
-    lead: "TidyDisk surveille les quatre et vous rend l'espace, en toute sécurité.",
+    lead: "TidyDisk surveille les quatre et vous rend l’espace, en toute sécurité.",
     cards: [
       {
         title: "Projects",
@@ -149,12 +149,12 @@ export const fr: Dictionary = {
     {
       tagline: "Au-delà de node_modules",
       heading: "Votre espace Docker, regroupé par projet.",
-      body: "Docker accumule discrètement des gigaoctets dans les images, volumes, conteneurs et le cache de build. Ouvrez l'onglet Docker pour le voir regroupé par le projet auquel appartient chaque ressource, avec les vrais logos, tailles et badges d'utilisation. Récupérez les images orphelines, les conteneurs arrêtés et les volumes inutilisés en un clic, avec les mêmes confirmations sécurisées que le reste de TidyDisk.",
+      body: "Docker accumule discrètement des gigaoctets dans les images, volumes, conteneurs et le cache de build. Ouvrez l'onglet Docker pour le voir regroupé par le projet auquel appartient chaque ressource, avec les vrais logos, tailles et badges d’utilisation. Récupérez les images orphelines, les conteneurs arrêtés et les volumes inutilisés en un clic, avec les mêmes confirmations sécurisées que le reste de TidyDisk.",
       bullets: [
         "Images, volumes, conteneurs et cache de build, chacun avec sa taille réelle",
         <>
           Ressources <b>regroupées par projet</b> à partir des labels Compose
-          et des liens d'utilisation
+          et des liens d’utilisation
         </>,
         "Confirmations sûres et typées avant toute suppression définitive",
       ],
@@ -192,7 +192,7 @@ export const fr: Dictionary = {
       },
       {
         title: "Jauge disque en pixels",
-        copy: "Une barre visible en un regard qui se remplit et rougit à mesure que vos dépendances s'accumulent.",
+        copy: "Une barre visible en un regard qui se remplit et rougit à mesure que vos dépendances s’accumulent.",
       },
       {
         title: "Révéler dans le Finder",
