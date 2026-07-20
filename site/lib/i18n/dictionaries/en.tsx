@@ -9,7 +9,7 @@ export const en: Dictionary = {
     title:
       "TidyDisk: see what is eating your dev disk, reclaim it in one click",
     description:
-      "TidyDisk lives in your macOS menu bar and shows what your dev projects really cost: every node_modules folder, your pnpm store, and every installed package. Free to scan. One-click cleanup with a 19 euro lifetime license. Safely, to the Trash, never rm -rf.",
+      "TidyDisk lives in your macOS menu bar and shows what your dev projects really cost: every node_modules folder, your pnpm store and package-manager caches, Docker images and volumes, and every installed package. Free to scan. One-click cleanup with a 19 euro lifetime license. Safely, to the Trash, never rm -rf.",
     blogTitle: "TidyDisk blog: keeping dev disks clean",
     blogDescription:
       "Practical guides on node_modules cleanup, package manager disk usage, and reclaiming space on a developer Mac. From the makers of TidyDisk.",
@@ -38,10 +38,10 @@ export const en: Dictionary = {
     ),
     body: (
       <>
-        Dev work quietly eats your Mac: old projects, heavy dependencies,
-        forgotten experiments. TidyDisk watches from the menu bar and gives
-        the space back in one click. Safely, to the Trash, never{" "}
-        <code>rm -rf</code>.
+        Dev work quietly eats your Mac: heavy <code>node_modules</code>, Docker
+        images, build caches, forgotten experiments. TidyDisk watches from the
+        menu bar and gives the space back in one click. Safely, to the Trash,
+        never <code>rm -rf</code>.
       </>
     ),
     downloadCta: "Download for macOS",
@@ -52,10 +52,40 @@ export const en: Dictionary = {
   band: {
     statement: (
       <>
-        <code>node_modules</code> is the heaviest object in the known
-        universe. <em>We help you delete it.</em>
+        <code>node_modules</code> is the heaviest object in the known universe.
+        But it is not alone: Docker images, build caches and dead projects pile
+        up too. <em>TidyDisk clears all of it.</em>
       </>
     ),
+  },
+
+  areas: {
+    kicker: "One tool, every kind of dev junk",
+    heading: (
+      <>
+        Four places your disk quietly{" "}
+        <span className="text-accent">fills up.</span>
+      </>
+    ),
+    lead: "TidyDisk watches all of them and gives the space back, safely.",
+    cards: [
+      {
+        title: "Projects",
+        copy: "Heavy, stale node_modules ranked by the real bytes you would free.",
+      },
+      {
+        title: "Caches",
+        copy: "Your pnpm store and Docker build cache, pruned in one safe click.",
+      },
+      {
+        title: "Packages",
+        copy: "A machine-wide dependency inventory: version drift, duplicates, and security advisories.",
+      },
+      {
+        title: "Docker",
+        copy: "Images, volumes, containers and build cache, grouped by the project they belong to.",
+      },
+    ],
   },
 
   features: [
@@ -113,6 +143,19 @@ export const en: Dictionary = {
         "Latest-on-npm and security-advisory pills. Expand a row for per-version severity",
       ],
     },
+    {
+      tagline: "Beyond node_modules",
+      heading: "Your Docker disk, grouped by project.",
+      body: "Docker quietly hoards gigabytes in images, volumes, containers and build cache. Open the Docker tab to see it grouped by the project each resource belongs to, with real logos, sizes and in-use badges. Reclaim dangling images, stopped containers and unused volumes in a click, with the same safe confirmations as the rest of TidyDisk.",
+      bullets: [
+        "Images, volumes, containers and build cache, each with its real size",
+        <>
+          Resources <b>grouped by project</b> from Compose labels and used-by
+          links
+        </>,
+        "Safe, typed confirmations before anything is permanently removed",
+      ],
+    },
   ],
 
   grid: {
@@ -164,8 +207,8 @@ export const en: Dictionary = {
     comingSoonPill: "Coming soon",
     comingSoonText: (
       <>
-        npm, yarn &amp; bun caches, plus per-project build outputs like{" "}
-        <code>.next</code> and <code>dist</code>.
+        Next up: npm, yarn &amp; bun caches, plus per-project build outputs
+        like <code>.next</code> and <code>dist</code>.
       </>
     ),
   },

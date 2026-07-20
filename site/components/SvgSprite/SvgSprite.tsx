@@ -35,6 +35,7 @@ const SYMBOLS = `
   <symbol id="i-broom" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 4.5 12 12" /><path d="M15 8 6.2 16.8a2.5 2.5 0 0 0 0 3.5l.5.5a2.5 2.5 0 0 0 3.5 0L19 12" /><path d="M6.5 15.5 11 20" /></g></symbol>
   <symbol id="i-sparkles" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4.5 11.6 8.9 16 10.5l-4.4 1.6L10 16.5 8.4 12.1 4 10.5l4.4-1.6z" /><path d="M18 13.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z" /><path d="M17.5 3.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z" /></g></symbol>
   <symbol id="i-layers" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5z" /><path d="m3 12.5 9 5 9-5" /><path d="m3 16.5 9 5 9-5" /></g></symbol>
+  <symbol id="i-docker" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h15.5a3.5 3.5 0 0 1-3.5 5H8a5 5 0 0 1-5-5z" /><rect x="6" y="9.2" width="3" height="3" rx="0.5" /><rect x="10" y="9.2" width="3" height="3" rx="0.5" /><rect x="10" y="5.6" width="3" height="3" rx="0.5" /></g></symbol>
 `;
 
 export function SvgSprite() {

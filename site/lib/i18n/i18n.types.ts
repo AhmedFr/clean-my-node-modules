@@ -198,13 +198,29 @@ export interface BlogChromeCopy {
   ctaButton: string;
 }
 
+/** One card in the four-up "areas" section (icon + accent flag stay in the component). */
+export interface AreaCardCopy {
+  title: string;
+  copy: string;
+}
+
+export interface AreasCopy {
+  kicker: string;
+  /** Accent `<span className="text-accent">` around the last words. */
+  heading: ReactNode;
+  lead: string;
+  /** Fixed order: Projects, Caches, Packages, Docker. */
+  cards: [AreaCardCopy, AreaCardCopy, AreaCardCopy, AreaCardCopy];
+}
+
 export interface Dictionary {
   meta: MetaCopy;
   nav: NavCopy;
   hero: HeroCopy;
   band: BandCopy;
-  /** Exactly four feature rows, in display order. */
-  features: [FeatureCopy, FeatureCopy, FeatureCopy, FeatureCopy];
+  areas: AreasCopy;
+  /** Exactly five feature rows, in display order (row 5 is Docker). */
+  features: [FeatureCopy, FeatureCopy, FeatureCopy, FeatureCopy, FeatureCopy];
   grid: GridCopy;
   why: WhyCopy;
   how: HowCopy;

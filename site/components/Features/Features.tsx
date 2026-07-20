@@ -4,6 +4,7 @@ import { NotifVisual } from "./NotifVisual";
 import { LauncherVisual } from "./LauncherVisual";
 import { ReclaimVisual } from "./ReclaimVisual";
 import { PackagesVisual } from "./PackagesVisual";
+import { DockerVisual } from "./DockerVisual";
 import type { Dictionary } from "@/lib/i18n";
 
 export interface FeaturesProps {
@@ -11,7 +12,7 @@ export interface FeaturesProps {
 }
 
 export function Features({ dict }: FeaturesProps) {
-  const [notif, launcher, reclaim, packages] = dict.features;
+  const [notif, launcher, reclaim, packages, docker] = dict.features;
   return (
     <section className="relative pt-[100px]" id="features">
       <Wrap className="flex flex-col gap-[150px] max900:gap-[96px]">
@@ -49,6 +50,15 @@ export function Features({ dict }: FeaturesProps) {
           body={packages.body}
           bullets={packages.bullets}
           visual={<PackagesVisual />}
+        />
+        <FeatureRow
+          id="docker"
+          num="05"
+          tagline={docker.tagline}
+          heading={docker.heading}
+          body={docker.body}
+          bullets={docker.bullets}
+          visual={<DockerVisual />}
         />
       </Wrap>
     </section>
