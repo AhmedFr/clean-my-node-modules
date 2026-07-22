@@ -484,6 +484,7 @@ export function LauncherApp(): ReactNode {
       const meta = e.metaKey || e.ctrlKey
       if (meta && e.key === ',') {
         e.preventDefault()
+        setSettingsLandingTab('scanning')
         setView((v) => (v === 'settings' ? 'list' : 'settings'))
         setConfirm(null)
         closeDockerConfirm()
