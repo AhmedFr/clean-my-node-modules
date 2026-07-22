@@ -32,6 +32,7 @@ export class UpdaterService {
   private status: UpdaterState['status'] = { phase: 'idle' }
   private checkedAt: number | null = null
   private lastInfo: UpdateSummary | null = null
+  private lastReportedVersion: string | null = null
   private firstCheckTimer: ReturnType<typeof setTimeout> | null = null
   private checkInterval: ReturnType<typeof setInterval> | null = null
 
@@ -46,7 +47,10 @@ export class UpdaterService {
       const summary = summarizeUpdate(info)
       this.lastInfo = summary
       this.checkedAt = Date.now()
-      this.opts.onEvent('update_available', { version: summary.version })
+      if (summary.version !== this.lastReportedVersion) {
+        this.opts.onEvent('update_available', { version: summary.version })
+        this.lastReportedVersion = summary.version
+      }
       this.setStatus({ phase: 'available', info: summary })
     })
     updater.on('update-not-available', () => {
@@ -68,7 +72,13 @@ export class UpdaterService {
     return { currentVersion: this.opts.currentVersion, checkedAt: this.checkedAt, status: this.status }
   }
 
-  check(): void {
+  /**
+   * A manual check (the Settings button, or IPC) always re-checks and may
+   * visibly transition the UI. A background ('auto') check is silent by
+   * design: it must never disturb an already-visible 'available' banner, so
+   * it bails out before touching the network when that state is showing.
+   */
+  check(source: 'auto' | 'manual' = 'manual'): void {
     if (isTranslocated(this.opts.execPath)) {
       this.setStatus({
         phase: 'error',
@@ -77,6 +87,7 @@ export class UpdaterService {
       })
       return
     }
+    if (source === 'auto' && this.status.phase === 'available') return
     // Never interrupt an in-flight or completed download with a fresh check.
     if (this.status.phase === 'downloading' || this.status.phase === 'downloaded') return
     void this.updater.checkForUpdates().catch(() => {
@@ -97,10 +108,14 @@ export class UpdaterService {
     this.updater.quitAndInstall()
   }
 
-  /** Silent background checks: shortly after launch, then every 6 hours. */
+  /**
+   * Silent background checks: shortly after launch, then every 6 hours.
+   * These use source 'auto' so they never disturb an already-visible
+   * 'available' state (see `check`).
+   */
   start(): void {
-    this.firstCheckTimer = setTimeout(() => this.check(), FIRST_CHECK_DELAY_MS)
-    this.checkInterval = setInterval(() => this.check(), CHECK_INTERVAL_MS)
+    this.firstCheckTimer = setTimeout(() => this.check('auto'), FIRST_CHECK_DELAY_MS)
+    this.checkInterval = setInterval(() => this.check('auto'), CHECK_INTERVAL_MS)
   }
 
   stop(): void {

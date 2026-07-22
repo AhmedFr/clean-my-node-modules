@@ -65,6 +65,7 @@ export function UpdateSettings({ accent }: UpdateSettingsProps): ReactNode {
               )}
               {status.phase === 'downloading' && (
                 <span
+                  aria-live="polite"
                   style={{
                     fontSize: 12.5,
                     color: 'var(--text-dim)',

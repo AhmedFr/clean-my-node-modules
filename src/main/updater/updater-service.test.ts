@@ -121,4 +121,37 @@ describe('UpdaterService', () => {
     expect(fake.checkForUpdates).not.toHaveBeenCalled()
     expect(states.at(-1)?.status).toMatchObject({ phase: 'error', kind: 'translocation' })
   })
+
+  it('dedupes the update_available event for repeated emissions of the same version', () => {
+    const { fake, service, onEvent } = makeService()
+    service.check()
+    fake.emit('update-available', INFO)
+    fake.emit('update-available', INFO)
+    expect(onEvent).toHaveBeenCalledTimes(1)
+    expect(onEvent).toHaveBeenCalledWith('update_available', { version: '1.2.0' })
+  })
+
+  it('reports the update_available event again when the version changes', () => {
+    const { fake, service, onEvent } = makeService()
+    service.check()
+    fake.emit('update-available', INFO)
+    fake.emit('update-available', { ...INFO, version: '1.3.0' })
+    expect(onEvent).toHaveBeenCalledTimes(2)
+    expect(onEvent).toHaveBeenNthCalledWith(1, 'update_available', { version: '1.2.0' })
+    expect(onEvent).toHaveBeenNthCalledWith(2, 'update_available', { version: '1.3.0' })
+  })
+
+  it('background checks do not disturb a visible available state', () => {
+    const { fake, service } = makeService()
+    fake.emit('update-available', INFO)
+    service.check('auto')
+    expect(fake.checkForUpdates).not.toHaveBeenCalled()
+  })
+
+  it('a manual check still re-checks even when available', () => {
+    const { fake, service } = makeService()
+    fake.emit('update-available', INFO)
+    service.check()
+    expect(fake.checkForUpdates).toHaveBeenCalledOnce()
+  })
 })

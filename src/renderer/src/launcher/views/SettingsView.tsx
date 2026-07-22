@@ -10,7 +10,7 @@ import type { ActivateResult, LicenseState } from '@shared/license.types'
 import type { PnpmStoreInfo } from '@shared/pnpm-store.types'
 import type { Settings } from '@shared/settings.types'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export type SettingsTab = 'scanning' | 'packages' | 'privacy' | 'updates' | 'license'
 
@@ -173,6 +173,13 @@ export function SettingsView({
 }: SettingsViewProps): ReactNode {
   const gb = settings.thresholdGB
   const [tab, setTab] = useState<SettingsTab>(initialTab ?? 'scanning')
+
+  // A deep link can arrive while this view is already mounted (nav event to an
+  // open launcher); follow it instead of only honoring the mount-time tab.
+  useEffect(() => {
+    if (initialTab) setTab(initialTab)
+  }, [initialTab])
+
   return (
     <div style={{ padding: '12px 18px 22px' }}>
       <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 6 }}>
