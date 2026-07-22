@@ -8,6 +8,7 @@ import type { PnpmPruneResult, PnpmStoreInfo } from '@shared/pnpm-store.types'
 import type { Project, ScanProgress } from '@shared/project.types'
 import type { Settings } from '@shared/settings.types'
 import type { ShareCardPayload } from '@shared/share.types'
+import type { UpdaterState } from '@shared/updater.types'
 import type { VolumeOption } from '@shared/volume.types'
 
 export interface CleanApi {
@@ -47,6 +48,14 @@ export interface CleanApi {
   openLauncher(nav?: LauncherNavTarget): Promise<void>
   /** Pulls (and clears) a nav target queued for a fresh launcher; called once on mount. */
   consumeLauncherNav(): Promise<LauncherNavTarget | null>
+  /** Current updater snapshot; renderers fetch once on mount then subscribe. */
+  getUpdaterState(): Promise<UpdaterState>
+  /** Triggers a silent update check (also used by the Settings "Check for updates" button). */
+  updaterCheck(): Promise<void>
+  /** Starts downloading the available update; no-op unless one is available. */
+  updaterDownload(): Promise<void>
+  /** Quits and installs the downloaded update; no-op unless downloaded. */
+  updaterInstall(): Promise<void>
   closeWindow(): Promise<void>
   setWindowHeight(height: number): void
   quitApp(): void
@@ -60,6 +69,7 @@ export interface CleanApi {
   onLicenseChanged(fn: (s: LicenseState) => void): () => void
   /** Fired when the launcher is asked to navigate to a view while already open. */
   onLauncherNavigate(fn: (nav: LauncherNavTarget) => void): () => void
+  onUpdaterState(fn: (s: UpdaterState) => void): () => void
 }
 
 declare global {
