@@ -31,10 +31,15 @@ export const IPC = {
   listVolumes: 'volumes:list',
   getLiveProjects: 'projects:live',
   consumeLauncherNav: 'launcher:consume-nav',
+  updaterGetState: 'updater:get-state',
+  updaterCheck: 'updater:check',
+  updaterDownload: 'updater:download',
+  updaterInstall: 'updater:install',
   // events (main -> renderer)
   onScanProgress: 'scan:progress',
   onProjectsChanged: 'projects:changed',
   onSettingsChanged: 'settings:changed',
   onLicenseChanged: 'license:changed',
   onLauncherNavigate: 'launcher:navigate',
+  onUpdaterState: 'updater:state',
 } as const
