@@ -38,6 +38,7 @@ import { EmptyView } from '../views/EmptyView'
 import { Onboarding } from '../views/Onboarding'
 import { PackagesView } from '../views/PackagesView'
 import { ScanningView } from '../views/ScanningView'
+import type { SettingsTab } from '../views/SettingsView'
 import { SettingsView } from '../views/SettingsView'
 import type { DockerConfirmState, LauncherTab, LauncherToast, LauncherView, SortKey } from './LauncherApp.types'
 import { launcherNavState } from './launcherNav'
@@ -71,6 +72,7 @@ export function LauncherApp(): ReactNode {
   const [sel, setSel] = useState(0)
   const [view, setView] = useState<LauncherView>('list')
   const [tab, setTab] = useState<LauncherTab>('projects')
+  const [settingsLandingTab, setSettingsLandingTab] = useState<SettingsTab>('scanning')
   const [deleting, setDeleting] = useState<Set<string>>(() => new Set())
   const [confirm, setConfirm] = useState<Project | null>(null)
   const [dockerConfirm, setDockerConfirm] = useState<DockerConfirmState | null>(null)
@@ -123,6 +125,7 @@ export function LauncherApp(): ReactNode {
   const applyNav = useCallback((nav: LauncherNavTarget | null): void => {
     if (!nav) return
     const next = launcherNavState(nav)
+    setSettingsLandingTab(next.settingsTab ?? 'scanning')
     setView(next.view)
     if (next.tab) setTab(next.tab)
   }, [])
@@ -481,6 +484,7 @@ export function LauncherApp(): ReactNode {
       const meta = e.metaKey || e.ctrlKey
       if (meta && e.key === ',') {
         e.preventDefault()
+        setSettingsLandingTab('scanning')
         setView((v) => (v === 'settings' ? 'list' : 'settings'))
         setConfirm(null)
         closeDockerConfirm()
@@ -826,6 +830,7 @@ export function LauncherApp(): ReactNode {
               onRefreshStore={() => void refresh()}
               license={license}
               activateLicense={activateLicense}
+              initialTab={settingsLandingTab}
             />
           )}
           {view === 'list' && (
@@ -1197,7 +1202,10 @@ export function LauncherApp(): ReactNode {
                 <button
                   className="cc-iconbtn"
                   title="Settings (⌘,)"
-                  onClick={() => setView(view === 'settings' ? 'list' : 'settings')}
+                  onClick={() => {
+                    setSettingsLandingTab('scanning')
+                    setView(view === 'settings' ? 'list' : 'settings')
+                  }}
                 >
                   {UIIcon.gear({ size: 16 })}
                 </button>

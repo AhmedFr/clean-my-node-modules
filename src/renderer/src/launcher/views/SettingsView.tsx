@@ -3,20 +3,22 @@ import { PnpmStoreSettings } from '@renderer/components/PnpmStoreSettings'
 import { ScanLocationsSettings } from '@renderer/components/ScanLocationsSettings'
 import { Segmented } from '@renderer/components/Segmented'
 import { Toggle } from '@renderer/components/Toggle'
+import { UpdateSettings } from '@renderer/components/UpdateSettings'
 import type { SetSetting } from '@renderer/hooks/useSettings'
 import { BUY_URL } from '@shared/license.constants'
 import type { ActivateResult, LicenseState } from '@shared/license.types'
 import type { PnpmStoreInfo } from '@shared/pnpm-store.types'
 import type { Settings } from '@shared/settings.types'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-type SettingsTab = 'scanning' | 'packages' | 'privacy' | 'license'
+export type SettingsTab = 'scanning' | 'packages' | 'privacy' | 'updates' | 'license'
 
 const SETTINGS_TABS: { value: SettingsTab; label: string }[] = [
   { value: 'scanning', label: 'Scanning' },
   { value: 'packages', label: 'Packages' },
   { value: 'privacy', label: 'Privacy' },
+  { value: 'updates', label: 'Updates' },
   { value: 'license', label: 'License' },
 ]
 
@@ -97,6 +99,8 @@ interface SettingsViewProps {
   onRefreshStore: () => void
   license: LicenseState
   activateLicense: (key: string) => Promise<ActivateResult>
+  /** Tab to land on when the view mounts (deep link from the panel banner). */
+  initialTab?: SettingsTab
 }
 
 function LicenseActivator({
@@ -165,9 +169,17 @@ export function SettingsView({
   onRefreshStore,
   license,
   activateLicense,
+  initialTab,
 }: SettingsViewProps): ReactNode {
   const gb = settings.thresholdGB
-  const [tab, setTab] = useState<SettingsTab>('scanning')
+  const [tab, setTab] = useState<SettingsTab>(initialTab ?? 'scanning')
+
+  // A deep link can arrive while this view is already mounted (nav event to an
+  // open launcher); follow it instead of only honoring the mount-time tab.
+  useEffect(() => {
+    if (initialTab) setTab(initialTab)
+  }, [initialTab])
+
   return (
     <div style={{ padding: '12px 18px 22px' }}>
       <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 6 }}>
@@ -319,6 +331,8 @@ export function SettingsView({
           />
         </SettingsRow>
       )}
+
+      {tab === 'updates' && <UpdateSettings accent={accent} />}
 
       {tab === 'license' && (
         <>

@@ -17,4 +17,8 @@ describe('launcherNavState', () => {
   it('ignores an unknown target rather than selecting a bogus tab (arrives over IPC)', () => {
     expect(launcherNavState('nope' as LauncherNavTarget)).toEqual({ view: 'list' })
   })
+
+  it('maps settings-updates to the settings view with the updates tab', () => {
+    expect(launcherNavState('settings-updates')).toEqual({ view: 'settings', settingsTab: 'updates' })
+  })
 })

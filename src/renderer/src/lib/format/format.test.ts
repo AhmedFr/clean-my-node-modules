@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatSize, formatSizeStr, GB, MB, relativeTime, staleness } from './format'
+import { formatSize, formatSizeStr, GB, MB, relativeTime, releaseDateLabel, staleness } from './format'
 
 const DAY = 86400000
 const NOW = 1_800_000_000_000
@@ -55,5 +55,15 @@ describe('staleness', () => {
 
   it('scales linearly to 540 days', () => {
     expect(staleness(NOW - 270 * DAY, NOW)).toBeCloseTo(0.5)
+  })
+})
+
+describe('releaseDateLabel', () => {
+  it('formats an ISO date', () => {
+    expect(releaseDateLabel('2026-07-20T14:26:58.000Z')).toMatch(/2026/)
+  })
+  it('returns null for empty or garbage input', () => {
+    expect(releaseDateLabel('')).toBeNull()
+    expect(releaseDateLabel('not-a-date')).toBeNull()
   })
 })
