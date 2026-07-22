@@ -1,4 +1,4 @@
-import type { UpdateSummary, UpdaterErrorKind } from '@shared/updater.types'
+import type { UpdaterErrorKind, UpdateSummary } from '@shared/updater.types'
 
 /** Structural slice of electron-updater's UpdateInfo that we consume; injectable for tests. */
 export interface UpdateInfoLike {

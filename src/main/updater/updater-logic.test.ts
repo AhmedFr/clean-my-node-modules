@@ -3,7 +3,9 @@ import { classifyUpdaterError, isTranslocated, summarizeUpdate } from './updater
 
 describe('isTranslocated', () => {
   it('detects the App Translocation mount path', () => {
-    expect(isTranslocated('/private/var/folders/x/AppTranslocation/ABC/d/TidyDisk.app/Contents/MacOS/TidyDisk')).toBe(true)
+    expect(isTranslocated('/private/var/folders/x/AppTranslocation/ABC/d/TidyDisk.app/Contents/MacOS/TidyDisk')).toBe(
+      true,
+    )
   })
   it('passes a normal /Applications path', () => {
     expect(isTranslocated('/Applications/TidyDisk.app/Contents/MacOS/TidyDisk')).toBe(false)
@@ -44,9 +46,9 @@ describe('summarizeUpdate', () => {
   })
 
   it('strips HTML from notes and nulls empty ones', () => {
-    expect(summarizeUpdate({ version: '1.2.0', releaseNotes: '<h2>New</h2><ul><li>Faster scans</li></ul>' }).notes).toBe(
-      'New\nFaster scans',
-    )
+    expect(
+      summarizeUpdate({ version: '1.2.0', releaseNotes: '<h2>New</h2><ul><li>Faster scans</li></ul>' }).notes,
+    ).toBe('New\nFaster scans')
     expect(summarizeUpdate({ version: '1.2.0', releaseNotes: '' }).notes).toBeNull()
     expect(summarizeUpdate({ version: '1.2.0' }).notes).toBeNull()
   })
