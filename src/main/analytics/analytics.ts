@@ -14,6 +14,9 @@ export const ANALYTICS_EVENTS = [
   'clean_performed',
   'analytics_disabled',
   'share_card_copied',
+  'update_available',
+  'update_download_clicked',
+  'update_installed',
 ] as const
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number]
 
