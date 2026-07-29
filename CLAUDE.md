@@ -45,3 +45,16 @@ need changes for routine updates.
   for the inclusive breakpoints. The residual classes in globals.css
   (`lp-nav`, `reveal`, `lp-screen`, `blog-prose`, ...) are behavior hooks or
   markdown-facing; keep them stable.
+
+## Testing
+
+- Coverage is ratcheted: `vitest.config.ts` thresholds auto-bump on local
+  `pnpm test:coverage` runs and CI fails below them. Never lower them by hand.
+- New logic ships with tests in the same PR. Renderer hook tests use the typed
+  bridge mock (`src/renderer/src/test/mock-clean-bridge.ts`); it is typed
+  against `CleanApi`, so preload API changes must update it (the compiler
+  will insist).
+- UI components (`.tsx`) are Storybook's responsibility — no component render
+  tests, and `.tsx` is excluded from coverage on purpose.
+- Two vitest projects: `node` (`src/main|shared|preload`) and `renderer`
+  (jsdom). Run one file with `pnpm vitest run --project <name> <path>`.
