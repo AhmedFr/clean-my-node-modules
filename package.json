@@ -42,7 +42,7 @@
     "electron-vite": "^2.3.0",
     "remotion": "^4.0.477",
     "typescript": "^5.7.2",
-    "vite": "^5.3.6",
+    "vite": "^5.4.11",
     "vitest": "^3.2.7"
   },
   "dependencies": {
