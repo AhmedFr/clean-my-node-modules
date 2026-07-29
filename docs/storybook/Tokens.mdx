@@ -1,0 +1,83 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Design System/Tokens" />
+
+export const Swatch = ({ token, note }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 0' }}>
+    <div
+      style={{
+        width: 44,
+        height: 28,
+        borderRadius: 6,
+        background: `var(${token})`,
+        border: '1px solid rgba(255,255,255,0.15)',
+      }}
+    />
+    <code>{token}</code>
+    <span style={{ opacity: 0.6 }}>{note}</span>
+  </div>
+)
+
+export const Group = ({ children }) => (
+  <div
+    style={{
+      background: 'linear-gradient(160deg, #3c4150 0%, #191a1f 70%)',
+      borderRadius: 10,
+      padding: 16,
+      color: 'rgba(255,255,255,0.9)',
+      marginBottom: 16,
+    }}
+  >
+    {children}
+  </div>
+)
+
+# Design tokens
+
+Single source of truth: `src/renderer/src/styles/global.css`. Components
+reference these via `var(--token)` in inline styles.
+
+## Brand and status
+
+<Group>
+  <Swatch token="--accent" note="brand red (default accent; user-configurable)" />
+  <Swatch token="--good" note="success green" />
+  <Swatch token="--good-line" note="success border" />
+  <Swatch token="--good-wash" note="success fill" />
+</Group>
+
+## Text emphasis ramp
+
+<Group>
+  <Swatch token="--text-strong" note="0.95 white" />
+  <Swatch token="--text" note="0.90 default" />
+  <Swatch token="--text-2" note="0.80" />
+  <Swatch token="--text-3" note="0.70" />
+  <Swatch token="--text-muted" note="0.50" />
+  <Swatch token="--text-dim" note="0.40" />
+  <Swatch token="--text-faint" note="0.34" />
+</Group>
+
+## Surfaces and lines
+
+<Group>
+  <Swatch token="--hairline" note="dividers, 0.07" />
+  <Swatch token="--surface-1" note="0.06 fill" />
+  <Swatch token="--surface-2" note="0.08 fill" />
+  <Swatch token="--surface-3" note="0.12 fill" />
+  <Swatch token="--surface-4" note="0.14 fill" />
+  <Swatch token="--border" note="0.10 border" />
+</Group>
+
+## Panels
+
+<Group>
+  <Swatch token="--panel-launcher" note="launcher window background" />
+  <Swatch token="--panel-menu" note="menu bar dropdown background" />
+  <Swatch token="--toast-bg" note="toast background" />
+</Group>
+
+## Fonts
+
+- `--ui-font`: system UI stack
+- `--mono-font`: JetBrains Mono, then system monospace
