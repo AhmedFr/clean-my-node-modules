@@ -9,7 +9,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-// No iconDataUrl on any of these — exercises the FrameworkIcon fallback path.
+// No iconDataUrl on any of these, exercises the FrameworkIcon fallback path.
 // Per the task brief: do not fabricate a fake iconDataUrl.
 export const ReactProject: Story = { args: { p: { kind: 'react', name: 'my-app' } } }
 export const NodeProject: Story = { args: { p: { kind: 'node', name: 'api-server' } } }

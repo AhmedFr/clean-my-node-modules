@@ -7,7 +7,7 @@ import { ACCENT } from '../../../../../.storybook/constants'
 import { mockCleanApi } from '../../../../../.storybook/mock-clean-api'
 import { ScanLocationsSettings } from './ScanLocationsSettings'
 
-// ScanLocationsSettings fetches window.clean.listVolumes() on mount — Electron's
+// ScanLocationsSettings fetches window.clean.listVolumes() on mount, Electron's
 // preload isn't present in Storybook, so each story stubs the volume list it wants
 // before the component mounts.
 function withVolumes(volumes: VolumeOption[]): Decorator {

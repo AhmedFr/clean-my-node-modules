@@ -5,7 +5,7 @@ import type { UIIconName } from './UIIcon.types'
 
 const NAMES = Object.keys(UIIcon) as UIIconName[]
 
-/** Story-only gallery wrapper — not part of the component's public API. */
+/** Story-only gallery wrapper, not part of the component's public API. */
 function UIIconGallery(): ReactNode {
   return (
     <div

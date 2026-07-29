@@ -5,7 +5,7 @@ import { mockCleanApi } from '../../../../../.storybook/mock-clean-api'
 import { UpdateBanner } from './UpdateBanner'
 
 // UpdateBanner reads its state from useUpdater() (window.clean.getUpdaterState /
-// onUpdaterState), not from props — Electron's preload isn't present in Storybook,
+// onUpdaterState), not from props. Electron's preload isn't present in Storybook,
 // so each story stubs the updater snapshot it wants before the component mounts.
 const INFO: UpdateSummary = {
   version: '1.5.0',
@@ -24,7 +24,7 @@ function withUpdaterState(status: UpdaterState['status']): Decorator {
   }
 }
 
-// Hosted in the menu bar panel — default 334px framing.
+// Hosted in the menu bar panel, default 334px framing.
 const meta = {
   title: 'Views/UpdateBanner',
   component: UpdateBanner,

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { Icon } from './Icon'
 import { SvgSprite } from '../SvgSprite'
 
-// Every <symbol id="..."> defined in SvgSprite.tsx — Icon just references one
+// Every <symbol id="..."> defined in SvgSprite.tsx, Icon just references one
 // of these by id, so the gallery mirrors that list rather than a prop union.
 const ICON_IDS = [
   'logo-module',

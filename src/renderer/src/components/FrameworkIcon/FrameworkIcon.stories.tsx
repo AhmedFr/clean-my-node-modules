@@ -15,7 +15,7 @@ type Story = StoryObj<typeof meta>
 
 export const Gallery: Story = {
   parameters: { panel: false },
-  // Ignores args — renders every FrameworkKind side by side.
+  // Ignores args, renders every FrameworkKind side by side.
   render: () => (
     <div
       style={{
