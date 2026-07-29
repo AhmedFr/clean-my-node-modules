@@ -24,13 +24,15 @@ describe('useLiveProjects', () => {
     expect(vi.mocked(window.clean.getLiveProjects)).toHaveBeenCalledTimes(2)
   })
 
-  it('stops polling and ignores late results after unmount', async () => {
+  it('stops polling after unmount', async () => {
     const { unmount } = renderHook(() => useLiveProjects())
     await act(async () => {})
     unmount()
     await act(async () => {
       vi.advanceTimersByTime(45_000 * 3)
     })
+    // Only the interval teardown is observable; React 18 makes any late
+    // post-unmount setLive a silent no-op, so the active guard can't be asserted.
     expect(vi.mocked(window.clean.getLiveProjects)).toHaveBeenCalledTimes(1)
   })
 })
