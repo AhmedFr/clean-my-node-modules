@@ -58,7 +58,10 @@ export class UpdaterService {
       this.setStatus({ phase: 'idle' })
     })
     updater.on('download-progress', (p: { percent: number }) => {
-      if (this.lastInfo) this.setStatus({ phase: 'downloading', info: this.lastInfo, percent: Math.round(p.percent) })
+      if (!this.lastInfo) return
+      const percent = Math.round(p.percent)
+      if (this.status.phase === 'downloading' && this.status.percent === percent) return
+      this.setStatus({ phase: 'downloading', info: this.lastInfo, percent })
     })
     updater.on('update-downloaded', () => {
       if (this.lastInfo) this.setStatus({ phase: 'downloaded', info: this.lastInfo })
@@ -98,6 +101,9 @@ export class UpdaterService {
   download(): void {
     if (this.status.phase !== 'available') return
     this.opts.onEvent('update_download_clicked', { version: this.status.info.version })
+    // Leave 'available' immediately: the UI reacts before the first progress
+    // event, and a second click can no longer start a duplicate download.
+    this.setStatus({ phase: 'downloading', info: this.status.info, percent: 0 })
     void this.updater.downloadUpdate().catch(() => {
       // failures surface through the 'error' event
     })

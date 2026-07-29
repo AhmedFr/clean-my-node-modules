@@ -93,6 +93,29 @@ describe('UpdaterService', () => {
     expect(states.at(-1)?.status).toMatchObject({ phase: 'downloaded' })
   })
 
+  it('transitions to downloading 0% immediately so a second click is a no-op', () => {
+    const { fake, service, states, onEvent } = makeService()
+    fake.emit('update-available', INFO)
+    service.download()
+    expect(states.at(-1)?.status).toMatchObject({ phase: 'downloading', percent: 0 })
+    service.download()
+    expect(fake.downloadUpdate).toHaveBeenCalledOnce()
+    expect(onEvent).toHaveBeenCalledTimes(2) // update_available + one update_download_clicked
+  })
+
+  it('drops progress events that do not change the rounded percent', () => {
+    const { fake, service, states } = makeService()
+    fake.emit('update-available', INFO)
+    service.download()
+    const before = states.length
+    fake.emit('download-progress', { percent: 41.7 })
+    fake.emit('download-progress', { percent: 41.9 })
+    expect(states.length).toBe(before + 1)
+    fake.emit('download-progress', { percent: 42.6 })
+    expect(states.length).toBe(before + 2)
+    expect(states.at(-1)?.status).toMatchObject({ phase: 'downloading', percent: 43 })
+  })
+
   it('refuses install unless downloaded', () => {
     const { fake, service } = makeService()
     service.quitAndInstall()

@@ -15,24 +15,29 @@ export function isTranslocated(execPath: string): boolean {
 
 export function classifyUpdaterError(message: string): UpdaterErrorKind {
   if (/apptranslocation/i.test(message)) return 'translocation'
-  if (/net::|enotfound|etimedout|econn|getaddrinfo|socket|network|status [45]\d\d/i.test(message)) return 'network'
+  // 4xx is deliberately NOT network: a 404 means the feed itself is broken
+  // (release-process mistake) and the raw message should surface, not "offline".
+  if (/net::|enotfound|etimedout|econn|getaddrinfo|socket|network|status 5\d\d/i.test(message)) return 'network'
   return 'unknown'
 }
 
 /** GitHub release bodies can arrive as HTML; keep the text, drop the tags. */
 function stripHtml(s: string): string {
-  return s
-    .replace(/<\/(h[1-6]|li|p|ul|ol|div|br)>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
-    .join('\n')
+  return (
+    s
+      .replace(/<\/(h[1-6]|li|p|ul|ol|div|br)>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      // &amp; last, so "&amp;lt;" decodes once to "&lt;" instead of twice to "<"
+      .replace(/&amp;/g, '&')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .join('\n')
+  )
 }
 
 export function summarizeUpdate(info: UpdateInfoLike): UpdateSummary {

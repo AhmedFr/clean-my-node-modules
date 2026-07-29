@@ -8,6 +8,7 @@
   "main": "out/main/index.js",
   "author": "Ahmed Abouelleil",
   "license": "MIT",
+  "repository": "github:AhmedFr/clean-my-node-modules",
   "scripts": {
     "dev": "electron-vite dev",
     "dev:clean": "sh scripts/dev-clean.sh",

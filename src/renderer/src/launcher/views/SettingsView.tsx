@@ -101,6 +101,8 @@ interface SettingsViewProps {
   activateLicense: (key: string) => Promise<ActivateResult>
   /** Tab to land on when the view mounts (deep link from the panel banner). */
   initialTab?: SettingsTab
+  /** Bumped on each explicit deep link so a repeat of the same tab still lands. */
+  navSeq?: number
 }
 
 function LicenseActivator({
@@ -170,15 +172,17 @@ export function SettingsView({
   license,
   activateLicense,
   initialTab,
+  navSeq,
 }: SettingsViewProps): ReactNode {
   const gb = settings.thresholdGB
   const [tab, setTab] = useState<SettingsTab>(initialTab ?? 'scanning')
 
   // A deep link can arrive while this view is already mounted (nav event to an
   // open launcher); follow it instead of only honoring the mount-time tab.
+  // navSeq re-fires this when the same tab is deep-linked twice in a row.
   useEffect(() => {
     if (initialTab) setTab(initialTab)
-  }, [initialTab])
+  }, [initialTab, navSeq])
 
   return (
     <div style={{ padding: '12px 18px 22px' }}>

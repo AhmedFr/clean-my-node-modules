@@ -73,6 +73,7 @@ export function LauncherApp(): ReactNode {
   const [view, setView] = useState<LauncherView>('list')
   const [tab, setTab] = useState<LauncherTab>('projects')
   const [settingsLandingTab, setSettingsLandingTab] = useState<SettingsTab>('scanning')
+  const [settingsNavSeq, setSettingsNavSeq] = useState(0)
   const [deleting, setDeleting] = useState<Set<string>>(() => new Set())
   const [confirm, setConfirm] = useState<Project | null>(null)
   const [dockerConfirm, setDockerConfirm] = useState<DockerConfirmState | null>(null)
@@ -126,6 +127,9 @@ export function LauncherApp(): ReactNode {
     if (!nav) return
     const next = launcherNavState(nav)
     setSettingsLandingTab(next.settingsTab ?? 'scanning')
+    // Re-fire the landing-tab effect even when the target tab is unchanged
+    // (e.g. banner clicked again after the user switched settings tabs).
+    if (next.settingsTab) setSettingsNavSeq((s) => s + 1)
     setView(next.view)
     if (next.tab) setTab(next.tab)
   }, [])
@@ -831,6 +835,7 @@ export function LauncherApp(): ReactNode {
               license={license}
               activateLicense={activateLicense}
               initialTab={settingsLandingTab}
+              navSeq={settingsNavSeq}
             />
           )}
           {view === 'list' && (

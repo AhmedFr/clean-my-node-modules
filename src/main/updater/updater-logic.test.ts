@@ -24,6 +24,9 @@ describe('classifyUpdaterError', () => {
   it('falls back to unknown', () => {
     expect(classifyUpdaterError('something exploded')).toBe('unknown')
   })
+  it('keeps 4xx as unknown so a broken feed is not reported as offline', () => {
+    expect(classifyUpdaterError('HttpError: 404 status 404')).toBe('unknown')
+  })
 })
 
 describe('summarizeUpdate', () => {
@@ -51,6 +54,10 @@ describe('summarizeUpdate', () => {
     ).toBe('New\nFaster scans')
     expect(summarizeUpdate({ version: '1.2.0', releaseNotes: '' }).notes).toBeNull()
     expect(summarizeUpdate({ version: '1.2.0' }).notes).toBeNull()
+  })
+
+  it('decodes entities exactly once', () => {
+    expect(summarizeUpdate({ version: '1.2.0', releaseNotes: 'a &amp;lt; b' }).notes).toBe('a &lt; b')
   })
 
   it('joins ReleaseNoteInfo arrays', () => {
