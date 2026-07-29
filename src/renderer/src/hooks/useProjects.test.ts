@@ -22,18 +22,20 @@ describe('useProjects', () => {
     expect(result.current).toEqual(next)
   })
 
-  it('unsubscribes on unmount and ignores a late initial fetch', async () => {
+  it('unsubscribes on unmount; late fetch resolution is safe', async () => {
     let resolve!: (p: Project[]) => void
     vi.mocked(window.clean.getProjects).mockReturnValue(
       new Promise<Project[]>((r) => {
         resolve = r
       }),
     )
-    const { unmount } = renderHook(() => useProjects())
+    const { result, unmount } = renderHook(() => useProjects())
     expect(bridge.listeners.projects).toBe(1)
     unmount()
     expect(bridge.listeners.projects).toBe(0)
-    // the `alive` guard: resolving after unmount must not throw or set state
+    // React 18 makes post-unmount setState a no-op, so the alive guard has no
+    // observable effect to assert — this only proves late resolution is safe.
     await act(async () => resolve([makeProject()]))
+    expect(result.current).toEqual([])
   })
 })
