@@ -48,8 +48,10 @@ need changes for routine updates.
 
 ## Testing
 
-- Coverage is ratcheted: `vitest.config.ts` thresholds auto-bump on local
-  `pnpm test:coverage` runs and CI fails below them. Never lower them by hand.
+- Coverage is ratcheted: CI fails below the thresholds in `vitest.config.ts`.
+  CI's (Linux) numbers are authoritative — macOS measures slightly higher, so
+  don't copy local numbers. When a PR raises CI coverage, bump the thresholds
+  in the same PR; never lower them.
 - New logic ships with tests in the same PR. Renderer hook tests use the typed
   bridge mock (`src/renderer/src/test/mock-clean-bridge.ts`); it is typed
   against `CleanApi`, so preload API changes must update it (the compiler

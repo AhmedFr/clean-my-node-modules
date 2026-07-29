@@ -23,13 +23,14 @@ export default defineConfig({
         'src/renderer/src/test/**',
       ],
       reporter: ['text', 'json-summary'],
-      // Ratchet: CI fails below these; local coverage runs auto-bump them as tests are added.
+      // Ratchet: CI (Linux) numbers are authoritative — coverage differs slightly
+      // from macOS because platform-dependent branches don't run there. When a PR
+      // raises CI coverage, bump these in the same PR. Never lower them.
       thresholds: {
-        autoUpdate: true,
-        statements: 75.19,
-        branches: 88.52,
-        functions: 85.96,
-        lines: 75.19,
+        statements: 75.1,
+        branches: 88.5,
+        functions: 85.7,
+        lines: 75.1,
       },
     },
     projects: [
