@@ -10,8 +10,6 @@ export default defineConfig({
     },
   },
   test: {
-    // only this checkout's sources — keeps temporary worktrees under .claude/ out of runs
-    include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       // *.ts only: .tsx (UI) is Storybook's domain and intentionally unmeasured
@@ -26,5 +24,23 @@ export default defineConfig({
       ],
       reporter: ['text', 'json-summary'],
     },
+    projects: [
+      {
+        extends: true, // inherit root resolve.alias
+        test: {
+          name: 'node',
+          include: ['src/main/**/*.test.ts', 'src/shared/**/*.test.ts', 'src/preload/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'renderer',
+          environment: 'jsdom',
+          include: ['src/renderer/**/*.test.ts'],
+          setupFiles: ['src/renderer/src/test/setup.ts'],
+        },
+      },
+    ],
   },
 })
