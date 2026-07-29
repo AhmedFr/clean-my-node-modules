@@ -51,9 +51,23 @@ describe('useDocker', () => {
   it('prune() marks busy as prune:<target> and clears even when the call rejects', async () => {
     const { result } = renderHook(() => useDocker())
     await waitFor(() => expect(result.current.loading).toBe(false))
-    vi.mocked(window.clean.pruneDocker).mockRejectedValue(new Error('boom'))
+
+    let rejectPrune!: (e: Error) => void
+    vi.mocked(window.clean.pruneDocker).mockReturnValue(
+      new Promise<DockerActionResult>((_, reject) => {
+        rejectPrune = reject
+      }),
+    )
+    let pruneCall!: Promise<unknown>
+    act(() => {
+      pruneCall = result.current.prune('buildCache')
+      pruneCall.catch(() => {})
+    })
+    expect(result.current.busyId).toBe('prune:buildCache')
+
     await act(async () => {
-      await expect(result.current.prune('buildCache')).rejects.toThrow('boom')
+      rejectPrune(new Error('boom'))
+      await expect(pruneCall).rejects.toThrow('boom')
     })
     expect(result.current.busyId).toBeNull()
   })

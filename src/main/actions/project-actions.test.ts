@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   showItemInFolder: vi.fn((_p: string) => {}),
   openPath: vi.fn(async (_p: string) => ''),
   execFileFails: { value: false },
+  execFileCalls: [] as Array<{ cmd: string; args: string[] }>,
 }))
 
 vi.mock('electron', () => ({
@@ -20,7 +21,8 @@ vi.mock('electron', () => ({
 }))
 
 vi.mock('node:child_process', () => ({
-  execFile: (_cmd: string, _args: string[], cb: (err: Error | null, stdout: string, stderr: string) => void) => {
+  execFile: (cmd: string, args: string[], cb: (err: Error | null, stdout: string, stderr: string) => void) => {
+    mocks.execFileCalls.push({ cmd, args })
     cb(mocks.execFileFails.value ? new Error('open failed') : null, '', '')
   },
 }))
@@ -43,6 +45,7 @@ function project(over: Partial<Project> = {}): Project {
 beforeEach(() => {
   vi.clearAllMocks()
   mocks.execFileFails.value = false
+  mocks.execFileCalls.length = 0
 })
 
 describe('deleteNodeModules', () => {
@@ -91,6 +94,7 @@ describe('openProject', () => {
   it('opens in VS Code when available', async () => {
     await openProject(project())
     expect(mocks.openPath).not.toHaveBeenCalled()
+    expect(mocks.execFileCalls).toEqual([{ cmd: 'open', args: ['-a', 'Visual Studio Code', '/Users/me/code/demo'] }])
   })
 
   it('falls back to Finder when the editor launch fails', async () => {
