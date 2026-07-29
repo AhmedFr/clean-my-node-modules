@@ -38,10 +38,25 @@ need changes for routine updates.
 - Package manager: pnpm. Build-script approvals live in `pnpm-workspace.yaml`
   (pnpm 11), not package.json.
 - One folder per component: `index.ts`, `Component.tsx`, `Component.types.ts`,
-  optionally `.constants.ts` and tests.
+  `Component.stories.tsx`, optionally `.constants.ts` and tests. Story
+  coverage is enforced by `stories-coverage.test.ts` in each component tree;
+  purely behavioral components go on its EXEMPT list with a reason.
 - Site styling is Tailwind v4: tokens in `site/app/globals.css` `@theme`
   (colors like `ink-2`/`accent`/`ok`, fonts `display`/`ui`/`mono`), arbitrary
   values over scale-snapping for exact px, custom `max900:`/`max560:` variants
   for the inclusive breakpoints. The residual classes in globals.css
   (`lp-nav`, `reveal`, `lp-screen`, `blog-prose`, ...) are behavior hooks or
   markdown-facing; keep them stable.
+
+## Storybook
+
+- Two books: `pnpm storybook` at the root (app components, dark panel
+  decorator) and `pnpm storybook` inside `site/` (Tailwind site components).
+  Both build in CI on every PR (`storybook:build`).
+- New components ship with stories covering every meaningful visual state
+  (each boolean/union prop that changes rendering). Update stories when a
+  component's visual states change.
+- Design-system docs live in the books themselves: `docs/storybook/*.mdx`
+  (app) and `site/docs/storybook/*.mdx` (site). Keep the Tokens pages in sync
+  when tokens change in `global.css` / `site/app/globals.css`.
+- Keep both books on the same Storybook major version.

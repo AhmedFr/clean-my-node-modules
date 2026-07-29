@@ -13,12 +13,7 @@ const EXEMPT: Record<string, string> = {
 it('every component folder has a stories file', () => {
   const missing = readdirSync(COMPONENTS_DIR, { withFileTypes: true })
     .filter((e) => e.isDirectory() && !(e.name in EXEMPT))
-    .filter(
-      (e) =>
-        !readdirSync(join(COMPONENTS_DIR, e.name)).some((f) =>
-          f.endsWith('.stories.tsx'),
-        ),
-    )
+    .filter((e) => !readdirSync(join(COMPONENTS_DIR, e.name)).some((f) => f.endsWith('.stories.tsx')))
     .map((e) => e.name)
 
   expect(
