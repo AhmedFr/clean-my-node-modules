@@ -20,6 +20,8 @@
     "test": "vitest run",
     "icon": "node scripts/make-icon.mjs",
     "demo": "node scripts/demo-data.mjs",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
     "package": "electron-vite build && electron-builder --mac --dir",
     "release": "electron-vite build && bash scripts/release-mac.sh",
     "video:studio": "remotion studio video/index.ts",
@@ -30,6 +32,8 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.0",
     "@remotion/cli": "^4.0.477",
+    "@storybook/addon-docs": "^10.5.5",
+    "@storybook/react-vite": "^10.5.5",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
@@ -39,6 +43,7 @@
     "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
     "remotion": "^4.0.477",
+    "storybook": "^10.5.5",
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
     "vitest": "^2.1.8"
