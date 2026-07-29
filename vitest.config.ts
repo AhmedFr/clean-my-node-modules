@@ -12,5 +12,19 @@ export default defineConfig({
   test: {
     // only this checkout's sources — keeps temporary worktrees under .claude/ out of runs
     include: ['src/**/*.test.ts'],
+    coverage: {
+      provider: 'v8',
+      // *.ts only: .tsx (UI) is Storybook's domain and intentionally unmeasured
+      include: ['src/**/*.ts'],
+      exclude: [
+        'src/**/*.test.ts',
+        'src/**/*.types.ts',
+        'src/**/*.d.ts',
+        // barrels and bootstrap wiring (src/main/index.ts, src/preload/index.ts)
+        'src/**/index.ts',
+        'src/renderer/src/test/**',
+      ],
+      reporter: ['text', 'json-summary'],
+    },
   },
 })

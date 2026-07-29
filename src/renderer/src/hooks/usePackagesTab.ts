@@ -35,7 +35,6 @@ export function usePackagesTab(query: string, active: boolean): PackagesTab {
   }, [active, ensure])
 
   // A new search collapses any open detail panel.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: collapse is the intended effect of a query change
   useEffect(() => {
     setExpandedName(null)
   }, [query])
