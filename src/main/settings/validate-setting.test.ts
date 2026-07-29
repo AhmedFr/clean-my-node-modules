@@ -113,3 +113,17 @@ describe('scanRoots', () => {
     expect(coerceSetting('scanRoots', ['/ok', 42])).toBeNull()
   })
 })
+
+describe('coerceSetting — dismissed update version', () => {
+  it('accepts dismissedUpdateVersion strings', () => {
+    expect(coerceSetting('dismissedUpdateVersion', '1.2.0')).toEqual({
+      key: 'dismissedUpdateVersion',
+      value: '1.2.0',
+    })
+  })
+
+  it('rejects non-string dismissedUpdateVersion', () => {
+    expect(coerceSetting('dismissedUpdateVersion', 5)).toBeNull()
+    expect(coerceSetting('dismissedUpdateVersion', null)).toBeNull()
+  })
+})

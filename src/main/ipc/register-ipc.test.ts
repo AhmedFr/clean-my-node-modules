@@ -1,6 +1,7 @@
 import type { ActivateResult } from '@shared/license.types'
 import type { Project } from '@shared/project.types'
 import { describe, expect, it, vi } from 'vitest'
+import type { UpdaterService } from '../updater/updater-service'
 
 type Handler = (event: unknown, ...args: unknown[]) => unknown
 const handlers = new Map<string, Handler>()
@@ -69,6 +70,12 @@ function makeCtx(pro: boolean, extraProjects: Project[] = []) {
     packages: { get: vi.fn(), compute: vi.fn() },
     settings: { get: () => ({ pnpmStorePath: undefined, pnpmBinaryPath: undefined }) },
     license: { get: () => ({ pro }), activate, revalidateIfStale: vi.fn() },
+    updater: {
+      getState: vi.fn(() => ({ currentVersion: '1.1.0', checkedAt: null, status: { phase: 'idle' } })),
+      check: vi.fn(),
+      download: vi.fn(),
+      quitAndInstall: vi.fn(),
+    } as unknown as UpdaterService,
     analytics,
     panel: { hide: vi.fn(), browserWindow: null },
     launcher: { open: vi.fn(), hide: vi.fn(), browserWindow: null },
@@ -246,5 +253,12 @@ describe('license enforcement in IPC handlers', () => {
     expect(removeDockerItem).toHaveBeenCalledWith('image', 'abc123')
     expect(res).toEqual({ ok: true, freedBytes: 2048 })
     expect(analytics.capture).toHaveBeenCalledWith('clean_performed', { kind: 'docker_image', freed_gb: 0 })
+  })
+
+  it('exposes updater state and forwards updater actions', async () => {
+    const { ctx } = makeCtx(false)
+    expect(await invoke(IPC.updaterGetState)).toMatchObject({ status: { phase: 'idle' } })
+    await invoke(IPC.updaterDownload)
+    expect(ctx.updater.download).toHaveBeenCalledOnce()
   })
 })

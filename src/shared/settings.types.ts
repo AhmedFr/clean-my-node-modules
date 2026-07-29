@@ -28,4 +28,6 @@ export interface Settings {
   docker?: boolean
   /** Manual override: path to the docker executable. */
   dockerBinaryPath?: string
+  /** Update banner dismissed for this version; a newer release re-shows the banner. */
+  dismissedUpdateVersion?: string
 }

@@ -43,3 +43,11 @@ export function staleness(ts: number, now = Date.now()): number {
   const days = (now - ts) / DAY
   return Math.max(0, Math.min(1, days / 540))
 }
+
+/** "Jul 20, 2026" from an ISO string, or null when absent/unparseable. */
+export function releaseDateLabel(iso: string): string | null {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+}

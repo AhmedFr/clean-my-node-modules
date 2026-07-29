@@ -201,6 +201,11 @@ export function registerIpc(ctx: AppContext): void {
 
   ipcMain.handle(IPC.consumeLauncherNav, () => ctx.launcher.consumePendingNav())
 
+  ipcMain.handle(IPC.updaterGetState, () => ctx.updater.getState())
+  ipcMain.handle(IPC.updaterCheck, () => ctx.updater.check())
+  ipcMain.handle(IPC.updaterDownload, () => ctx.updater.download())
+  ipcMain.handle(IPC.updaterInstall, () => ctx.updater.quitAndInstall())
+
   ipcMain.handle(IPC.closeWindow, (e) => {
     const win = BrowserWindow.fromWebContents(e.sender)
     if (win === ctx.panel.browserWindow) ctx.panel.hide()

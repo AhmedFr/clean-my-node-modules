@@ -1,5 +1,6 @@
 import { MItem } from '@renderer/components/MItem'
 import { UIIcon } from '@renderer/components/UIIcon'
+import { UpdateBanner } from '@renderer/components/UpdateBanner'
 import { useAutoHeight } from '@renderer/hooks/useAutoHeight'
 import { useDocker } from '@renderer/hooks/useDocker'
 import { usePackages } from '@renderer/hooks/usePackages'
@@ -18,7 +19,7 @@ import { Separator } from './Separator'
 import { TrackedSummary } from './TrackedSummary'
 
 export function PanelApp(): ReactNode {
-  const [settings, , settingsLoaded] = useSettings()
+  const [settings, setSetting, settingsLoaded] = useSettings()
   const accent = settings.accent
 
   const projects = useProjects()
@@ -129,6 +130,11 @@ export function PanelApp(): ReactNode {
               <PanelEmpty accent={accent} onOpenSetup={() => void window.clean.openLauncher()} />
             ) : (
               <>
+                <UpdateBanner
+                  accent={accent}
+                  dismissedVersion={settings.dismissedUpdateVersion}
+                  onDismiss={(v) => void setSetting('dismissedUpdateVersion', v)}
+                />
                 <TrackedSummary
                   heroBytes={areas.heroBytes}
                   combinedLimitGB={areas.combinedLimitGB}

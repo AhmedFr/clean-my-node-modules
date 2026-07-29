@@ -2,6 +2,8 @@ import { homedir } from 'node:os'
 import { IPC } from '@shared/ipc.constants'
 import { GB } from '@shared/units.constants'
 import { app } from 'electron'
+// electron-updater is CJS; with "type": "module" the default import is the interop shim.
+import electronUpdater from 'electron-updater'
 import { Analytics } from './analytics/analytics'
 import { getInstallId } from './analytics/install-id'
 import { broadcast, registerIpc } from './ipc/register-ipc'
@@ -14,6 +16,7 @@ import { Scanner } from './scanner/scanner'
 import { ScanScheduler } from './scheduler/scan-scheduler'
 import { SettingsStore } from './settings/settings-store'
 import { TrayManager } from './tray/tray'
+import { noteVersionChange, UpdaterService } from './updater'
 import { LauncherWindow } from './windows/launcher-window'
 import { PanelWindow } from './windows/panel-window'
 import { is } from './windows/window-utils'
@@ -34,11 +37,24 @@ app.whenReady().then(() => {
   const license = new LicenseStore()
   const analytics = new Analytics(() => settings.get().analytics, getInstallId(), is.dev ? null : undefined)
   analytics.capture('app_launched', { version: app.getVersion() })
+
+  const prevVersion = noteVersionChange(app.getVersion())
+  if (prevVersion) analytics.capture('update_installed', { from: prevVersion, to: app.getVersion() })
+
   const scanner = new Scanner()
   const panel = new PanelWindow()
   const launcher = new LauncherWindow()
   const tray = new TrayManager()
   const notifier = new ThresholdNotifier(() => launcher.open())
+
+  const updater = new UpdaterService(electronUpdater.autoUpdater, {
+    currentVersion: app.getVersion(),
+    execPath: process.execPath,
+    onState: (s) => broadcast(IPC.onUpdaterState, s),
+    onEvent: (event, props) => analytics.capture(event, props),
+  })
+  // Silent checks only make sense for a packaged, signed build.
+  if (app.isPackaged) updater.start()
 
   const revalidateLicense = (): void => {
     void license.revalidateIfStale().then((result) => {
@@ -98,13 +114,14 @@ app.whenReady().then(() => {
   app.on('before-quit', () => {
     scheduler.stop()
     clearInterval(licenseTimer)
+    updater.stop()
     for (const off of unsubscribe) off()
     void analytics.shutdown()
   })
 
   tray.create((trayInstance) => panel.toggle(trayInstance))
   panel.create()
-  registerIpc({ projects, packages, settings, license, analytics, panel, launcher, runScan })
+  registerIpc({ projects, packages, settings, license, updater, analytics, panel, launcher, runScan })
   syncDerivedState()
 
   // First launch: show onboarding front-and-center; it triggers the first scan.

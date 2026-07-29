@@ -49,6 +49,7 @@ export function coerceSetting(
     case 'pnpmStorePath':
     case 'pnpmBinaryPath':
     case 'dockerBinaryPath':
+    case 'dismissedUpdateVersion':
       return typeof value === 'string' ? { key, value: value.trim() } : null
     case 'scanRoots':
       return Array.isArray(value) && value.every((v) => typeof v === 'string' && isAbsolute(v))

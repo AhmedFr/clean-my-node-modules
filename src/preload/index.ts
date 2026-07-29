@@ -35,6 +35,10 @@ const api: CleanApi = {
   copyShareCard: (payload) => ipcRenderer.invoke(IPC.copyShareCard, payload),
   openLauncher: (nav) => ipcRenderer.invoke(IPC.openLauncher, nav),
   consumeLauncherNav: () => ipcRenderer.invoke(IPC.consumeLauncherNav),
+  getUpdaterState: () => ipcRenderer.invoke(IPC.updaterGetState),
+  updaterCheck: () => ipcRenderer.invoke(IPC.updaterCheck),
+  updaterDownload: () => ipcRenderer.invoke(IPC.updaterDownload),
+  updaterInstall: () => ipcRenderer.invoke(IPC.updaterInstall),
   closeWindow: () => ipcRenderer.invoke(IPC.closeWindow),
   setWindowHeight: (height) => ipcRenderer.send(IPC.setWindowHeight, height),
   quitApp: () => ipcRenderer.send(IPC.quitApp),
@@ -46,6 +50,7 @@ const api: CleanApi = {
   onSettingsChanged: subscribe(IPC.onSettingsChanged),
   onLicenseChanged: subscribe(IPC.onLicenseChanged),
   onLauncherNavigate: subscribe(IPC.onLauncherNavigate),
+  onUpdaterState: subscribe(IPC.onUpdaterState),
 }
 
 contextBridge.exposeInMainWorld('clean', api)
