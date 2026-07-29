@@ -1,0 +1,55 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Design System/Tokens" />
+
+export const Swatch = ({ token, note }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 0' }}>
+    <div
+      style={{
+        width: 44,
+        height: 28,
+        borderRadius: 6,
+        background: `var(${token})`,
+        border: '1px solid rgba(255,255,255,0.15)',
+      }}
+    />
+    <code>{token}</code>
+    <span style={{ opacity: 0.6 }}>{note}</span>
+  </div>
+)
+
+# Design tokens
+
+Source of truth: the `@theme` block in `app/globals.css`. Use them through
+Tailwind utilities (`text-ink-2`, `bg-accent`, `font-mono`).
+
+## Canvas and panels
+
+<Swatch token="--color-canvas" note="page background" />
+<Swatch token="--color-canvas-soft" note="soft section background" />
+<Swatch token="--color-panel" note="card / panel background" />
+
+## Ink ramp
+
+<Swatch token="--color-ink" note="primary text" />
+<Swatch token="--color-ink-2" note="secondary, 0.70" />
+<Swatch token="--color-ink-3" note="tertiary, 0.46" />
+<Swatch token="--color-ink-4" note="faint, 0.30" />
+
+## Lines
+
+<Swatch token="--color-line" note="hairline, 0.09" />
+<Swatch token="--color-line-2" note="stronger line, 0.14" />
+
+## Brand and status
+
+<Swatch token="--color-accent" note="brand red" />
+<Swatch token="--color-accent-deep" note="gradient partner" />
+<Swatch token="--color-ok" note="success" />
+<Swatch token="--color-warn" note="warning" />
+
+## Fonts
+
+- `font-display`: Cabinet Grotesk (headlines)
+- `font-ui`: General Sans (body)
+- `font-mono`: JetBrains Mono (numbers, code)
