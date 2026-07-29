@@ -23,6 +23,14 @@ export default defineConfig({
         'src/renderer/src/test/**',
       ],
       reporter: ['text', 'json-summary'],
+      // Ratchet: CI fails below these; local coverage runs auto-bump them as tests are added.
+      thresholds: {
+        autoUpdate: true,
+        statements: 75.19,
+        branches: 88.52,
+        functions: 85.96,
+        lines: 75.19,
+      },
     },
     projects: [
       {
