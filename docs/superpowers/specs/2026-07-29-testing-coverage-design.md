@@ -23,10 +23,13 @@ that keeps quality from silently regressing over years:
 ## Scope
 
 - **In scope:** Electron app (`src/main`, `src/preload`, renderer *logic*),
-  coverage tooling and CI enforcement, one Playwright Electron smoke suite.
+  coverage tooling and CI enforcement.
 - **Out of scope:** React component/view tests (Storybook is being added in
   parallel and owns the UI layer), the site, release/packaging scripts, the
-  Remotion video pipeline.
+  Remotion video pipeline. E2E automation of the real app (Playwright
+  Electron smoke) was considered and deliberately deferred: maintenance cost
+  outweighs the benefit for now; revisit if IPC/window-boot regressions start
+  slipping through.
 
 ## Approach
 
@@ -43,7 +46,7 @@ and slow for a tray app).
 - Coverage config in `vitest.config.ts`:
   - Provider v8. Scope: `src/**/*.ts` only. Excluded: `**/*.tsx` (Storybook's
     domain), `**/*.types.ts`, `**/*.d.ts`, `**/index.ts` barrel files,
-    `src/main/index.ts` (app bootstrap, covered by the E2E smoke instead).
+    `src/main/index.ts` (app bootstrap wiring, no unit-testable logic).
   - `thresholds` (lines/functions/branches/statements) initialised to the
     measured baseline at implementation time, with `thresholds.autoUpdate:
     true` — vitest's built-in ratchet. Local coverage runs bump the numbers in
@@ -83,29 +86,12 @@ By risk tier:
    `electron` alias shim in the vitest node project supports files that
    import it incidentally.
 
-## Phase 4 — E2E smoke (Playwright Electron)
-
-- `@playwright/test` with the `_electron` driver, suite under `e2e/`,
-  separate from vitest. Runs the built app (`out/main/index.js`).
-- Smoke scope only: app boots without errors; tray and windows are created;
-  `window.clean` bridge is exposed with the expected methods; launcher window
-  loads; a scan of a fixture directory completes and reports projects.
-  New IPC surface added later must be added to the bridge-shape assertion.
-- **Safety sandbox (hard rule):** the app deletes files, so the suite must be
-  physically unable to touch real data. A test hook in `src/main/index.ts`:
-  when `TIDYDISK_E2E_HOME` is set, call `app.setPath('userData', ...)` into a
-  temp dir and seed settings so scan roots point only into the fixture tree.
-  The E2E launcher creates the fixture in a temp dir per run.
-- CI: the existing `package-macos` job gains a smoke step after packaging
-  (build once, smoke against it). Kept on macOS since that is the shipped
-  platform.
-
 ## Long-term policy (added to CLAUDE.md)
 
 - New logic ships with tests in the same PR; the coverage ratchet enforces the
   floor automatically.
-- New IPC handlers/bridge methods must be added to the E2E bridge-shape
-  assertion (the typed mock already breaks at compile time).
+- New preload bridge methods must be reflected in the typed mock (the
+  compiler enforces this since the mock is typed against `api.types.ts`).
 - UI components are Storybook's responsibility; do not add component render
   tests here.
 
@@ -113,7 +99,8 @@ By risk tier:
 
 - `thresholds.autoUpdate` only bumps when someone runs coverage locally; CI
   enforces the floor either way, so the ratchet can lag but never regress.
-- Playwright + Electron on macOS runners can be flaky at boot; mitigate with
-  generous launch timeout and a single retry, and keep the suite tiny.
+- With E2E deferred, IPC wiring and window boot remain covered only by
+  `register-ipc.test.ts` and the CI packaging job; a boot-time regression
+  could still ship. Accepted trade-off.
 - Extracting logic from Electron-glue files (Phase 3.4) touches shipped code;
   keep extractions mechanical and covered by the new tests.
