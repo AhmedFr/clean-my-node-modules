@@ -11,8 +11,8 @@ vi.mock('electron', () => ({
   Notification: class {
     static isSupported = (): boolean => mocks.supported.value
     constructor(private opts: { title: string; body: string }) {}
-    on(_event: string, fn: () => void): void {
-      mocks.clicks.push(fn)
+    on(event: string, fn: () => void): void {
+      if (event === 'click') mocks.clicks.push(fn)
     }
     show(): void {
       mocks.shown.push(this.opts)

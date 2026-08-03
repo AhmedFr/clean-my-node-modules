@@ -11,4 +11,7 @@ describe('abbreviateHome', () => {
   it('abbreviates the home directory itself to ~', () => {
     expect(abbreviateHome('/Users/me', '/Users/me')).toBe('~')
   })
+  it('leaves sibling paths sharing the home prefix untouched', () => {
+    expect(abbreviateHome('/Users/mean', '/Users/me')).toBe('/Users/mean')
+  })
 })
