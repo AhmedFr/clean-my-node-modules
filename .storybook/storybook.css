@@ -1,0 +1,5 @@
+/* Storybook-only overrides: global.css assumes the frameless Electron panel. */
+body {
+  overflow: auto !important;
+  user-select: text !important;
+}

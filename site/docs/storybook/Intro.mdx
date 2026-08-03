@@ -1,0 +1,26 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Design System/Intro" />
+
+# TidyDisk site design system
+
+The marketing site (tidydisk.app) is Next.js with Tailwind v4. All design
+tokens live in `app/globals.css` under `@theme`: colors like `ink-2`,
+`accent`, `ok`; fonts `display`, `ui`, `mono`. Components use Tailwind
+utilities with arbitrary values for exact pixels, plus custom `max900:` and
+`max560:` variants for the inclusive breakpoints.
+
+## Component convention
+
+One folder per component under `components/`, with `index.ts`, the component
+file, a `.types.ts` when it has props, and a `.stories.tsx` (required,
+enforced by `components/stories-coverage.test.ts`; non-visual components go
+on its EXEMPT list with a reason).
+
+## Known Storybook limitations
+
+- Brand fonts are injected by `next/font` in the app layout, so Storybook
+  falls back to system fonts. Spacing and color are faithful; letterforms are
+  not.
+- Page-level compositions in `components/pages/` read markdown content from
+  disk and are exempt from stories.

@@ -1,0 +1,37 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Design System/Intro" />
+
+# TidyDisk app design system
+
+TidyDisk is a macOS menu bar app. Every component here renders inside a dark
+vibrancy panel, so the design tokens are white-alpha overlays on a translucent
+dark background. Stories are wrapped in a decorator that simulates that panel:
+a dark gradient stands in for the wallpaper, and stories render inside the
+334px panel frame by default (opt out with `parameters: { panel: false }`).
+
+## Component convention
+
+One folder per component under `src/renderer/src/components/`:
+
+- `index.ts` re-exports
+- `Component.tsx` the component
+- `Component.types.ts` its props
+- `Component.stories.tsx` its stories (required, enforced by
+  `stories-coverage.test.ts`; purely behavioral components can be added to the
+  EXEMPT list there, with a reason)
+
+## Adding a component
+
+1. Create the folder with the four files above.
+2. Cover every meaningful visual state with a story: each boolean or union
+   prop that changes what the user sees gets its own story.
+3. `pnpm test` fails until the story file exists.
+
+## Rules
+
+- Colors, fonts, and surfaces come from the CSS variables in
+  `src/renderer/src/styles/global.css` (see the Tokens page). No hand-typed
+  rgba values in components.
+- The accent color is a user setting; components receive it as an `accent`
+  prop rather than reading a global.
