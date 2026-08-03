@@ -1,3 +1,5 @@
+// @vitest-environment node
+// filesystem-only test; under jsdom import.meta.url is not a file: URL
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'

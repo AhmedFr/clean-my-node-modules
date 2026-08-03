@@ -48,6 +48,21 @@ need changes for routine updates.
   (`lp-nav`, `reveal`, `lp-screen`, `blog-prose`, ...) are behavior hooks or
   markdown-facing; keep them stable.
 
+## Testing
+
+- Coverage is ratcheted: CI fails below the thresholds in `vitest.config.ts`.
+  CI's (Linux) numbers are authoritative — macOS measures slightly higher, so
+  don't copy local numbers. When a PR raises CI coverage, bump the thresholds
+  in the same PR; never lower them.
+- New logic ships with tests in the same PR. Renderer hook tests use the typed
+  bridge mock (`src/renderer/src/test/mock-clean-bridge.ts`); it is typed
+  against `CleanApi`, so preload API changes must update it (the compiler
+  will insist).
+- UI components (`.tsx`) are Storybook's responsibility — no component render
+  tests, and `.tsx` is excluded from coverage on purpose.
+- Two vitest projects: `node` (`src/main|shared|preload`) and `renderer`
+  (jsdom). Run one file with `pnpm vitest run --project <name> <path>`.
+
 ## Storybook
 
 - Two books: `pnpm storybook` at the root (app components, dark panel
